@@ -75,7 +75,7 @@ jobs:
         run: |
           cd zfull
           mkdir -p out
-          node ../scriptc-try/node_modules/.bin/scriptc build entries/${{ matrix.pkg }}.ts --emit c -o out/${{ matrix.pkg }}.c
+          node ../scriptc-try/node_modules/.bin/scriptc build entries/${{ matrix.pkg }}.ts --npm-static zod --emit c -o out/${{ matrix.pkg }}.c
           ls -la out/
 
       - name: Upload C artifact

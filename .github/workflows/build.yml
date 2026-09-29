@@ -89,6 +89,17 @@ jobs:
           npm init -y >/dev/null 2>&1 || true
           npm install scriptc@0.1.7 --no-audit --no-fund
           cd ..
+      - name: Patch scriptc for diagnostics (locate badType source)
+        run: |
+          python3 - <<'PYEOF'
+          import io
+          p = "scriptc-try/node_modules/@scriptc/compiler/dist/frontend/lowering/lowerer.js"
+          s = io.open(p, encoding="utf-8").read().split(chr(10))
+          assert "throw new PoisonError();" in s[4221], s[4221]
+          s.insert(4221, '        try { console.error("[scriptc-diag] badType at", node && node.getSourceFile ? node.getSourceFile().fileName : "?", node && node.getStart ? node.getStart() : "?", this.checker.typeToString(type)); } catch (e) {}')
+          io.open(p, "w", encoding="utf-8").write(chr(10).join(s))
+          print("diag inserted")
+          PYEOF
 
       - name: Install ZCode workspace deps (pnpm)
         run: |

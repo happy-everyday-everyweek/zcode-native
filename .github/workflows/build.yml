@@ -109,6 +109,8 @@ jobs:
           npm init -y >/dev/null 2>&1 || true
           npm install scriptc@0.1.7 --no-audit --no-fund
           cd ..
+      - name: Patch scriptc lib runtime (re-include async + child units)
+        run: python3 ci/patch_scriptc_lib_runtime.py "$GITHUB_WORKSPACE/scriptc-try/node_modules/scriptc/dist/backend/native-toolchain.js"
       - name: Install minimal type deps (Node types + undici for shims)
         run: |
           mkdir -p zfull/node_modules/@types /tmp/nt
@@ -158,6 +160,10 @@ jobs:
           echo '--- .so full symtab zr ---'
           $TC/llvm-readelf -sW ../out/libzcode_rpc.so 2>/dev/null | grep -i 'zr_' | head -24 || true
           ls -la ../out/
+          echo '=== unresolved symbols check ==='
+          $TC/llvm-readelf -sW ../out/libzcode_rpc.so | awk '$7=="UND" && $8 != "" {print $8}' | grep -v '@' | sort -u | tee /tmp/und.txt || true
+          if grep -q 'scr_' /tmp/und.txt; then echo 'UNRESOLVED scr_* SYMBOLS:'; cat /tmp/und.txt; exit 1; fi
+          echo 'no unresolved scr_* symbols'
 
       - name: Upload aarch64 library
         if: always()
@@ -198,6 +204,8 @@ jobs:
           npm init -y >/dev/null 2>&1 || true
           npm install scriptc@0.1.7 --no-audit --no-fund
           cd ..
+      - name: Patch scriptc lib runtime (re-include async + child units)
+        run: python3 ci/patch_scriptc_lib_runtime.py "$GITHUB_WORKSPACE/scriptc-try/node_modules/scriptc/dist/backend/native-toolchain.js"
       - name: Install minimal type deps (Node types + undici for shims)
         run: |
           mkdir -p zfull/node_modules/@types /tmp/nt
@@ -244,6 +252,10 @@ jobs:
           $TC/clang --target=aarch64-linux-android26 --sysroot="$SYSROOT" -fuse-ld=lld -shared -rtlib=compiler-rt --unwindlib=none -Wl,-Bsymbolic -o /tmp/libzcodecore.so /tmp/jni.o /tmp/combined.o -lc -lm -llog
           ls -la /tmp/libzcodecore.so
           $TC/llvm-readelf -sW /tmp/libzcodecore.so | grep -E 'Java_|zr_' | head -16
+          echo '=== unresolved symbols check ==='
+          $TC/llvm-readelf -sW /tmp/libzcodecore.so | awk '$7=="UND" && $8 != "" {print $8}' | grep -v '@' | sort -u | tee /tmp/und.txt || true
+          if grep -q 'scr_' /tmp/und.txt; then echo 'UNRESOLVED scr_* SYMBOLS:'; cat /tmp/und.txt; exit 1; fi
+          echo 'no unresolved scr_* symbols'
       - name: Build APK (javac + d8 + aapt2 + zipalign + apksigner)
         run: |
           WS=$GITHUB_WORKSPACE

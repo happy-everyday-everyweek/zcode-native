@@ -46,6 +46,18 @@ jobs:
           ln -sfn /tmp/nt/node_modules/@types/node zfull/node_modules/@types/node
           ln -sfn /tmp/nt/node_modules/undici-types zfull/node_modules/undici-types
           ls -la zfull/node_modules/ zfull/node_modules/@types/
+      - name: Install ZCode workspace deps (pnpm)
+        run: |
+          npm i -g pnpm@10.33.2 >/dev/null 2>&1 || true
+          cd ZCode
+          pnpm install --ignore-scripts --no-frozen-lockfile
+          cd ..
+      - name: Re-link @types/node + undici-types from ZCode node_modules
+        run: |
+          ln -sfn "$PWD/ZCode/node_modules/@types/node" zfull/node_modules/@types/node
+          ln -sfn "$PWD/ZCode/node_modules/undici-types" zfull/node_modules/undici-types
+          ls -la zfull/node_modules/
+
 
 
       - name: Build ${{ matrix.pkg }} to C

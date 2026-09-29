@@ -140,6 +140,19 @@ jobs:
           echo '--- .scriptc ---'
           ls -la .scriptc/ 2>/dev/null | head -20 || true
           find . -name '*.lib.a' -o -name '*.a' | head
+      - name: Link aarch64 shared library (.so)
+        run: |
+          NDK=/tmp/ndk/android-ndk-r27c
+          TC=$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin
+          cd zfull/profiles
+          $TC/ld.lld -r .scriptc/rpc-probe.lib.a -o /tmp/combined.o
+          $TC/clang --target=aarch64-linux-android26 --sysroot="$NDK/toolchains/llvm/prebuilt/linux-x86_64/sysroot" -fuse-ld=lld -shared -rtlib=compiler-rt --unwindlib=none -Wl,-Bsymbolic -o ../out/libzcode_rpc.so /tmp/combined.o -lc -lm
+          echo '--- dynamic section ---'
+          $TC/llvm-readelf -d ../out/libzcode_rpc.so | head -16 || true
+          echo '--- exported symbols ---'
+          $TC/llvm-nm -D ../out/libzcode_rpc.so 2>/dev/null | head -24 || true
+          ls -la ../out/
+
       - name: Upload aarch64 library
         if: always()
         uses: actions/upload-artifact@v4
@@ -147,7 +160,7 @@ jobs:
           name: lib-aarch64-zcode-rpc
           path: |
             zfull/out/
-            zfull/.scriptc/
+            zfull/profiles/.scriptc/
           if-no-files-found: warn
 
   coverage-sweep:

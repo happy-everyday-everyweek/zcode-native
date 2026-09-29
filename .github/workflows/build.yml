@@ -86,10 +86,22 @@ jobs:
           pnpm install --ignore-scripts --no-frozen-lockfile
           cd ..
 
-      - name: Build contracts dist (needed for subpath exports resolution)
+      - name: Link @types/node (so scriptc adopts real Node types)
+        run: |
+          mkdir -p zfull/node_modules/@types
+          ln -sfn "$PWD/ZCode/node_modules/@types/node" zfull/node_modules/@types/node
+          ls -la zfull/node_modules/@types/
+
+      - name: Generate dynamic-workflow libs (gitignored generated file)
+        run: |
+          cd ZCode/apps/zcode-cli/packages/dynamic-workflow
+          node scripts/generate-libs.mjs
+          cd -
+
+      - name: Build core dependency-chain dist (contracts, shared, core, ...)
         run: |
           cd ZCode
-          pnpm --filter @zcode/contracts build
+          pnpm --filter @zcode/core... build
           cd ..
 
       - name: Full coverage sweep (22 entries)

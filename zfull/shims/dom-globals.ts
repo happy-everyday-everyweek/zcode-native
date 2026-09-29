@@ -22,13 +22,13 @@ declare global {
   }
 
   interface Element {
-    readonly tagName?: string;
+    readonly tagName: string;
     readonly className?: string;
     readonly id?: string;
     readonly textContent?: string;
     readonly innerText?: string;
     readonly value?: string;
-    readonly outerHTML?: string;
+    readonly outerHTML: string;
     readonly parentElement?: Element;
     getAttribute(name: string): string | null;
     hasAttribute(name: string): boolean;
@@ -67,7 +67,7 @@ declare global {
   var window: Window;
 
   interface Document {
-    readonly documentElement?: Element;
+    readonly documentElement: Element;
     readonly body?: Element;
     readonly title?: string;
     createElement(tag: string): HTMLElement;

@@ -1,0 +1,18 @@
+{
+  "profile_format": 1,
+  "name": "zcode-rpc",
+  "entry": "../entries/rpc-probe.ts",
+  "emission": "llvm",
+  "abi": {
+    "prefix": "zr_",
+    "init_symbol": "zr_init",
+    "sink_register_symbol": "zr_set_panic_sink",
+    "collect_symbol": "zr_collect",
+    "result_reset_symbol": null
+  },
+  "exports": [
+    { "export": "rpc_probe_emitter", "symbol": "zr_rpc_probe_emitter", "params": [], "returns": "string" },
+    { "export": "rpc_probe_store", "symbol": "zr_rpc_probe_store", "params": [], "returns": "string" },
+    { "export": "rpc_probe_once", "symbol": "zr_rpc_probe_once", "params": [], "returns": "string" }
+  ]
+}

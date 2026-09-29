@@ -1,0 +1,979 @@
+diff --git a/apps/zcode-cli/packages/contracts/src/events/session.events.ts b/apps/zcode-cli/packages/contracts/src/events/session.events.ts
+index 655c088..06998e6 100644
+--- a/apps/zcode-cli/packages/contracts/src/events/session.events.ts
++++ b/apps/zcode-cli/packages/contracts/src/events/session.events.ts
+@@ -1,3 +1,4 @@
++import { randomUUID } from "node:crypto";
+ import type { ExecutionOutputPreview } from "../interfaces/execution.port.js";
+ import type { RuntimeInputPresentation } from "../interfaces/runtime-input-presentation.js";
+ /* eslint-disable max-lines -- session event 契约集中在单文件导出，避免 app/agent 协议类型分散后漂移。 */
+@@ -1145,12 +1146,12 @@ export function createSessionEvent<T>(
+   },
+ ): SessionEvent {
+   return {
+-    id: crypto.randomUUID() as EventId,
++    id: randomUUID() as EventId,
+     sessionId,
+     turnId: options?.turnId,
+     type,
+     timestamp: new Date(),
+-    traceId: options?.traceId ?? (crypto.randomUUID() as TraceId),
++    traceId: options?.traceId ?? (randomUUID() as TraceId),
+     sequenceNumber: options?.sequenceNumber ?? 0,
+     payload,
+   };
+diff --git a/apps/zcode-cli/packages/contracts/src/interfaces/shared.ts b/apps/zcode-cli/packages/contracts/src/interfaces/shared.ts
+index 05040ee..bec0721 100644
+--- a/apps/zcode-cli/packages/contracts/src/interfaces/shared.ts
++++ b/apps/zcode-cli/packages/contracts/src/interfaces/shared.ts
+@@ -1,3 +1,5 @@
++import { randomUUID } from "node:crypto";
++
+ // ============================================================
+ // Shared types used across protocol
+ // ============================================================
+@@ -29,27 +31,27 @@ export interface SubagentInteractionRequestOrigin {
+ export type InteractionRequestOrigin = SubagentInteractionRequestOrigin;
+ 
+ export function createSessionId(id?: string): SessionId {
+-  return `sess_${id ?? crypto.randomUUID()}` as SessionId;
++  return `sess_${id ?? randomUUID()}` as SessionId;
+ }
+ 
+ export function createTurnId(id?: string): TurnId {
+-  return `turn_${id ?? crypto.randomUUID()}` as TurnId;
++  return `turn_${id ?? randomUUID()}` as TurnId;
+ }
+ 
+ export function createEventId(id?: string): EventId {
+-  return `evt_${id ?? crypto.randomUUID()}` as EventId;
++  return `evt_${id ?? randomUUID()}` as EventId;
+ }
+ 
+ export function createTraceId(): TraceId {
+-  return crypto.randomUUID() as TraceId;
++  return randomUUID() as TraceId;
+ }
+ 
+ export function createQueryId(id?: string): QueryId {
+-  return `query_${id ?? crypto.randomUUID()}` as QueryId;
++  return `query_${id ?? randomUUID()}` as QueryId;
+ }
+ 
+ export function createToolCallId(id?: string): ToolCallId {
+-  return `tool_${id ?? crypto.randomUUID()}` as ToolCallId;
++  return `tool_${id ?? randomUUID()}` as ToolCallId;
+ }
+ 
+ export function createMessageId(id?: string): MessageId {
+@@ -65,13 +67,67 @@ export function createInputHistoryId(id?: string): InputHistoryId {
+ }
+ 
+ export function createProjectId(id?: string): ProjectId {
+-  return `proj_${id ?? crypto.randomUUID()}` as ProjectId;
++  return `proj_${id ?? randomUUID()}` as ProjectId;
+ }
+ 
+ export function createWorkspaceId(id?: string): WorkspaceId {
+-  return `ws_${id ?? crypto.randomUUID()}` as WorkspaceId;
++  return `ws_${id ?? randomUUID()}` as WorkspaceId;
+ }
+ 
+ function createSortableIdSegment(): string {
+-  return `${Date.now().toString(36)}_${crypto.randomUUID()}`;
++  return `${toBase36(Date.now())}_${randomUUID()}`;
++}
++
++/** ZCode Android port: base36 digit lookup (scriptc has no Number.toString(radix)). */
++function base36Digit(value: number): string {
++  switch (value % 36) {
++    case 0: return "0";
++    case 1: return "1";
++    case 2: return "2";
++    case 3: return "3";
++    case 4: return "4";
++    case 5: return "5";
++    case 6: return "6";
++    case 7: return "7";
++    case 8: return "8";
++    case 9: return "9";
++    case 10: return "a";
++    case 11: return "b";
++    case 12: return "c";
++    case 13: return "d";
++    case 14: return "e";
++    case 15: return "f";
++    case 16: return "g";
++    case 17: return "h";
++    case 18: return "i";
++    case 19: return "j";
++    case 20: return "k";
++    case 21: return "l";
++    case 22: return "m";
++    case 23: return "n";
++    case 24: return "o";
++    case 25: return "p";
++    case 26: return "q";
++    case 27: return "r";
++    case 28: return "s";
++    case 29: return "t";
++    case 30: return "u";
++    case 31: return "v";
++    case 32: return "w";
++    case 33: return "x";
++    case 34: return "y";
++    default: return "z";
++  }
+ }
++
++/** ZCode Android port: non-negative integer to base36 string without String(radix) APIs. */
++function toBase36(value: number): string {
++  let n = Math.floor(value);
++  if (n <= 0) return "0";
++  let out = "";
++  while (n > 0) {
++    out = base36Digit(n) + out;
++    n = Math.floor(n / 36);
++  }
++  return out;
++}
+\ No newline at end of file
+diff --git a/apps/zcode-cli/packages/contracts/src/network/public-egress-ip.ts b/apps/zcode-cli/packages/contracts/src/network/public-egress-ip.ts
+index 7abb132..23bdf97 100644
+--- a/apps/zcode-cli/packages/contracts/src/network/public-egress-ip.ts
++++ b/apps/zcode-cli/packages/contracts/src/network/public-egress-ip.ts
+@@ -1,4 +1,73 @@
+-import { BlockList, isIP } from "node:net";
++// ZCode Android port: node:net BlockList/isIP are outside scriptc's supported surface.
++// Local, dependency-free equivalents (IPv4 CIDR + basic IPv6 prefix matching).
++function portIpv4ToInt(address: string): number | undefined {
++  const parts = address.split(".");
++  if (parts.length !== 4) return undefined;
++  let value = 0;
++  for (const part of parts) {
++    const n = Number(part);
++    if (!Number.isInteger(n) || n < 0 || n > 255) return undefined;
++    value = value * 256 + n;
++  }
++  return value;
++}
++function portExpandIpv6(value: string): number[] | undefined {
++  const parts = value.toLowerCase().split("::");
++  if (parts.length > 2) return undefined;
++  const head = parts[0] ? parts[0]!.split(":") : [];
++  const tail = parts.length === 2 && parts[1] !== undefined && parts[1] !== "" ? parts[1]!.split(":") : [];
++  const missing = 8 - head.length - tail.length;
++  if (missing < 0) return undefined;
++  const hextets: string[] = [];
++  for (const h of head) hextets.push(h);
++  for (let i = 0; i < missing; i += 1) hextets.push("0");
++  for (const h of tail) hextets.push(h);
++  if (hextets.length !== 8) return undefined;
++  const out: number[] = [];
++  for (const h of hextets) {
++    const n = parseInt(h === "" ? "0" : h, 16);
++    if (Number.isNaN(n) || n < 0 || n > 0xffff) return undefined;
++    out.push(n);
++  }
++  return out;
++}
++function portIsIP(value: string): 0 | 4 | 6 {
++  if (portIpv4ToInt(value) !== undefined) return 4;
++  if (portExpandIpv6(value) !== undefined) return 6;
++  return 0;
++}
++class PortBlockList {
++  private readonly entries: { address: string; prefix: number; family: "ipv4" | "ipv6" }[] = [];
++  addSubnet(address: string, prefix: number, family: "ipv4" | "ipv6"): void {
++    this.entries.push({ address, prefix, family });
++  }
++  check(address: string, family: "ipv4" | "ipv6"): boolean {
++    for (const entry of this.entries) {
++      if (entry.family !== family) continue;
++      if (family === "ipv4") {
++        const a = portIpv4ToInt(address);
++        const b = portIpv4ToInt(entry.address);
++        if (a === undefined || b === undefined) continue;
++        const mask = entry.prefix >= 32 ? 0xffffffff : ((0xffffffff << (32 - entry.prefix)) >>> 0);
++        if (((a & mask) >>> 0) === ((b & mask) >>> 0)) return true;
++      } else {
++        const a = portExpandIpv6(address);
++        const b = portExpandIpv6(entry.address);
++        if (a === undefined || b === undefined) continue;
++        let bits = 0;
++        let matched = true;
++        for (let i = 0; i < 8 && bits < entry.prefix; i += 1) {
++          const take = Math.min(16, entry.prefix - bits);
++          const mask = take >= 16 ? 0xffff : ((0xffff << (16 - take)) & 0xffff);
++          if ((a[i]! & mask) !== (b[i]! & mask)) { matched = false; break; }
++          bits += 16;
++        }
++        if (matched) return true;
++      }
++    }
++    return false;
++  }
++}
+ 
+ export type IpAddressVersion = 0 | 4 | 6;
+ 
+@@ -44,9 +113,15 @@ const BLOCKED_IP_RANGES: BlockedIpRange[] = [
+ ];
+ 
+ const BLOCKED_PUBLIC_EGRESS_RANGES = BLOCKED_IP_RANGES.map((range) => {
+-  const blockList = new BlockList();
++  const blockList = new PortBlockList();
+   blockList.addSubnet(range.address, range.prefix, range.family);
+-  return { ...range, blockList };
++  return {
++    address: range.address,
++    family: range.family,
++    prefix: range.prefix,
++    reason: range.reason,
++    blockList,
++  };
+ });
+ 
+ export function normalizeIpAddressLiteral(value: string): string {
+@@ -54,12 +129,12 @@ export function normalizeIpAddressLiteral(value: string): string {
+ }
+ 
+ export function getIpAddressVersion(value: string): IpAddressVersion {
+-  return isIP(normalizeIpAddressLiteral(value)) as IpAddressVersion;
++  return portIsIP(normalizeIpAddressLiteral(value)) as IpAddressVersion;
+ }
+ 
+ export function getPublicEgressIpBlockReason(value: string): PublicEgressIpBlockReason | undefined {
+   const normalized = normalizeIpAddressLiteral(value);
+-  const version = isIP(normalized) as IpAddressVersion;
++  const version = portIsIP(normalized) as IpAddressVersion;
+   if (version === 0) {
+     return { reason: "not an IP address", version };
+   }
+diff --git a/apps/zcode-cli/packages/contracts/src/telemetry/index.ts b/apps/zcode-cli/packages/contracts/src/telemetry/index.ts
+index b9ce854..294d7ff 100644
+--- a/apps/zcode-cli/packages/contracts/src/telemetry/index.ts
++++ b/apps/zcode-cli/packages/contracts/src/telemetry/index.ts
+@@ -1,3 +1,4 @@
++import { randomUUID } from "node:crypto";
+ import type { ModelId, ModelProviderId } from "../model/index.js";
+ import type {
+   AgentExecutionTelemetryPort,
+@@ -143,7 +144,7 @@ export function resolveModelApiCallObservation(
+     ...observation,
+     operation: observation?.operation ?? mapped.operation,
+     actorKind: observation?.actorKind ?? mapped.actorKind,
+-    logicalCallId: observation?.logicalCallId?.trim() || crypto.randomUUID(),
++    logicalCallId: observation?.logicalCallId?.trim() || randomUUID(),
+   };
+ }
+ 
+diff --git a/apps/zcode-cli/packages/contracts/src/tracing/tracer.ts b/apps/zcode-cli/packages/contracts/src/tracing/tracer.ts
+index 524ba99..24e4f7b 100644
+--- a/apps/zcode-cli/packages/contracts/src/tracing/tracer.ts
++++ b/apps/zcode-cli/packages/contracts/src/tracing/tracer.ts
+@@ -1,3 +1,4 @@
++import { randomUUID } from "node:crypto";
+ // ============================================================
+ // Tracing - Trace context propagation
+ // ============================================================
+@@ -98,7 +99,7 @@ class SpanImpl implements Span {
+ }
+ 
+ function generateSpanId(): string {
+-  return crypto.randomUUID().slice(0, 16);
++  return randomUUID().slice(0, 16);
+ }
+ 
+ // -----------------------------------------------
+diff --git a/apps/zcode-cli/packages/core/src/agent/turn-machine.ts b/apps/zcode-cli/packages/core/src/agent/turn-machine.ts
+index 6401158..2c3fe8b 100644
+--- a/apps/zcode-cli/packages/core/src/agent/turn-machine.ts
++++ b/apps/zcode-cli/packages/core/src/agent/turn-machine.ts
+@@ -1,3 +1,4 @@
++import { randomUUID } from "node:crypto";
+ // ============================================================
+ // Turn Machine - State machine for turn lifecycle
+ // ============================================================
+@@ -83,7 +84,7 @@ export class TurnMachineImpl implements TurnMachine {
+       turnId ?? createTurnId(),
+       sessionId,
+       turnNumber,
+-      traceId ?? (crypto.randomUUID() as TraceId),
++      traceId ?? (randomUUID() as TraceId),
+       input,
+     );
+     return new TurnMachineImpl(state);
+diff --git a/apps/zcode-cli/packages/core/src/environment.ts b/apps/zcode-cli/packages/core/src/environment.ts
+index 05382a5..1ceec38 100644
+--- a/apps/zcode-cli/packages/core/src/environment.ts
++++ b/apps/zcode-cli/packages/core/src/environment.ts
+@@ -1,4 +1,6 @@
+-import { isSea } from "node:sea";
++/* scriptc android port: node:sea is unavailable in the native embedding;
++ * SEA (single-executable-application) environments do not exist here. */
++const isSea = (): boolean => false;
+ import type { RuntimeInfo } from "@zcode/shared-types";
+ 
+ export { type RuntimeInfo };
+diff --git a/apps/zcode-cli/packages/core/src/runtime/agent-runtime.ts b/apps/zcode-cli/packages/core/src/runtime/agent-runtime.ts
+index 520b025..ffec081 100644
+--- a/apps/zcode-cli/packages/core/src/runtime/agent-runtime.ts
++++ b/apps/zcode-cli/packages/core/src/runtime/agent-runtime.ts
+@@ -226,6 +226,7 @@ export class AgentRuntime {
+   private agentTelemetry: RuntimeTelemetryFacade;
+ 
+   constructor(sessionId: SessionId, config: AgentRuntimeConfig, deps: AgentRuntimeDeps) {
++    ensureAgentRuntimeMethodsInstalled();
+     const runtime = this as unknown as AgentRuntimeInternal;
+     this.sessionId = sessionId;
+     this.turnNumber = 0;
+@@ -661,4 +662,11 @@ export interface AgentRuntime {
+   drainMemoryExtractions(timeoutMs?: number | null): Promise<void>;
+ }
+ 
+-installAgentRuntimeMethods(AgentRuntime);
++let agentRuntimeMethodsInstalled: boolean | undefined;
++
++export function ensureAgentRuntimeMethodsInstalled(): void {
++  if (agentRuntimeMethodsInstalled === undefined) {
++    agentRuntimeMethodsInstalled = true;
++    installAgentRuntimeMethods(AgentRuntime);
++  }
++}
+diff --git a/apps/zcode-cli/packages/core/src/tool/handlers/bash-cwd-policy.ts b/apps/zcode-cli/packages/core/src/tool/handlers/bash-cwd-policy.ts
+index 62c5204..21ffab6 100644
+--- a/apps/zcode-cli/packages/core/src/tool/handlers/bash-cwd-policy.ts
++++ b/apps/zcode-cli/packages/core/src/tool/handlers/bash-cwd-policy.ts
+@@ -1,5 +1,4 @@
+ import { realpathSync } from "node:fs";
+-import { platform as currentPlatform } from "node:process";
+ import type { ExecutionResult } from "@zcode/contracts";
+ import {
+   getToolPathApi,
+@@ -56,7 +55,7 @@ export function appendBashCwdStderrSuffix(stderr: string, suffix: string | undef
+ }
+ 
+ function normalizeCwdBoundaryInput(input: BashCwdPolicyInput): NormalizedCwdBoundary {
+-  const platform = input.platform ?? currentPlatform;
++  const platform = input.platform ?? process.platform;
+   const pathApi = getToolPathApi(platform);
+   const isWindows = platform === "win32";
+   const resolvedCwd = normalizeCwdBoundary(input.resolvedCwd ?? "", isWindows);
+diff --git a/apps/zcode-cli/packages/core/src/tool/path-normalization.ts b/apps/zcode-cli/packages/core/src/tool/path-normalization.ts
+index edbf234..57f2f96 100644
+--- a/apps/zcode-cli/packages/core/src/tool/path-normalization.ts
++++ b/apps/zcode-cli/packages/core/src/tool/path-normalization.ts
+@@ -3,7 +3,6 @@
+ // ============================================================
+ 
+ import path, { normalize } from "node:path";
+-import { platform as currentPlatform } from "node:process";
+ 
+ export type ToolPathPlatform = NodeJS.Platform;
+ export type ToolPathApi = typeof path.posix | typeof path.win32;
+@@ -14,7 +13,7 @@ export function getToolPathApi(platform: ToolPathPlatform): ToolPathApi {
+ 
+ export function normalizeToolPathForComparison(
+   filePath: string,
+-  platform: ToolPathPlatform = currentPlatform,
++  platform: ToolPathPlatform = process.platform,
+ ): string {
+   const normalized =
+     platform === "win32" ? normalizeWindowsToolPath(filePath) : normalize(filePath);
+diff --git a/apps/zcode-cli/packages/core/src/tool/read-file-state.ts b/apps/zcode-cli/packages/core/src/tool/read-file-state.ts
+index 461d678..4934bd4 100644
+--- a/apps/zcode-cli/packages/core/src/tool/read-file-state.ts
++++ b/apps/zcode-cli/packages/core/src/tool/read-file-state.ts
+@@ -2,7 +2,6 @@
+ // Read File State Helpers
+ // ============================================================
+ 
+-import { platform as currentPlatform } from "node:process";
+ import { normalizeToolPathForComparison } from "./path-normalization.js";
+ import type { ReadFileStateEntry, ReadFileStateMap } from "./types.js";
+ 
+@@ -10,7 +9,7 @@ type ReadFileStatePlatform = NodeJS.Platform;
+ 
+ function createReadFileStatePathKey(
+   filePath: string,
+-  platform: ReadFileStatePlatform = currentPlatform,
++  platform: ReadFileStatePlatform = process.platform,
+ ): string {
+   return normalizeToolPathForComparison(filePath, platform);
+ }
+@@ -19,7 +18,7 @@ export function createReadFileStateKey(
+   filePath: string,
+   offset: number | undefined,
+   limit: number | undefined,
+-  platform: ReadFileStatePlatform = currentPlatform,
++  platform: ReadFileStatePlatform = process.platform,
+ ): string {
+   return [
+     createReadFileStatePathKey(filePath, platform),
+@@ -31,7 +30,7 @@ export function createReadFileStateKey(
+ export function findEditableReadFileState(
+   readFileState: ReadFileStateMap | undefined,
+   filePath: string,
+-  platform: ReadFileStatePlatform = currentPlatform,
++  platform: ReadFileStatePlatform = process.platform,
+ ): ReadFileStateEntry | undefined {
+   return findLatestReadFileState(readFileState, filePath, platform);
+ }
+@@ -39,7 +38,7 @@ export function findEditableReadFileState(
+ export function findLatestReadFileState(
+   readFileState: ReadFileStateMap | undefined,
+   filePath: string,
+-  platform: ReadFileStatePlatform = currentPlatform,
++  platform: ReadFileStatePlatform = process.platform,
+ ): ReadFileStateEntry | undefined {
+   if (!readFileState) return undefined;
+ 
+diff --git a/packages/rpc/src/channelClient.ts b/packages/rpc/src/channelClient.ts
+index 27675cd..4a788c3 100644
+--- a/packages/rpc/src/channelClient.ts
++++ b/packages/rpc/src/channelClient.ts
+@@ -19,11 +19,11 @@ enum State {
+ export class ChannelClient implements IChannelClient, IDisposable {
+   private state = State.Uninitialized;
+   private isDisposed = false;
+-  private activeRequests = new Set<IDisposable>();
++  private activeRequests: IDisposable[] = [];
+   private handlers = new Map<number, IHandler>();
+   // Promise 请求和事件监听共用 handlers，但只有前者需要在连接终结时 reject。
+   // 单独维护 reject map，避免 dispose 把事件订阅误当成挂起的 RPC 请求。
+-  private pendingRejections = new Map<number, (error: Error) => void>();
++  private pendingRejections: { id: number; reject: (error: Error) => void }[] = [];
+   private lastRequestId = 0;
+   private protocolListener: IDisposable | null;
+ 
+@@ -51,6 +51,13 @@ export class ChannelClient implements IChannelClient, IDisposable {
+     } as T;
+   }
+ 
++  private removePendingRejection(id: number): void {
++    const index = this.pendingRejections.findIndex((entry) => entry.id === id);
++    if (index !== -1) {
++      this.pendingRejections.splice(index, 1);
++    }
++  }
++
+   private requestPromise(
+     channelName: string,
+     name: string,
+@@ -65,11 +72,16 @@ export class ChannelClient implements IChannelClient, IDisposable {
+ 
+     let disposable: IDisposable | undefined;
+     const result = new Promise<any>((resolve, reject) => {
+-      this.pendingRejections.set(id, reject);
++      const existingRejection = this.pendingRejections.find((entry) => entry.id === id);
++      if (existingRejection === undefined) {
++        this.pendingRejections.push({ id, reject });
++      } else {
++        existingRejection.reject = reject;
++      }
+       const doRequest = () => {
+         // dispose/cancel 可能发生在 Initialize 之前；此时不能再把已经 rejected
+         // 的请求发送到新连接或已终结的传输上。
+-        if (this.isDisposed || !this.pendingRejections.has(id)) {
++        if (this.isDisposed || !this.pendingRejections.some((entry) => entry.id === id)) {
+           return;
+         }
+ 
+@@ -77,12 +89,12 @@ export class ChannelClient implements IChannelClient, IDisposable {
+           switch (response.type) {
+             case ResponseType.PromiseSuccess:
+               this.handlers.delete(id);
+-              this.pendingRejections.delete(id);
++              this.removePendingRejection(id);
+               resolve(response.data);
+               return;
+             case ResponseType.PromiseError: {
+               this.handlers.delete(id);
+-              this.pendingRejections.delete(id);
++              this.removePendingRejection(id);
+               const error = new Error(response.data.message) as Error & Record<string, unknown>;
+               error.name = response.data.name;
+               if (response.data.stack) {
+@@ -110,7 +122,7 @@ export class ChannelClient implements IChannelClient, IDisposable {
+             }
+             case ResponseType.PromiseErrorObj:
+               this.handlers.delete(id);
+-              this.pendingRejections.delete(id);
++              this.removePendingRejection(id);
+               reject(response.data);
+               return;
+           }
+@@ -127,21 +139,26 @@ export class ChannelClient implements IChannelClient, IDisposable {
+       }
+ 
+       disposable = cancellationToken.onCancellationRequested(() => {
+-        if (!this.pendingRejections.has(id)) {
++        if (!this.pendingRejections.some((entry) => entry.id === id)) {
+           return;
+         }
+         this.sendCancelOrDispose(RequestType.PromiseCancel, id);
+         this.handlers.delete(id);
+-        this.pendingRejections.delete(id);
++        this.removePendingRejection(id);
+         reject(new Error("Cancelled"));
+       });
+-      this.activeRequests.add(disposable);
++      if (!this.activeRequests.includes(disposable)) {
++        this.activeRequests.push(disposable);
++      }
+     });
+ 
+     return result.finally(() => {
+       disposable?.dispose();
+       if (disposable) {
+-        this.activeRequests.delete(disposable);
++        const disposableIndex = this.activeRequests.indexOf(disposable);
++        if (disposableIndex !== -1) {
++          this.activeRequests.splice(disposableIndex, 1);
++        }
+       }
+     });
+   }
+@@ -151,7 +168,9 @@ export class ChannelClient implements IChannelClient, IDisposable {
+     const emitter = new Emitter<any>({
+       onWillAddFirstListener: () => {
+         const doRequest = () => {
+-          this.activeRequests.add(emitter);
++          if (!this.activeRequests.includes(emitter)) {
++            this.activeRequests.push(emitter);
++          }
+           this.sendRequest(RequestType.EventListen, id, channelName, name, arg);
+         };
+ 
+@@ -162,7 +181,10 @@ export class ChannelClient implements IChannelClient, IDisposable {
+         }
+       },
+       onDidRemoveLastListener: () => {
+-        this.activeRequests.delete(emitter);
++        const emitterIndex = this.activeRequests.indexOf(emitter);
++      if (emitterIndex !== -1) {
++        this.activeRequests.splice(emitterIndex, 1);
++      }
+         this.sendCancelOrDispose(RequestType.EventDispose, id);
+         this.handlers.delete(id);
+       },
+@@ -260,16 +282,18 @@ export class ChannelClient implements IChannelClient, IDisposable {
+     }
+     // 传输已终结时，所有已发出以及排队等待 Initialize 的 Promise 请求都必须
+     // fail-closed。否则上层的 in-flight 去重 Promise 会永久占用 workspace key。
+-    for (const [id, reject] of this.pendingRejections) {
+-      this.pendingRejections.delete(id);
+-      this.handlers.delete(id);
+-      reject(rejection);
++    for (const entry of [...this.pendingRejections]) {
++      this.removePendingRejection(entry.id);
++      this.handlers.delete(entry.id);
++      entry.reject(rejection);
+     }
+-    for (const disposable of this.activeRequests) {
+-      disposable.dispose();
++    for (const disposable of [...this.activeRequests]) {
++      if (this.activeRequests.includes(disposable)) {
++        disposable.dispose();
++      }
+     }
+-    this.activeRequests.clear();
+-    this.pendingRejections.clear();
++    this.activeRequests.length = 0;
++    this.pendingRejections.length = 0;
+     this._onDidInitialize.dispose();
+   }
+ }
+diff --git a/packages/rpc/src/foundation.ts b/packages/rpc/src/foundation.ts
+index 383a23e..d19a4e3 100644
+--- a/packages/rpc/src/foundation.ts
++++ b/packages/rpc/src/foundation.ts
+@@ -34,7 +34,7 @@ function once(fn: () => void): () => void {
+  * VS Code 里几乎每个类都有一个 DisposableStore 来管理子资源。
+  */
+ export class DisposableStore implements IDisposable {
+-  private items = new Set<IDisposable>();
++  private items: IDisposable[] = [];
+   private isDisposed = false;
+ 
+   add<T extends IDisposable>(item: T): T {
+@@ -43,7 +43,9 @@ export class DisposableStore implements IDisposable {
+       item.dispose();
+       return item;
+     }
+-    this.items.add(item);
++    if (!this.items.includes(item)) {
++      this.items.push(item);
++    }
+     return item;
+   }
+ 
+@@ -55,7 +57,7 @@ export class DisposableStore implements IDisposable {
+     for (const item of this.items) {
+       item.dispose();
+     }
+-    this.items.clear();
++    this.items.length = 0;
+   }
+ }
+ 
+@@ -71,7 +73,7 @@ export type Event<T> = (listener: (e: T) => void) => IDisposable;
+ 
+ export namespace Event {
+   /** 永远不触发的事件 */
+-  export const None: Event<any> = () => ({ dispose() {} });
++  export const None: Event<never> = () => ({ dispose() {} });
+ 
+   /** 只触发一次就自动取消订阅 */
+   export function once<T>(event: Event<T>): Event<T> {
+@@ -121,7 +123,7 @@ export namespace Event {
+  * "有人监听才发送 EventListen 请求，无人监听就发 EventDispose"。
+  */
+ export class Emitter<T> implements IDisposable {
+-  private listeners = new Set<(e: T) => void>();
++  private listeners: ((e: T) => void)[] = [];
+   private disposed = false;
+   private options?: EmitterOptions;
+ 
+@@ -129,27 +131,27 @@ export class Emitter<T> implements IDisposable {
+     this.options = options;
+   }
+ 
+-  get event(): Event<T> {
+-    return (listener: (e: T) => void) => {
+-      if (this.disposed) {
+-        return { dispose() {} };
++  readonly event: Event<T> = (listener: (e: T) => void) => {
++    if (this.disposed) {
++      return { dispose() {} };
++    }
++    const isFirst = this.listeners.length === 0;
++    if (!this.listeners.includes(listener)) {
++      this.listeners.push(listener);
++    }
++    if (isFirst) {
++      this.options?.onWillAddFirstListener?.();
++    }
++    return toDisposable(() => {
++      const index = this.listeners.indexOf(listener);
++      if (index !== -1) {
++        this.listeners.splice(index, 1);
+       }
+-
+-      const isFirst = this.listeners.size === 0;
+-      this.listeners.add(listener);
+-
+-      if (isFirst) {
+-        this.options?.onWillAddFirstListener?.();
++      if (this.listeners.length === 0) {
++        this.options?.onDidRemoveLastListener?.();
+       }
+-
+-      return toDisposable(() => {
+-        this.listeners.delete(listener);
+-        if (this.listeners.size === 0) {
+-          this.options?.onDidRemoveLastListener?.();
+-        }
+-      });
+-    };
+-  }
++    });
++  };
+ 
+   fire(event: T): void {
+     if (this.disposed) {
+@@ -162,7 +164,7 @@ export class Emitter<T> implements IDisposable {
+ 
+   dispose(): void {
+     this.disposed = true;
+-    this.listeners.clear();
++    this.listeners.length = 0;
+   }
+ }
+ 
+diff --git a/packages/rpc/src/ipc.ts b/packages/rpc/src/ipc.ts
+index efe794d..4f8e95f 100644
+--- a/packages/rpc/src/ipc.ts
++++ b/packages/rpc/src/ipc.ts
+@@ -96,7 +96,7 @@ export class IPCServer<TContext = string>
+   implements IChannelServer<TContext>, IConnectionHub<TContext>, IDisposable
+ {
+   private channels = new Map<string, IServerChannel<TContext>>();
+-  private _connections = new Set<Connection<TContext>>();
++  private _connections: Connection<TContext>[] = [];
+ 
+   private readonly _onDidAddConnection = new Emitter<Connection<TContext>>();
+   readonly onDidAddConnection = this._onDidAddConnection.event;
+@@ -129,7 +129,9 @@ export class IPCServer<TContext = string>
+             this.channels.forEach((channel, name) => channelServer.registerChannel(name, channel));
+ 
+             const connection: Connection<TContext> = { channelServer, channelClient, ctx };
+-            this._connections.add(connection);
++            if (!this._connections.includes(connection)) {
++              this._connections.push(connection);
++            }
+             this._onDidAddConnection.fire(connection);
+ 
+             // 客户端断开时清理
+@@ -137,7 +139,10 @@ export class IPCServer<TContext = string>
+               onDidClientDisconnect(() => {
+                 channelServer.dispose();
+                 channelClient.dispose();
+-                this._connections.delete(connection);
++                const connectionIndex = this._connections.indexOf(connection);
++                if (connectionIndex !== -1) {
++                  this._connections.splice(connectionIndex, 1);
++                }
+                 this._onDidRemoveConnection.fire(connection);
+               }),
+             );
+@@ -255,11 +260,11 @@ export class IPCServer<TContext = string>
+ 
+   dispose(): void {
+     this.disposables.dispose();
+-    for (const connection of this._connections) {
++    for (const connection of [...this._connections]) {
+       connection.channelClient.dispose();
+       connection.channelServer.dispose();
+     }
+-    this._connections.clear();
++    this._connections.length = 0;
+     this.channels.clear();
+     this._onDidAddConnection.dispose();
+     this._onDidRemoveConnection.dispose();
+diff --git a/packages/shared/src/conversation-share.ts b/packages/shared/src/conversation-share.ts
+index 6c210a6..863d0a6 100644
+--- a/packages/shared/src/conversation-share.ts
++++ b/packages/shared/src/conversation-share.ts
+@@ -46,8 +46,7 @@ export function localizeConversationShareUrl(shareUrl: string, locale: Locale):
+   }
+   const parsed = parseConversationSharePathname(url.pathname);
+   if (!parsed) return shareUrl;
+-  url.pathname = `${CONVERSATION_SHARE_LOCALE_PATH_PREFIX[locale]}/share/${parsed.rawCode}`;
+-  return url.toString();
++  return `${url.protocol}//${url.host}${CONVERSATION_SHARE_LOCALE_PATH_PREFIX[locale]}/share/${parsed.rawCode}${url.search}${url.hash}`;
+ }
+ 
+ export const conversationShareAccessModeSchema = z.enum([
+diff --git a/packages/shared/src/feedbackPrivacy.ts b/packages/shared/src/feedbackPrivacy.ts
+index 461a6a0..61cfeaf 100644
+--- a/packages/shared/src/feedbackPrivacy.ts
++++ b/packages/shared/src/feedbackPrivacy.ts
+@@ -76,14 +76,11 @@ function redactValues(text: string, diagnostic: boolean): string {
+       try {
+         const url = new URL(raw);
+         // URL 凭据并不只在 userinfo/query 中，webhook 和重置链接常将秘密放在路径里。
+-        if (shouldRedactUrlPath(url, diagnostic) && url.pathname && url.pathname !== "/") {
+-          url.pathname = `/${REDACTED}`;
+-        }
+-        url.username = "";
+-        url.password = "";
+-        url.search = "";
+-        url.hash = "";
+-        return url.toString();
++        const redactedPath =
++          shouldRedactUrlPath(url, diagnostic) && url.pathname && url.pathname !== "/"
++            ? `/${REDACTED}`
++            : url.pathname;
++        return `${url.protocol}//${url.host}${redactedPath}`;
+       } catch {
+         return REDACTED;
+       }
+diff --git a/packages/shared/src/helpAppConfig.ts b/packages/shared/src/helpAppConfig.ts
+index cf82297..f62368c 100644
+--- a/packages/shared/src/helpAppConfig.ts
++++ b/packages/shared/src/helpAppConfig.ts
+@@ -69,8 +69,6 @@ export function createHelpAppConfigReader(options: {
+     entry.pending = (async () => {
+       const response = await options.fetchImpl(url, {
+         method: "GET",
+-        cache: "no-store",
+-        credentials: "omit",
+         headers,
+         signal: AbortSignal.timeout(10_000),
+       });
+diff --git a/packages/shared/src/localTtft.ts b/packages/shared/src/localTtft.ts
+index 27d7065..f255ec7 100644
+--- a/packages/shared/src/localTtft.ts
++++ b/packages/shared/src/localTtft.ts
+@@ -188,5 +188,5 @@ export const localTtftBatchSchema = z
+   .strict();
+ export type LocalTtftBatch = z.infer<typeof localTtftBatchSchema>;
+ export function localTtftNow(): number {
+-  return performance.timeOrigin + performance.now();
++  return Date.now();
+ }
+diff --git a/packages/shared/src/mcp.ts b/packages/shared/src/mcp.ts
+index 3e020d5..efc122e 100644
+--- a/packages/shared/src/mcp.ts
++++ b/packages/shared/src/mcp.ts
+@@ -275,9 +275,7 @@ export function convertToZCodeAgentMcpServer(
+     let command = config.command;
+     let args = config.args || [];
+     // 自动检测平台：Node.js 用 process.platform，浏览器用 navigator.platform
+-    const isWin32 =
+-      (typeof process !== "undefined" && process.platform === "win32") ||
+-      (typeof navigator !== "undefined" && /win/i.test(navigator.platform));
++    const isWin32 = typeof process !== "undefined" && process.platform === "win32";
+     if (isWin32) {
+       const lowerCmd = command.toLowerCase();
+       const unwrappedCommand = args[1];
+diff --git a/packages/shared/src/uuid.ts b/packages/shared/src/uuid.ts
+index 44c4093..8df0888 100644
+--- a/packages/shared/src/uuid.ts
++++ b/packages/shared/src/uuid.ts
+@@ -1,58 +1,71 @@
++import { randomUUID } from "node:crypto";
++
++/** ZCode Android port: switch-based nibble table (scriptc has no Number.toString(radix)). */
++function hexDigit(value: number): string {
++  switch (value % 16) {
++    case 0: return "0";
++    case 1: return "1";
++    case 2: return "2";
++    case 3: return "3";
++    case 4: return "4";
++    case 5: return "5";
++    case 6: return "6";
++    case 7: return "7";
++    case 8: return "8";
++    case 9: return "9";
++    case 10: return "a";
++    case 11: return "b";
++    case 12: return "c";
++    case 13: return "d";
++    case 14: return "e";
++    default: return "f";
++  }
++}
++
+ function byteToHex(byte: number): string {
+-  return byte.toString(16).padStart(2, "0");
++  return hexDigit(Math.floor(byte / 16)) + hexDigit(byte);
++}
++
++/** ZCode Android port: Math.random-based fill (scriptc has no crypto.getRandomValues surface). */
++function fillRandomBytes(bytes: Uint8Array): void {
++  for (let index = 0; index < bytes.length; index += 1) {
++    bytes[index] = Math.floor(Math.random() * 256);
++  }
++}
++
++function dashedHex(bytes: Uint8Array): string {
++  let out = "";
++  for (let index = 0; index < 16; index += 1) {
++    if (index === 4 || index === 6 || index === 8 || index === 10) out += "-";
++    out += byteToHex(bytes[index]!);
++  }
++  return out;
+ }
+ 
+ /** 普通 main command 与 background wake 共用 UUID v7（48-bit 时间戳 + 随机位）。 */
+ export function uuidv7(now: number = Date.now()): string {
+   const bytes = new Uint8Array(16);
+-  crypto.getRandomValues(bytes);
+-  const ts = BigInt(now);
+-  bytes[0] = Number((ts >> 40n) & 0xffn);
+-  bytes[1] = Number((ts >> 32n) & 0xffn);
+-  bytes[2] = Number((ts >> 24n) & 0xffn);
+-  bytes[3] = Number((ts >> 16n) & 0xffn);
+-  bytes[4] = Number((ts >> 8n) & 0xffn);
+-  bytes[5] = Number(ts & 0xffn);
++  fillRandomBytes(bytes);
++  const t = Math.floor(now);
++  bytes[0] = Math.floor(t / 1099511627776) % 256;
++  bytes[1] = Math.floor(t / 4294967296) % 256;
++  bytes[2] = Math.floor(t / 16777216) % 256;
++  bytes[3] = Math.floor(t / 65536) % 256;
++  bytes[4] = Math.floor(t / 256) % 256;
++  bytes[5] = t % 256;
+   bytes[6] = 0x70 | (bytes[6]! & 0x0f);
+   bytes[8] = 0x80 | (bytes[8]! & 0x3f);
+-  const hex = Array.from(bytes, byteToHex).join("");
+-  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
++  return dashedHex(bytes);
+ }
+ 
+ function formatUuid(bytes: Uint8Array): string {
+   const normalized = new Uint8Array(bytes);
+   normalized[6] = (normalized[6]! & 0x0f) | 0x40;
+   normalized[8] = (normalized[8]! & 0x3f) | 0x80;
+-
+-  const segments = [
+-    normalized.slice(0, 4),
+-    normalized.slice(4, 6),
+-    normalized.slice(6, 8),
+-    normalized.slice(8, 10),
+-    normalized.slice(10, 16),
+-  ];
+-
+-  return segments.map((segment) => Array.from(segment, byteToHex).join("")).join("-");
++  return dashedHex(normalized);
+ }
+ 
+ export function createUuid(): string {
+-  const runtimeCrypto = globalThis.crypto;
+-  if (runtimeCrypto?.randomUUID) {
+-    return runtimeCrypto.randomUUID();
+-  }
+-
+-  if (runtimeCrypto?.getRandomValues) {
+-    const bytes = new Uint8Array(16);
+-    runtimeCrypto.getRandomValues(bytes);
+-    return formatUuid(bytes);
+-  }
+-
+-  // 部分移动端 WebView 只有 `crypto` 对象但没有 `randomUUID()`，
+-  // 之前 UI 初始化直接调用会在首屏崩掉。这里退回到最小可用的随机实现，
+-  // 保证移动端至少能生成 tab / history / request 所需的临时 ID。
+-  const bytes = new Uint8Array(16);
+-  for (let index = 0; index < bytes.length; index += 1) {
+-    bytes[index] = Math.floor(Math.random() * 256);
+-  }
+-  return formatUuid(bytes);
+-}
++  // ZCode Android port: scriptc supports node:crypto randomUUID statically.
++  return randomUUID();
++}
+\ No newline at end of file
+diff --git a/packages/shared/src/zcode-protocol-v4/wire-assembler.ts b/packages/shared/src/zcode-protocol-v4/wire-assembler.ts
+index cdca361..961dbfd 100644
+--- a/packages/shared/src/zcode-protocol-v4/wire-assembler.ts
++++ b/packages/shared/src/zcode-protocol-v4/wire-assembler.ts
+@@ -439,7 +439,7 @@ export class TopicWireFrameAssembler<F> {
+     }
+     let json: string;
+     try {
+-      json = new TextDecoder("utf-8", { fatal: true }).decode(logical);
++      json = new TextDecoder("utf-8").decode(logical);
+     } catch {
+       this.settle(key, assembly);
+       events.push(this.fault(assembly, "proto.frameAssemblyInvalidUtf8"));
+diff --git a/packages/shared/src/zcode-protocol-v4/wire-reassembly.ts b/packages/shared/src/zcode-protocol-v4/wire-reassembly.ts
+index 25efab6..3c80327 100644
+--- a/packages/shared/src/zcode-protocol-v4/wire-reassembly.ts
++++ b/packages/shared/src/zcode-protocol-v4/wire-reassembly.ts
+@@ -179,7 +179,7 @@ export function reassembleTopicWireFrames<F>(
+ 
+   let decoded: string;
+   try {
+-    decoded = new TextDecoder("utf-8", { fatal: true }).decode(logical);
++    decoded = new TextDecoder("utf-8").decode(logical);
+   } catch {
+     return {
+       kind: "rejected",
+diff --git a/packages/shared/src/zcodeEndpoint.ts b/packages/shared/src/zcodeEndpoint.ts
+index 8369d0a..ca26dc4 100644
+--- a/packages/shared/src/zcodeEndpoint.ts
++++ b/packages/shared/src/zcodeEndpoint.ts
+@@ -289,8 +289,5 @@ export function rewriteZCodeEndpointUrl(input: string | URL, endpointOrigin: str
+   }
+ 
+   const target = new URL(targetOrigin);
+-  target.pathname = parsed.pathname;
+-  target.search = parsed.search;
+-  target.hash = parsed.hash;
+-  return target.toString();
++  return `${target.protocol}//${target.host}${parsed.pathname}${parsed.search}${parsed.hash}`;
+ }

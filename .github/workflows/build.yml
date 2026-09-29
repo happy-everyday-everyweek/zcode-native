@@ -1,0 +1,48 @@
+name: build-zcode-native
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  rpc-emit-c:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Clone ZCode v3.14.3 and apply adaptation patch
+        run: |
+          git clone --depth 1 --branch v3.14.3 https://github.com/zai-org/ZCode.git ZCode
+          cd ZCode
+          git apply ../patches/zcode-adaptations.patch
+          echo "ZCode ready at $(git rev-parse --short HEAD), patch applied."
+
+      - name: Install scriptc (npm)
+        run: |
+          mkdir -p scriptc-try
+          cd scriptc-try
+          npm init -y >/dev/null 2>&1 || true
+          npm install scriptc@0.1.6 --no-audit --no-fund
+          cd ..
+
+      - name: Build rpc package to C
+        run: |
+          cd zfull
+          mkdir -p out
+          node ../scriptc-try/node_modules/.bin/scriptc build entries/rpc.ts --emit c -o out/rpc.c
+          ls -la out/
+
+      - name: Upload C artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rpc-c-output
+          path: zfull/out/
+          if-no-files-found: error

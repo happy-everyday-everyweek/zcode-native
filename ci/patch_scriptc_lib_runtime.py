@@ -10,8 +10,10 @@ there. The produced .lib.a then carries unresolvable symbols and the linked
 
     dlopen failed: cannot locate symbol "scr_promise_settled_ref"
 
-This patch keeps only scr_crypto_async.c and scr_ffi.c excluded from the
-library runtime source list. It searches for native-toolchain.js under the
+This patch re-includes only scr_async.c. scr_child.c stays excluded (its
+POSIX arm calls posix_spawn*, absent from bionic); the eight scr_children_*
+hooks scr_async.c references are supplied by ci/android_child_stubs.c at
+link time. It searches for native-toolchain.js under the
 given root (default: scriptc-try), so it does not depend on the exact npm
 hoisting layout; it patches every copy that still contains the pattern.
 
@@ -24,7 +26,7 @@ import sys
 arg = sys.argv[1] if len(sys.argv) > 1 else "scriptc-try"
 old = ('f !== "scr_async.c" && f !== "scr_crypto_async.c" && '
        'f !== "scr_child.c" && f !== "scr_ffi.c"')
-new = 'f !== "scr_crypto_async.c" && f !== "scr_ffi.c"'
+new = 'f !== "scr_crypto_async.c" && f !== "scr_child.c" && f !== "scr_ffi.c"'
 
 if os.path.isfile(arg):
     files = [arg]

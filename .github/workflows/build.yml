@@ -148,11 +148,12 @@ jobs:
           TC=$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin
           cd zfull/profiles
           $TC/ld.lld -r --whole-archive .scriptc/rpc-probe.lib.a -o /tmp/combined.o
+          $TC/clang --target=aarch64-linux-android26 --sysroot="$NDK/toolchains/llvm/prebuilt/linux-x86_64/sysroot" -O1 -fPIC -c "$GITHUB_WORKSPACE/ci/android_child_stubs.c" -o /tmp/child_stubs.o
           echo '--- lib.a symbols ---'
           $TC/llvm-nm .scriptc/rpc-probe.lib.a 2>/dev/null | head -40 || true
           echo '--- combined.o defined symbols ---'
           $TC/llvm-nm /tmp/combined.o 2>/dev/null | grep -v ' U ' | head -40 || true
-          $TC/clang --target=aarch64-linux-android26 --sysroot="$NDK/toolchains/llvm/prebuilt/linux-x86_64/sysroot" -fuse-ld=lld -shared -rtlib=compiler-rt --unwindlib=none -Wl,-Bsymbolic -o ../out/libzcode_rpc.so /tmp/combined.o -lc -lm
+          $TC/clang --target=aarch64-linux-android26 --sysroot="$NDK/toolchains/llvm/prebuilt/linux-x86_64/sysroot" -fuse-ld=lld -shared -rtlib=compiler-rt --unwindlib=none -Wl,-Bsymbolic -o ../out/libzcode_rpc.so /tmp/child_stubs.o /tmp/combined.o -lc -lm
           echo '--- dynamic section ---'
           $TC/llvm-readelf -d ../out/libzcode_rpc.so | head -16 || true
           echo '--- exported symbols ---'
@@ -248,8 +249,9 @@ jobs:
           SYSROOT="$NDK/toolchains/llvm/prebuilt/linux-x86_64/sysroot"
           cd $WS/zfull/profiles
           $TC/ld.lld -r --whole-archive .scriptc/rpc-probe.lib.a -o /tmp/combined.o
+          $TC/clang --target=aarch64-linux-android26 --sysroot="$SYSROOT" -O1 -fPIC -c $WS/ci/android_child_stubs.c -o /tmp/child_stubs.o
           $TC/clang --target=aarch64-linux-android26 --sysroot="$SYSROOT" -O1 -fPIC -c $WS/android/app/com/zcode/rpc/zcode_android_jni.c -o /tmp/jni.o
-          $TC/clang --target=aarch64-linux-android26 --sysroot="$SYSROOT" -fuse-ld=lld -shared -rtlib=compiler-rt --unwindlib=none -Wl,-Bsymbolic -o /tmp/libzcodecore.so /tmp/jni.o /tmp/combined.o -lc -lm -llog
+          $TC/clang --target=aarch64-linux-android26 --sysroot="$SYSROOT" -fuse-ld=lld -shared -rtlib=compiler-rt --unwindlib=none -Wl,-Bsymbolic -o /tmp/libzcodecore.so /tmp/jni.o /tmp/child_stubs.o /tmp/combined.o -lc -lm -llog
           ls -la /tmp/libzcodecore.so
           $TC/llvm-readelf -sW /tmp/libzcodecore.so | grep -E 'Java_|zr_' | head -16
           echo '=== unresolved symbols check ==='

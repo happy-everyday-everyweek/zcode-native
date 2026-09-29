@@ -36,6 +36,30 @@ jobs:
           npm init -y >/dev/null 2>&1 || true
           npm install scriptc@0.1.6 --no-audit --no-fund
           cd ..
+      - name: Install and link minimal type deps (Node types + undici for shims)
+        run: |
+          mkdir -p zfull/node_modules/@types /tmp/nt
+          cd /tmp/nt
+          npm init -y >/dev/null 2>&1 || true
+          npm install --no-audit --no-fund @types/node@25.6.0
+          cd "$GITHUB_WORKSPACE"
+          ln -sfn /tmp/nt/node_modules/@types/node zfull/node_modules/@types/node
+          ln -sfn /tmp/nt/node_modules/undici-types zfull/node_modules/undici-types
+          ls -la zfull/node_modules/ zfull/node_modules/@types/
+
+      - name: Patch scriptc to adopt tsconfig jsx (tui .tsx preflight)
+        run: |
+          python3 - <<'PYEOF'
+          import io
+          p = "scriptc-try/node_modules/@scriptc/compiler/dist/frontend/tsc-codes.js"
+          s = io.open(p, encoding="utf-8").read()
+          if '"jsx",' not in s:
+              old = 'export const ADOPTED_OPTIONS = [\n'
+              assert old in s, "marker missing"
+              s = s.replace(old, old + '    "jsx",\n', 1)
+              io.open(p, "w", encoding="utf-8").write(s)
+          print('jsx adopted:', '"jsx",' in io.open(p, encoding='utf-8').read())
+          PYEOF
 
       - name: Build ${{ matrix.pkg }} to C
         run: |
@@ -78,6 +102,19 @@ jobs:
           npm init -y >/dev/null 2>&1 || true
           npm install scriptc@0.1.6 --no-audit --no-fund
           cd ..
+      - name: Patch scriptc to adopt tsconfig jsx (tui .tsx preflight)
+        run: |
+          python3 - <<'PYEOF'
+          import io
+          p = "scriptc-try/node_modules/@scriptc/compiler/dist/frontend/tsc-codes.js"
+          s = io.open(p, encoding="utf-8").read()
+          if '"jsx",' not in s:
+              old = 'export const ADOPTED_OPTIONS = [\n'
+              assert old in s, "marker missing"
+              s = s.replace(old, old + '    "jsx",\n', 1)
+              io.open(p, "w", encoding="utf-8").write(s)
+          print('jsx adopted:', '"jsx",' in io.open(p, encoding='utf-8').read())
+          PYEOF
 
       - name: Install ZCode workspace deps (pnpm)
         run: |

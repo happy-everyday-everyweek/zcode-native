@@ -1,3 +1,16 @@
+diff --git a/apps/zcode-cli/packages/adapters/src/model/model-option-map-fetch.ts b/apps/zcode-cli/packages/adapters/src/model/model-option-map-fetch.ts
+index dd72b03..05bb510 100644
+--- a/apps/zcode-cli/packages/adapters/src/model/model-option-map-fetch.ts
++++ b/apps/zcode-cli/packages/adapters/src/model/model-option-map-fetch.ts
+@@ -31,7 +31,7 @@ export function createModelOptionMapFetch(input: {
+ }
+ 
+ async function readRequestBody(
+-  request: RequestInfo | URL,
++  request: string | URL | Request,
+   init: RequestInit | undefined,
+ ): Promise<string | undefined> {
+   if (typeof init?.body === "string") return init.body;
 diff --git a/apps/zcode-cli/packages/contracts/src/events/session.events.ts b/apps/zcode-cli/packages/contracts/src/events/session.events.ts
 index 655c088..06998e6 100644
 --- a/apps/zcode-cli/packages/contracts/src/events/session.events.ts
@@ -430,7 +443,7 @@ index 461d678..4934bd4 100644
    if (!readFileState) return undefined;
  
 diff --git a/apps/zcode-cli/packages/telemetry/src/otlp-exporter.ts b/apps/zcode-cli/packages/telemetry/src/otlp-exporter.ts
-index d3e7c4b..aa97363 100644
+index d3e7c4b..4fc7527 100644
 --- a/apps/zcode-cli/packages/telemetry/src/otlp-exporter.ts
 +++ b/apps/zcode-cli/packages/telemetry/src/otlp-exporter.ts
 @@ -278,7 +278,7 @@ function compactResourceAttributes(
@@ -438,7 +451,7 @@ index d3e7c4b..aa97363 100644
  
  async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T | undefined> {
 -  let timeout: number | undefined;
-+  let timeout: ReturnType<typeof setTimeout> | undefined;
++  let timeout: Timeout | undefined;
    try {
      return await Promise.race([
        promise,

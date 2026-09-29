@@ -58,18 +58,18 @@
       "@zcode/services/*": ["../ZCode/packages/services/src/*"],
       "@zcode/shared": ["../ZCode/packages/shared/src/index.ts"],
       "@zcode/shared/*": ["../ZCode/packages/shared/src/*"],
-      "@zcode/zcode-cua": ["../ZCode/packages/zcode-cua/index.d.ts"],
-      "@zcode/zcode-cua/frame-contract": ["../ZCode/packages/zcode-cua/frame-contract.d.ts"],
-      "@zcode/zcode-cua/host-display-contract": ["../ZCode/packages/zcode-cua/host-display-contract.d.ts"],
-      "@zcode/zcode-cua/request-access-contract": ["../ZCode/packages/zcode-cua/request-access-contract.d.ts"],
-      "@zcode/zcode-cua/pip-session": ["../ZCode/packages/zcode-cua/pip-session.d.ts"],
-      "@zcode/zcode-cua/pip-session/node": ["../ZCode/packages/zcode-cua/pip-session-node.d.ts"],
-      "@zcode/zcode-cua/broker": ["../ZCode/packages/zcode-cua/broker.d.ts"],
-      "@zcode/zcode-cua/broker/server": ["../ZCode/packages/zcode-cua/broker-server.d.ts"],
-      "@zcode/zcode-cua/broker/ports": ["../ZCode/packages/zcode-cua/broker-ports.d.ts"],
-      "@zcode/zcode-cua/broker/socketPath": ["../ZCode/packages/zcode-cua/broker-socket-path.d.ts"],
-      "@zcode/zcode-cua/broker/helperConstants": ["../ZCode/packages/zcode-cua/broker-helper-constants.d.ts"],
-      "@zcode/zcode-cua/broker/helperHealth": ["../ZCode/packages/zcode-cua/broker-helper-health.d.ts"]
+      "@zcode/zcode-cua": ["../ZCode/packages/zcode-cua/index.js"],
+      "@zcode/zcode-cua/frame-contract": ["../ZCode/packages/zcode-cua/frame-contract.js"],
+      "@zcode/zcode-cua/host-display-contract": ["../ZCode/packages/zcode-cua/host-display-contract.js"],
+      "@zcode/zcode-cua/request-access-contract": ["../ZCode/packages/zcode-cua/request-access-contract.js"],
+      "@zcode/zcode-cua/pip-session": ["../ZCode/packages/zcode-cua/pip-session.js"],
+      "@zcode/zcode-cua/pip-session/node": ["../ZCode/packages/zcode-cua/pip-session-node.js"],
+      "@zcode/zcode-cua/broker": ["../ZCode/packages/zcode-cua/broker.js"],
+      "@zcode/zcode-cua/broker/server": ["../ZCode/packages/zcode-cua/broker-server.js"],
+      "@zcode/zcode-cua/broker/ports": ["../ZCode/packages/zcode-cua/broker-ports.js"],
+      "@zcode/zcode-cua/broker/socketPath": ["../ZCode/packages/zcode-cua/broker-socket-path.js"],
+      "@zcode/zcode-cua/broker/helperConstants": ["../ZCode/packages/zcode-cua/broker-helper-constants.js"],
+      "@zcode/zcode-cua/broker/helperHealth": ["../ZCode/packages/zcode-cua/broker-helper-health.js"]
     }
   }
 }

@@ -1,3 +1,64 @@
+diff --git a/apps/zcode-cli/packages/adapters/src/exec/outputEncoding.ts b/apps/zcode-cli/packages/adapters/src/exec/outputEncoding.ts
+index 19d7e10..0c5b4ea 100644
+--- a/apps/zcode-cli/packages/adapters/src/exec/outputEncoding.ts
++++ b/apps/zcode-cli/packages/adapters/src/exec/outputEncoding.ts
+@@ -1,6 +1,6 @@
+ import { execFileSync } from "node:child_process";
+ import { StringDecoder } from "node:string_decoder";
+-import iconv from "iconv-lite";
++import * as iconv from "iconv-lite";
+ 
+ const WINDOWS_OUTPUT_ENCODING_OVERRIDE_ENV = "ZCODE_WINDOWS_OUTPUT_ENCODING";
+ const PYTHON_UTF8_ENV_PATCH = {
+diff --git a/apps/zcode-cli/packages/adapters/src/fs/text-metadata.ts b/apps/zcode-cli/packages/adapters/src/fs/text-metadata.ts
+index 3e181d8..43c51c9 100644
+--- a/apps/zcode-cli/packages/adapters/src/fs/text-metadata.ts
++++ b/apps/zcode-cli/packages/adapters/src/fs/text-metadata.ts
+@@ -5,7 +5,7 @@ import {
+   type FileSystemLineEndings,
+   type FileSystemTextEncoding,
+ } from "@zcode/contracts";
+-import iconv from "iconv-lite";
++import * as iconv from "iconv-lite";
+ 
+ const UTF8_BOM = [0xef, 0xbb, 0xbf] as const;
+ const UTF16LE_BOM = [0xff, 0xfe] as const;
+diff --git a/apps/zcode-cli/packages/adapters/src/http/index.ts b/apps/zcode-cli/packages/adapters/src/http/index.ts
+index 77826f2..bbe9044 100644
+--- a/apps/zcode-cli/packages/adapters/src/http/index.ts
++++ b/apps/zcode-cli/packages/adapters/src/http/index.ts
+@@ -2,8 +2,8 @@
+ // Node HTTP Client Adapter
+ // ============================================================
+ 
+-import http from "node:http";
+-import https from "node:https";
++import * as http from "node:http";
++import * as https from "node:https";
+ import { Readable } from "node:stream";
+ import { ProxyAgent } from "proxy-agent";
+ import {
+diff --git a/apps/zcode-cli/packages/adapters/src/http/public-egress-policy.ts b/apps/zcode-cli/packages/adapters/src/http/public-egress-policy.ts
+index c9cc4a4..52089e9 100644
+--- a/apps/zcode-cli/packages/adapters/src/http/public-egress-policy.ts
++++ b/apps/zcode-cli/packages/adapters/src/http/public-egress-policy.ts
+@@ -1,5 +1,5 @@
+-import { lookup as defaultDnsLookup } from "node:dns/promises";
+-import http from "node:http";
++import { promises as dnsPromises } from "node:dns";
++import * as http from "node:http";
+ import {
+   createHttpClientError,
+   getIpAddressVersion,
+@@ -20,7 +20,7 @@ interface PublicEgressLookupOptions {
+ }
+ 
+ export function defaultPublicDnsLookup(): DnsLookup {
+-  return defaultDnsLookup;
++  return dnsPromises.lookup;
+ }
+ 
+ export async function assertPublicEgressDestination(
 diff --git a/apps/zcode-cli/packages/adapters/src/model/model-option-map-fetch.ts b/apps/zcode-cli/packages/adapters/src/model/model-option-map-fetch.ts
 index dd72b03..05bb510 100644
 --- a/apps/zcode-cli/packages/adapters/src/model/model-option-map-fetch.ts
@@ -11,6 +72,28 @@ index dd72b03..05bb510 100644
    init: RequestInit | undefined,
  ): Promise<string | undefined> {
    if (typeof init?.body === "string") return init.body;
+diff --git a/apps/zcode-cli/packages/adapters/src/network/proxy-fetch.ts b/apps/zcode-cli/packages/adapters/src/network/proxy-fetch.ts
+index 47a442d..81ce153 100644
+--- a/apps/zcode-cli/packages/adapters/src/network/proxy-fetch.ts
++++ b/apps/zcode-cli/packages/adapters/src/network/proxy-fetch.ts
+@@ -1,5 +1,5 @@
+-import http from "node:http";
+-import https from "node:https";
++import * as http from "node:http";
++import * as https from "node:https";
+ import { Readable } from "node:stream";
+ import { ProxyAgent } from "proxy-agent";
+ import {
+diff --git a/apps/zcode-cli/packages/adapters/src/plugins/version-compare.ts b/apps/zcode-cli/packages/adapters/src/plugins/version-compare.ts
+index 623616f..ffb1de5 100644
+--- a/apps/zcode-cli/packages/adapters/src/plugins/version-compare.ts
++++ b/apps/zcode-cli/packages/adapters/src/plugins/version-compare.ts
+@@ -1,4 +1,4 @@
+-import semver from "semver";
++import * as semver from "semver";
+ 
+ export type PluginUpdateStatus = "none" | "update-available" | "version-changed";
+ 
 diff --git a/apps/zcode-cli/packages/contracts/src/events/session.events.ts b/apps/zcode-cli/packages/contracts/src/events/session.events.ts
 index 655c088..06998e6 100644
 --- a/apps/zcode-cli/packages/contracts/src/events/session.events.ts
@@ -329,6 +412,19 @@ index 05382a5..1ceec38 100644
  import type { RuntimeInfo } from "@zcode/shared-types";
  
  export { type RuntimeInfo };
+diff --git a/apps/zcode-cli/packages/core/src/permission/workflow-draft-path.ts b/apps/zcode-cli/packages/core/src/permission/workflow-draft-path.ts
+index d7d7346..09ea4bc 100644
+--- a/apps/zcode-cli/packages/core/src/permission/workflow-draft-path.ts
++++ b/apps/zcode-cli/packages/core/src/permission/workflow-draft-path.ts
+@@ -7,7 +7,7 @@
+ // 全程不碰文件系统：不 realpath、不 stat。权限判定必须是纯函数——同一份输入在任何机器上
+ // 给出同一个答案，且不会因为一次磁盘读失败而把「不放行」错判成「放行」。
+ 
+-import nodePath from "node:path";
++import * as nodePath from "node:path";
+ 
+ import { WORKFLOW_DRAFTS_DIR } from "@zcode/contracts";
+ 
 diff --git a/apps/zcode-cli/packages/core/src/runtime/agent-runtime.ts b/apps/zcode-cli/packages/core/src/runtime/agent-runtime.ts
 index 520b025..ffec081 100644
 --- a/apps/zcode-cli/packages/core/src/runtime/agent-runtime.ts
@@ -373,19 +469,71 @@ index 62c5204..21ffab6 100644
    const pathApi = getToolPathApi(platform);
    const isWindows = platform === "win32";
    const resolvedCwd = normalizeCwdBoundary(input.resolvedCwd ?? "", isWindows);
+diff --git a/apps/zcode-cli/packages/core/src/tool/handlers/webfetch-egress-guard.ts b/apps/zcode-cli/packages/core/src/tool/handlers/webfetch-egress-guard.ts
+index f200b6b..e2da8f3 100644
+--- a/apps/zcode-cli/packages/core/src/tool/handlers/webfetch-egress-guard.ts
++++ b/apps/zcode-cli/packages/core/src/tool/handlers/webfetch-egress-guard.ts
+@@ -1,4 +1,4 @@
+-import ipaddr from "ipaddr.js";
++import * as ipaddr from "ipaddr.js";
+ import { webFetchError } from "./webfetch-errors.js";
+ 
+ const IPV4_BENCHMARK_NETWORK = ipaddr.parseCIDR("198.18.0.0/15") as [ipaddr.IPv4, number];
+diff --git a/apps/zcode-cli/packages/core/src/tool/handlers/workflow-drafts.ts b/apps/zcode-cli/packages/core/src/tool/handlers/workflow-drafts.ts
+index 34e2bcb..73243e4 100644
+--- a/apps/zcode-cli/packages/core/src/tool/handlers/workflow-drafts.ts
++++ b/apps/zcode-cli/packages/core/src/tool/handlers/workflow-drafts.ts
+@@ -16,7 +16,7 @@
+ // 用户在项目里找不到的草稿不值得一条路径。
+ 
+ import { mkdir, writeFile } from "node:fs/promises";
+-import path from "node:path";
++import * as path from "node:path";
+ import {
+   SAVED_WORKFLOW_FILE_EXTENSION,
+   WORKFLOW_DRAFTS_DIR,
+diff --git a/apps/zcode-cli/packages/core/src/tool/handlers/workflow-path-source.ts b/apps/zcode-cli/packages/core/src/tool/handlers/workflow-path-source.ts
+index 38250d5..d8e0812 100644
+--- a/apps/zcode-cli/packages/core/src/tool/handlers/workflow-path-source.ts
++++ b/apps/zcode-cli/packages/core/src/tool/handlers/workflow-path-source.ts
+@@ -11,7 +11,7 @@
+ // 批准之后再改文件也改不了将要执行的东西。
+ 
+ import { readFile } from "node:fs/promises";
+-import path from "node:path";
++import * as path from "node:path";
+ import type { SavedWorkflowMeta } from "@zcode/contracts";
+ import { SAVED_WORKFLOW_SENTINEL, parseSavedWorkflow } from "./saved-workflows/index.js";
+ import { describeWorkflowScriptPath } from "./workflow-script-path.js";
+diff --git a/apps/zcode-cli/packages/core/src/tool/handlers/workflow-script-path.ts b/apps/zcode-cli/packages/core/src/tool/handlers/workflow-script-path.ts
+index d501d78..6cd1671 100644
+--- a/apps/zcode-cli/packages/core/src/tool/handlers/workflow-script-path.ts
++++ b/apps/zcode-cli/packages/core/src/tool/handlers/workflow-script-path.ts
+@@ -8,7 +8,7 @@
+ // 正是它在别处读写文件时用的那一种。两者只差这一个纯函数——铸一次、三个模型面共用
+ // （终态通知、`GetWorkflowRun`、工具响应），所以不可能在三处之间分叉。
+ 
+-import path from "node:path";
++import * as path from "node:path";
+ 
+ /**
+  * 把脚本文件的绝对路径写成模型面该看到的样子：在会话工作目录之下就给工作区相对路径，
 diff --git a/apps/zcode-cli/packages/core/src/tool/path-normalization.ts b/apps/zcode-cli/packages/core/src/tool/path-normalization.ts
-index edbf234..57f2f96 100644
+index edbf234..a924749 100644
 --- a/apps/zcode-cli/packages/core/src/tool/path-normalization.ts
 +++ b/apps/zcode-cli/packages/core/src/tool/path-normalization.ts
-@@ -3,7 +3,6 @@
+@@ -2,8 +2,8 @@
+ // Tool Path Normalization Helpers
  // ============================================================
  
- import path, { normalize } from "node:path";
+-import path, { normalize } from "node:path";
 -import { platform as currentPlatform } from "node:process";
++import * as path from "node:path";
++import { normalize } from "node:path";
  
  export type ToolPathPlatform = NodeJS.Platform;
  export type ToolPathApi = typeof path.posix | typeof path.win32;
-@@ -14,7 +13,7 @@ export function getToolPathApi(platform: ToolPathPlatform): ToolPathApi {
+@@ -14,7 +14,7 @@ export function getToolPathApi(platform: ToolPathPlatform): ToolPathApi {
  
  export function normalizeToolPathForComparison(
    filePath: string,
@@ -768,6 +916,32 @@ index efe794d..4f8e95f 100644
      this.channels.clear();
      this._onDidAddConnection.dispose();
      this._onDidRemoveConnection.dispose();
+diff --git a/packages/services/src/process/processResourceSampler.ts b/packages/services/src/process/processResourceSampler.ts
+index 91077c9..a4be920 100644
+--- a/packages/services/src/process/processResourceSampler.ts
++++ b/packages/services/src/process/processResourceSampler.ts
+@@ -1,7 +1,7 @@
+ import { execFile as nodeExecFile } from "node:child_process";
+ import { readdir, readFile } from "node:fs/promises";
+ import { basename } from "node:path";
+-import os from "node:os";
++import * as os from "node:os";
+ import {
+   formatZCodeAgentProcessName,
+   type HostResourceUsageProcess,
+diff --git a/packages/services/src/runtime-tools/appCaCert.ts b/packages/services/src/runtime-tools/appCaCert.ts
+index be03553..351db83 100644
+--- a/packages/services/src/runtime-tools/appCaCert.ts
++++ b/packages/services/src/runtime-tools/appCaCert.ts
+@@ -1,7 +1,7 @@
+ import { randomBytes } from "node:crypto";
+ import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+ import { join } from "node:path";
+-import forge from "node-forge";
++import * as forge from "node-forge";
+ import { getAppConfigDir } from "../paths.js";
+ 
+ // app 场景的自签 CA（区别于 debug 抓包代理那套，仅 debug 环境用）。
 diff --git a/packages/shared/src/conversation-share.ts b/packages/shared/src/conversation-share.ts
 index 6c210a6..863d0a6 100644
 --- a/packages/shared/src/conversation-share.ts

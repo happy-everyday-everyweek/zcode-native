@@ -1,5 +1,3 @@
-import "./node-forge.js";
-
 export {};
 
 /* Minimal DOM type surface for sources that reference browser-only

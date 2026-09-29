@@ -94,6 +94,87 @@ index 623616f..ffb1de5 100644
  
  export type PluginUpdateStatus = "none" | "update-available" | "version-changed";
  
+diff --git a/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/commands/executor.ts b/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/commands/executor.ts
+index 883aad6..79c902a 100644
+--- a/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/commands/executor.ts
++++ b/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/commands/executor.ts
+@@ -4,7 +4,7 @@
+ // 命中时走本执行器，未命中回落旧桥（binder 侧回落，随每条命令原生化逐条消失）。
+ // 完成定义：原生 handler + L2 闭环 + L3 e2e，且写路径不经旧协议代码。
+ import type { CommandEnvelope, CommandResult } from "@zcode/shared/zcode-protocol-v4";
+-import { NATIVE_HANDLERS } from "./handlers/index.js";
++import { nativeHandlers } from "./handlers/index.js";
+ import type { V4CommandCoreHost } from "./types.js";
+ 
+ const SELECTION_SIDE_CHAT_RESTRICTED_COMMANDS = new Set<CommandEnvelope["type"]>([
+@@ -33,7 +33,7 @@ export class V4CommandExecutor {
+ 
+   /** 已原生化的命令集（binder 据此分流；全部命中后旧桥整体删除）。 */
+   supports(type: CommandEnvelope["type"]): boolean {
+-    return type in NATIVE_HANDLERS;
++    return type in nativeHandlers();
+   }
+ 
+   async execute(
+@@ -48,7 +48,8 @@ export class V4CommandExecutor {
+     ) {
+       throw new V4SelectionSideChatRestrictedCommandError(envelope.type);
+     }
+-    const handler = NATIVE_HANDLERS[envelope.type as keyof typeof NATIVE_HANDLERS];
++    const handlers = nativeHandlers();
++    const handler = handlers[envelope.type as keyof typeof handlers];
+     if (!handler) {
+       throw new Error(`v4 native executor does not support: ${envelope.type}`);
+     }
+diff --git a/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/commands/handlers/index.ts b/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/commands/handlers/index.ts
+index 3d81295..4124fc2 100644
+--- a/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/commands/handlers/index.ts
++++ b/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/commands/handlers/index.ts
+@@ -12,15 +12,32 @@ import { sessionMgmtHandlers } from "./session-mgmt.js";
+ import { selectionSideSessionHandlers } from "./selection-side-session.js";
+ import { assistantFeedbackHandlers } from "./assistant-feedback.js";
+ 
+-export const NATIVE_HANDLERS = {
+-  ...sessionFlowHandlers,
+-  ...queueHandlers,
+-  ...sessionMgmtHandlers,
+-  ...selectionSideSessionHandlers,
+-  ...goalCompactHandlers,
+-  ...modelConfigHandlers,
+-  ...interactionBackgroundHandlers,
+-  ...forkEditRetryHandlers,
+-  ...fileRewindHandlers,
+-  ...assistantFeedbackHandlers,
+-} as const;
++let cachedNativeHandlers: ReturnType<typeof buildNativeHandlers> | undefined;
++function buildNativeHandlers() {
++  return {
++    ...sessionFlowHandlers,
++    ...queueHandlers,
++    ...sessionMgmtHandlers,
++    ...selectionSideSessionHandlers,
++    ...goalCompactHandlers,
++    ...modelConfigHandlers,
++    ...interactionBackgroundHandlers,
++    ...forkEditRetryHandlers,
++    ...fileRewindHandlers,
++    ...assistantFeedbackHandlers,
++  } as const;
++}
++/**
++ * 原生 handler 注册表。
++ *
++ * 构建从模块顶层移入函数体（首次使用时构建并缓存）：注册表要读取各组 handler 的绑定，
++ * 而本文件位于 bootstrap 命令处理器的循环依赖环中——scriptc 要求环内模块体为纯声明，
++ * 顶层构造会在初始化窗口内读取跨模块绑定。改为惰性构建后，可观察行为不变（单例、
++ * 内容相同；NATIVE_HANDLERS 此前的使用也全部在函数体内）。
++ */
++export function nativeHandlers(): ReturnType<typeof buildNativeHandlers> {
++  if (cachedNativeHandlers === undefined) {
++    cachedNativeHandlers = buildNativeHandlers();
++  }
++  return cachedNativeHandlers;
++}
 diff --git a/apps/zcode-cli/packages/contracts/src/events/session.events.ts b/apps/zcode-cli/packages/contracts/src/events/session.events.ts
 index 655c088..06998e6 100644
 --- a/apps/zcode-cli/packages/contracts/src/events/session.events.ts

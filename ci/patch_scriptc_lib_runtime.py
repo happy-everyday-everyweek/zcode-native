@@ -1,28 +1,50 @@
 #!/usr/bin/env python3
 """scriptc 0.1.7 lib-runtime fix: re-include scr_async.c and scr_child.c.
 
-scriptc's library lane (LIB_RUNTIME_SOURCES) drops scr_async.c / scr_child.c
-assuming nothing references them, but scr_bytes_io.c (plus the gated
-fetch / file_handle / test units) call scr_promise_settled_ref / _void and
-scr_children_* / scr_now_ms defined there. The produced .lib.a then carries
-unresolvable symbols and the linked .so fails at runtime with:
+scriptc's library lane (LIB_RUNTIME_SOURCES, inside the @scriptc/compiler
+package) drops scr_async.c / scr_child.c assuming nothing references them,
+but scr_bytes_io.c (plus the gated fetch / file_handle / test units) call
+scr_promise_settled_ref / _void and scr_children_* / scr_now_ms defined
+there. The produced .lib.a then carries unresolvable symbols and the linked
+.so fails at runtime with:
 
     dlopen failed: cannot locate symbol "scr_promise_settled_ref"
 
 This patch keeps only scr_crypto_async.c and scr_ffi.c excluded from the
-library runtime source list.
+library runtime source list. It searches for native-toolchain.js under the
+given root (default: scriptc-try), so it does not depend on the exact npm
+hoisting layout; it patches every copy that still contains the pattern.
 
-Usage: python3 ci/patch_scriptc_lib_runtime.py [path/to/native-toolchain.js]
+Usage: python3 ci/patch_scriptc_lib_runtime.py [path-or-root]
 """
+import glob
+import os
 import sys
 
-path = sys.argv[1] if len(sys.argv) > 1 else (
-    "scriptc-try/node_modules/scriptc/dist/backend/native-toolchain.js"
-)
-src = open(path, encoding="utf-8").read()
+arg = sys.argv[1] if len(sys.argv) > 1 else "scriptc-try"
 old = ('f !== "scr_async.c" && f !== "scr_crypto_async.c" && '
        'f !== "scr_child.c" && f !== "scr_ffi.c"')
 new = 'f !== "scr_crypto_async.c" && f !== "scr_ffi.c"'
-assert old in src, "target pattern not found in " + path
-open(path, "w", encoding="utf-8").write(src.replace(old, new, 1))
-print("patched LIB_RUNTIME_SOURCES: scr_async.c + scr_child.c re-included")
+
+if os.path.isfile(arg):
+    files = [arg]
+else:
+    files = sorted(set(glob.glob(os.path.join(arg, "**", "native-toolchain.js"),
+                                  recursive=True)))
+assert files, "native-toolchain.js not found under " + arg
+
+patched = []
+already = []
+for f in files:
+    src = open(f, encoding="utf-8").read()
+    if old in src:
+        open(f, "w", encoding="utf-8").write(src.replace(old, new, 1))
+        patched.append(f)
+    elif new in src:
+        already.append(f)
+assert patched or already, "target pattern not found in any candidate: %r" % files
+for f in patched:
+    print("patched:", f)
+for f in already:
+    print("already patched:", f)
+print("done: %d patched, %d already" % (len(patched), len(already)))

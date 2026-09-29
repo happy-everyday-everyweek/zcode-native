@@ -110,7 +110,7 @@ jobs:
           npm install scriptc@0.1.7 --no-audit --no-fund
           cd ..
       - name: Patch scriptc lib runtime (re-include async + child units)
-        run: python3 ci/patch_scriptc_lib_runtime.py "$GITHUB_WORKSPACE/scriptc-try/node_modules/scriptc/dist/backend/native-toolchain.js"
+        run: python3 ci/patch_scriptc_lib_runtime.py "$GITHUB_WORKSPACE/scriptc-try"
       - name: Install minimal type deps (Node types + undici for shims)
         run: |
           mkdir -p zfull/node_modules/@types /tmp/nt
@@ -205,7 +205,7 @@ jobs:
           npm install scriptc@0.1.7 --no-audit --no-fund
           cd ..
       - name: Patch scriptc lib runtime (re-include async + child units)
-        run: python3 ci/patch_scriptc_lib_runtime.py "$GITHUB_WORKSPACE/scriptc-try/node_modules/scriptc/dist/backend/native-toolchain.js"
+        run: python3 ci/patch_scriptc_lib_runtime.py "$GITHUB_WORKSPACE/scriptc-try"
       - name: Install minimal type deps (Node types + undici for shims)
         run: |
           mkdir -p zfull/node_modules/@types /tmp/nt

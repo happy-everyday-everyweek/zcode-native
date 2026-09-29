@@ -57,6 +57,17 @@ jobs:
           ln -sfn "$PWD/ZCode/node_modules/@types/node" zfull/node_modules/@types/node
           ln -sfn "$PWD/ZCode/node_modules/undici-types" zfull/node_modules/undici-types
           ls -la zfull/node_modules/
+      - name: Generate dynamic-workflow libs (gitignored generated file)
+        run: |
+          cd ZCode/apps/zcode-cli/packages/dynamic-workflow
+          node scripts/generate-libs.mjs
+          cd -
+      - name: Build core dependency-chain dist (contracts, shared, core, ...)
+        run: |
+          cd ZCode
+          pnpm --filter @zcode/core... build
+          cd ..
+
 
 
 

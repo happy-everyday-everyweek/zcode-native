@@ -86,6 +86,12 @@ jobs:
           pnpm install --ignore-scripts --no-frozen-lockfile
           cd ..
 
+      - name: Build contracts dist (needed for subpath exports resolution)
+        run: |
+          cd ZCode
+          pnpm --filter @zcode/contracts build
+          cd ..
+
       - name: Full coverage sweep (22 entries)
         run: |
           cd zfull

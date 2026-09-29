@@ -36,17 +36,24 @@ declare global {
     matches(selector: string): boolean;
     remove(): void;
     scrollIntoView(options?: unknown): void;
+    readonly children?: Element[];
+    readonly isConnected?: boolean;
+    readonly clientWidth?: number;
+    readonly clientHeight?: number;
+    append(node: unknown): void;
   }
 
   interface HTMLElement extends Element {
     readonly style?: unknown;
     click(): void;
     focus(): void;
+    setAttribute(name: string, value: string): void;
   }
 
   interface HTMLInputElement extends HTMLElement {
     readonly value?: string;
     checked?: boolean;
+    disabled?: boolean;
   }
 
   interface Window {
@@ -65,6 +72,7 @@ declare global {
     readonly title?: string;
     createElement(tag: string): HTMLElement;
     querySelectorAll(selectors: string): Element[];
+    elementsFromPoint(x: number, y: number): Element[];
   }
   var document: Document;
 

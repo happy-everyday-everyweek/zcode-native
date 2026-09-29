@@ -86,11 +86,14 @@ jobs:
           pnpm install --ignore-scripts --no-frozen-lockfile
           cd ..
 
-      - name: Link @types/node (so scriptc adopts real Node types)
+      - name: Link @types/node + undici-types (so scriptc adopts real Node types)
         run: |
           mkdir -p zfull/node_modules/@types
           ln -sfn "$PWD/ZCode/node_modules/@types/node" zfull/node_modules/@types/node
+          test -d "$PWD/ZCode/node_modules/undici-types" || { echo 'undici-types missing'; exit 1; }
+          ln -sfn "$PWD/ZCode/node_modules/undici-types" zfull/node_modules/undici-types
           ls -la zfull/node_modules/@types/
+          ls -la zfull/node_modules/undici-types/ 2>/dev/null || true
 
       - name: Generate dynamic-workflow libs (gitignored generated file)
         run: |

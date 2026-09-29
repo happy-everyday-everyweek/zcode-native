@@ -1,5 +1,58 @@
 export {};
 
+/* node-forge 1.4.0 ships no types. The project's own d.ts
+ * (services/src/runtime-tools/node-forge.d.ts) is an ambient file that
+ * scriptc does not auto-load, so inline the same declarations here. */
+declare module "node-forge" {
+  interface ForgeKey {
+    n?: unknown;
+  }
+  interface ForgeKeyPair {
+    publicKey: ForgeKey;
+    privateKey: ForgeKey;
+  }
+  interface ForgeCertAttr {
+    name?: string;
+    shortName?: string;
+    type?: string;
+    value?: string;
+  }
+  interface ForgeCertExtension {
+    name: string;
+    cA?: boolean;
+    critical?: boolean;
+    keyCertSign?: boolean;
+    cRLSign?: boolean;
+    digitalSignature?: boolean;
+    keyEncipherment?: boolean;
+    serverAuth?: boolean;
+    clientAuth?: boolean;
+  }
+  interface ForgeMessageDigest {
+    update(msg: string): ForgeMessageDigest;
+  }
+  interface ForgeCertificate {
+    publicKey: ForgeKey;
+    serialNumber: string;
+    validity: { notBefore: Date; notAfter: Date };
+    setSubject(attrs: ForgeCertAttr[]): void;
+    setIssuer(attrs: ForgeCertAttr[]): void;
+    setExtensions(exts: ForgeCertExtension[]): void;
+    sign(key: ForgeKey, md?: ForgeMessageDigest): void;
+  }
+  interface ForgeStatic {
+    pki: {
+      rsa: { generateKeyPair(bits: number): ForgeKeyPair };
+      createCertificate(): ForgeCertificate;
+      certificateToPem(cert: ForgeCertificate): string;
+      privateKeyToPem(key: ForgeKey): string;
+    };
+    md: { sha256: { create(): ForgeMessageDigest } };
+  }
+  const forge: ForgeStatic;
+  export = forge;
+}
+
 /* Minimal DOM type surface for sources that reference browser-only
  * globals. scriptc's forced lib (es2025) has no DOM, and ambient .d.ts
  * files are not auto-loaded — a shim must be pulled in via a real import
@@ -8,7 +61,6 @@ export {};
  *
  * Keep this deliberately small: add names only when a coverage report
  * asks for them. */
-
 declare global {
   interface DOMRect {
     readonly x: number;
@@ -21,6 +73,13 @@ declare global {
     readonly left: number;
   }
 
+  interface CSSStyleDeclaration {
+    display?: string;
+    visibility?: string;
+    opacity?: string;
+    [key: string]: unknown;
+  }
+
   interface Element {
     readonly tagName: string;
     readonly className?: string;
@@ -29,14 +88,14 @@ declare global {
     readonly innerText?: string;
     readonly value?: string;
     readonly outerHTML: string;
-    readonly parentElement?: Element;
+    readonly parentElement: Element | null;
     getAttribute(name: string): string | null;
     hasAttribute(name: string): boolean;
     getBoundingClientRect(): DOMRect;
     matches(selector: string): boolean;
     remove(): void;
     scrollIntoView(options?: unknown): void;
-    readonly children?: Element[];
+    readonly children: Element[];
     readonly isConnected?: boolean;
     readonly clientWidth?: number;
     readonly clientHeight?: number;
@@ -44,7 +103,7 @@ declare global {
   }
 
   interface HTMLElement extends Element {
-    readonly style?: unknown;
+    style: CSSStyleDeclaration;
     click(): void;
     focus(): void;
     setAttribute(name: string, value: string): void;
@@ -62,14 +121,14 @@ declare global {
     readonly scrollX: number;
     readonly scrollY: number;
     scrollBy(x: number, y: number): void;
-    getComputedStyle(el: Element): unknown;
+    getComputedStyle(el: Element): CSSStyleDeclaration;
   }
   var window: Window;
 
   interface Document {
     readonly documentElement: Element;
     readonly body?: Element;
-    readonly title?: string;
+    readonly title: string;
     createElement(tag: string): HTMLElement;
     querySelectorAll(selectors: string): Element[];
     elementsFromPoint(x: number, y: number): Element[];
@@ -77,9 +136,10 @@ declare global {
   var document: Document;
 
   interface Location {
-    href?: string;
+    href: string;
   }
   var location: Location;
 
-  type HeadersInit = string[][] | Record<string, string>;
+  type HeadersInit = import("undici-types").HeadersInit;
+  type RequestInfo = import("undici-types").RequestInfo;
 }

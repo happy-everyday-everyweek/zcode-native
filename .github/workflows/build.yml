@@ -100,6 +100,25 @@ jobs:
           io.open(p, "w", encoding="utf-8").write(chr(10).join(s))
           print("diag inserted")
           PYEOF
+      - name: Patch scriptc for poison-escape (scan-phase PoisonError catch)
+        run: |
+          python3 - <<'PYEOF'
+          import io
+          p = "scriptc-try/node_modules/@scriptc/compiler/dist/frontend/lowering/lowerer.js"
+          lines = io.open(p, encoding="utf-8").read().split(chr(10))
+          idx = None
+          for i, ln in enumerate(lines):
+              if "promoteNode(fn);" in ln:
+                  idx = i
+                  break
+          assert idx is not None, "promoteNode(fn) not found"
+          assert "if (fn)" in lines[idx - 1], lines[idx - 1]
+          lines[idx - 1] = lines[idx - 1].rstrip() + " {"
+          lines[idx] = "                    try { promoteNode(fn); } catch (e) { if (!(e instanceof PoisonError)) throw e; }"
+          lines.insert(idx + 1, "                }")
+          io.open(p, "w", encoding="utf-8").write(chr(10).join(lines))
+          print("poison-escape patch applied")
+          PYEOF
 
       - name: Install ZCode workspace deps (pnpm)
         run: |

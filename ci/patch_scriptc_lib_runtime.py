@@ -21,6 +21,7 @@ Usage: python3 ci/patch_scriptc_lib_runtime.py [path-or-root]
 """
 import glob
 import os
+import shutil
 import sys
 
 arg = sys.argv[1] if len(sys.argv) > 1 else "scriptc-try"
@@ -50,3 +51,19 @@ for f in patched:
 for f in already:
     print("already patched:", f)
 print("done: %d patched, %d already" % (len(patched), len(already)))
+
+# -- place the ucontext compat shim into the runtime source dir ---------
+# scr_async.c does `#include <ucontext.h>`; with `-I <runtime-src>` searched
+# before system paths, this shim forwards to <sys/ucontext.h> (real type
+# definitions) and adds the three declarations bionic is missing. The trap
+# definitions come from ci/android_ucontext_stubs.c at link time.
+if os.path.isdir(arg):
+    compat = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                          "android_ucontext_compat.h")
+    placed = 0
+    for d in glob.glob(os.path.join(arg, "**", "@scriptc", "runtime", "src"),
+                       recursive=True):
+        shutil.copyfile(compat, os.path.join(d, "ucontext.h"))
+        print("placed ucontext.h compat in", d)
+        placed += 1
+    assert placed, "@scriptc/runtime/src not found under " + arg

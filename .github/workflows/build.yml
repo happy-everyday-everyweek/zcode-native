@@ -1,4 +1,4 @@
-name: build-zcode-native
+name: zcode-native
 
 on:
   push:
@@ -6,9 +6,13 @@ on:
   workflow_dispatch:
 
 jobs:
-  rpc-emit-c:
+  emit-c:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        pkg: [rpc, formal-proof, model-option-map]
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -23,7 +27,7 @@ jobs:
           git clone --depth 1 --branch v3.14.3 https://github.com/zai-org/ZCode.git ZCode
           cd ZCode
           git apply ../patches/zcode-adaptations.patch
-          echo "ZCode ready at $(git rev-parse --short HEAD), patch applied."
+          echo "ZCode ready at $(git rev-parse --short HEAD)."
 
       - name: Install scriptc (npm)
         run: |
@@ -33,16 +37,70 @@ jobs:
           npm install scriptc@0.1.6 --no-audit --no-fund
           cd ..
 
-      - name: Build rpc package to C
+      - name: Build ${{ matrix.pkg }} to C
         run: |
           cd zfull
           mkdir -p out
-          node ../scriptc-try/node_modules/.bin/scriptc build entries/rpc.ts --emit c -o out/rpc.c
+          node ../scriptc-try/node_modules/.bin/scriptc build entries/${{ matrix.pkg }}.ts --emit c -o out/${{ matrix.pkg }}.c
           ls -la out/
 
       - name: Upload C artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: rpc-c-output
+          name: c-${{ matrix.pkg }}
           path: zfull/out/
-          if-no-files-found: error
+          if-no-files-found: warn
+
+  coverage-sweep:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Clone ZCode v3.14.3 and apply adaptation patch
+        run: |
+          git clone --depth 1 --branch v3.14.3 https://github.com/zai-org/ZCode.git ZCode
+          cd ZCode
+          git apply ../patches/zcode-adaptations.patch
+          echo "ZCode ready."
+
+      - name: Install scriptc (npm)
+        run: |
+          mkdir -p scriptc-try
+          cd scriptc-try
+          npm init -y >/dev/null 2>&1 || true
+          npm install scriptc@0.1.6 --no-audit --no-fund
+          cd ..
+
+      - name: Install ZCode workspace deps (pnpm)
+        run: |
+          npm i -g pnpm@10.33.2 >/dev/null 2>&1 || true
+          cd ZCode
+          pnpm install --ignore-scripts --no-frozen-lockfile
+          cd ..
+
+      - name: Full coverage sweep (22 entries)
+        run: |
+          cd zfull
+          mkdir -p reports
+          for name in core contracts shared shared-types dynamic-workflow dynamic-workflow-runtime adapters bootstrap telemetry i18n cli tui services provider provider-node rpc client server zcode-server-cli model-option-map formal-proof node-repl-host; do
+            echo "===== $name ====="
+            node ../scriptc-try/node_modules/.bin/scriptc coverage entries/$name.ts > reports/$name.cov.log 2>&1 || true
+            echo "done $name ($(wc -c < reports/$name.cov.log) bytes)"
+          done
+          echo ALL-DONE
+
+      - name: Upload coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: zfull/reports/
+          if-no-files-found: warn

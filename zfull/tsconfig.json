@@ -35,7 +35,7 @@
       "@zcode/swift-bridge/*": ["../ZCode/apps/zcode-cli/packages/swift-bridge/src/*"],
       "@zcode/telemetry": ["../ZCode/apps/zcode-cli/packages/telemetry/src/index.ts"],
       "@zcode/telemetry/*": ["../ZCode/apps/zcode-cli/packages/telemetry/src/*"],
-      "@zcode/tui": ["../ZCode/apps/zcode-cli/packages/tui/src/index.ts"],
+      "@zcode/tui": ["./compat/tui.ts"],
       "@zcode/tui/*": ["../ZCode/apps/zcode-cli/packages/tui/src/*"],
       "@zcode/client": ["../ZCode/packages/client/src/index.ts"],
       "@zcode/client/*": ["../ZCode/packages/client/src/*"],

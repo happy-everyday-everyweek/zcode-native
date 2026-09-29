@@ -146,6 +146,10 @@ jobs:
           TC=$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin
           cd zfull/profiles
           $TC/ld.lld -r .scriptc/rpc-probe.lib.a -o /tmp/combined.o
+          echo '--- lib.a symbols ---'
+          $TC/llvm-nm .scriptc/rpc-probe.lib.a 2>/dev/null | head -40 || true
+          echo '--- combined.o defined symbols ---'
+          $TC/llvm-nm /tmp/combined.o 2>/dev/null | grep -v ' U ' | head -40 || true
           $TC/clang --target=aarch64-linux-android26 --sysroot="$NDK/toolchains/llvm/prebuilt/linux-x86_64/sysroot" -fuse-ld=lld -shared -rtlib=compiler-rt --unwindlib=none -Wl,-Bsymbolic -o ../out/libzcode_rpc.so /tmp/combined.o -lc -lm
           echo '--- dynamic section ---'
           $TC/llvm-readelf -d ../out/libzcode_rpc.so | head -16 || true
@@ -162,6 +166,7 @@ jobs:
             zfull/out/
             zfull/profiles/.scriptc/
           if-no-files-found: warn
+          include-hidden-files: true
 
   coverage-sweep:
     runs-on: ubuntu-latest

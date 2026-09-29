@@ -86,6 +86,70 @@ jobs:
           path: zfull/out/
           if-no-files-found: warn
 
+  lib-aarch64:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      - name: Setup Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Clone ZCode v3.14.3 and apply adaptation patch
+        run: |
+          git clone --depth 1 --branch v3.14.3 https://github.com/zai-org/ZCode.git ZCode
+          cd ZCode
+          git apply ../patches/zcode-adaptations.patch
+          cd ..
+      - name: Install scriptc (npm)
+        run: |
+          mkdir -p scriptc-try
+          cd scriptc-try
+          npm init -y >/dev/null 2>&1 || true
+          npm install scriptc@0.1.7 --no-audit --no-fund
+          cd ..
+      - name: Install minimal type deps (Node types + undici for shims)
+        run: |
+          mkdir -p zfull/node_modules/@types /tmp/nt
+          cd /tmp/nt
+          npm init -y >/dev/null 2>&1 || true
+          npm install --no-audit --no-fund @types/node@25.6.0
+          cd "$GITHUB_WORKSPACE"
+          ln -sfn /tmp/nt/node_modules/@types/node zfull/node_modules/@types/node
+          ln -sfn /tmp/nt/node_modules/undici-types zfull/node_modules/undici-types
+      - name: Install zig (x86_64 linux)
+        run: |
+          curl -fsSL -o /tmp/zig.tar.xz https://ziglang.org/download/0.16.0/zig-x86_64-linux-0.16.0.tar.xz
+          tar -xf /tmp/zig.tar.xz -C /tmp
+          ZIGDIR="$(ls -d /tmp/zig-* | head -n1)"
+          echo "$ZIGDIR" >> "$GITHUB_PATH"
+          "$ZIGDIR/zig" version
+      - name: Install Android NDK r27c
+        run: |
+          curl -fsSL -o /tmp/ndk.zip https://dl.google.com/android/repository/android-ndk-r27c-linux.zip
+          unzip -q /tmp/ndk.zip -d /tmp/ndk
+          echo "ANDROID_NDK_ROOT=/tmp/ndk/android-ndk-r27c" >> "$GITHUB_ENV"
+      - name: Build zcode-rpc aarch64 static library
+        run: |
+          cd zfull
+          mkdir -p out
+          SCRIPTC_CC=zigcc SCRIPTC_TARGET=aarch64-linux-android node ../scriptc-try/node_modules/.bin/scriptc build --lib --profile profiles/rpc.profile.json
+          echo '--- out ---'
+          ls -la out/ 2>/dev/null || true
+          echo '--- .scriptc ---'
+          ls -la .scriptc/ 2>/dev/null | head -20 || true
+          find . -name '*.lib.a' -o -name '*.a' | head
+      - name: Upload aarch64 library
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lib-aarch64-zcode-rpc
+          path: |
+            zfull/out/
+            zfull/.scriptc/
+          if-no-files-found: warn
+
   coverage-sweep:
     runs-on: ubuntu-latest
     timeout-minutes: 180

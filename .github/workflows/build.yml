@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        pkg: [rpc, formal-proof, model-option-map]
+        pkg: [core, contracts, shared, shared-types, dynamic-workflow, dynamic-workflow-runtime, adapters, bootstrap, telemetry, i18n, cli, tui, services, provider, provider-node, rpc, client, server, zcode-server-cli, model-option-map, formal-proof, node-repl-host]
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4

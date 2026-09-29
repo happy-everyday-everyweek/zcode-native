@@ -145,7 +145,7 @@ jobs:
           NDK=/tmp/ndk/android-ndk-r27c
           TC=$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin
           cd zfull/profiles
-          $TC/ld.lld -r .scriptc/rpc-probe.lib.a -o /tmp/combined.o
+          $TC/ld.lld -r --whole-archive .scriptc/rpc-probe.lib.a -o /tmp/combined.o
           echo '--- lib.a symbols ---'
           $TC/llvm-nm .scriptc/rpc-probe.lib.a 2>/dev/null | head -40 || true
           echo '--- combined.o defined symbols ---'
@@ -155,6 +155,8 @@ jobs:
           $TC/llvm-readelf -d ../out/libzcode_rpc.so | head -16 || true
           echo '--- exported symbols ---'
           $TC/llvm-nm -D ../out/libzcode_rpc.so 2>/dev/null | head -24 || true
+          echo '--- .so full symtab zr ---'
+          $TC/llvm-readelf -sW ../out/libzcode_rpc.so 2>/dev/null | grep -i 'zr_' | head -24 || true
           ls -la ../out/
 
       - name: Upload aarch64 library

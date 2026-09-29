@@ -34,7 +34,7 @@ jobs:
           mkdir -p scriptc-try
           cd scriptc-try
           npm init -y >/dev/null 2>&1 || true
-          npm install scriptc@0.1.6 --no-audit --no-fund
+          npm install scriptc@0.1.7 --no-audit --no-fund
           cd ..
       - name: Install and link minimal type deps (Node types + undici for shims)
         run: |
@@ -87,7 +87,7 @@ jobs:
           mkdir -p scriptc-try
           cd scriptc-try
           npm init -y >/dev/null 2>&1 || true
-          npm install scriptc@0.1.6 --no-audit --no-fund
+          npm install scriptc@0.1.7 --no-audit --no-fund
           cd ..
 
       - name: Install ZCode workspace deps (pnpm)

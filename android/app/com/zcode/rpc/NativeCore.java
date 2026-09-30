@@ -6,7 +6,7 @@ public final class NativeCore {
     }
 
     private NativeCore() {}
-
+    public static native void setDiagDir(String dir);
     public static native void init();
 
     public static native void collect();

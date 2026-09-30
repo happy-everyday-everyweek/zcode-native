@@ -1,5 +1,4 @@
 import type * as checks from "./checks.js";
-import { globalConfig } from "./core.js";
 import type { $ZodConfig } from "./core.js";
 import type * as errors from "./errors.js";
 import type * as schemas from "./schemas.js";
@@ -516,7 +515,7 @@ export function isObject(data: any): data is Record<PropertyKey, unknown> {
 
 export const allowsEval: { value: boolean } = /* @__PURE__*/ cached(() => {
   // Skip the probe under `jitless`: strict CSPs report the caught `new Function` as a `securitypolicyviolation` even though the throw is swallowed.
-  if (globalConfig.jitless) {
+  if (((globalThis as any).__zod_globalConfig as $ZodConfig | undefined)?.jitless) {
     return false;
   }
 

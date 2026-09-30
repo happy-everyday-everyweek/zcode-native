@@ -10,6 +10,7 @@
     "types": ["node"],
     "typeRoots": ["../ZCode/node_modules/@types"],
     "paths": {
+      "zod": ["./vendor/zod/src/index.ts"],
       "node-forge": ["./compat/node-forge.d.ts"],
       "@zcode/adapters": ["../ZCode/apps/zcode-cli/packages/adapters/src/index.ts"],
       "@zcode/adapters/*": ["../ZCode/apps/zcode-cli/packages/adapters/src/*"],

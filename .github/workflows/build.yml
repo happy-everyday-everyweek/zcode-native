@@ -460,6 +460,13 @@ jobs:
           cd ZCode
           pnpm install --ignore-scripts --no-frozen-lockfile
           cd ..
+      - name: Build ZCode dists (workspace package eligibility)
+        run: |
+          mkdir -p lib-logs
+          cd ZCode
+          pnpm -r build > ../lib-logs/zcode-build.log 2>&1 || true
+          tail -8 ../lib-logs/zcode-build.log || true
+          cd ..
       - name: Link zod into zfull
         run: |
           test -d "$PWD/ZCode/node_modules/zod" || { echo 'zod missing'; exit 1; }

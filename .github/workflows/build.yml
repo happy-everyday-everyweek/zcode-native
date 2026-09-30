@@ -486,6 +486,7 @@ jobs:
             tail -8 "../lib-logs/$name.log" || true
           }
           run_one zod-probe profiles/zod-probe.profile.json || true
+          run_one zod-js-probe profiles/zod-js-probe.profile.json || true
           run_one contracts profiles/lib-contracts.profile.json || true
           run_one shared profiles/lib-shared.profile.json || true
           run_one core profiles/lib-core.profile.json || true

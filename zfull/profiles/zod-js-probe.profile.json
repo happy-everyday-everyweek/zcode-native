@@ -1,0 +1,17 @@
+{
+  "profile_format": 1,
+  "name": "zod-js-probe",
+  "entry": "../entries/zod-js-probe.ts",
+  "emission": "llvm",
+  "abi": {
+    "prefix": "zjs_",
+    "init_symbol": "zjs_init",
+    "sink_register_symbol": "zjs_set_panic_sink",
+    "collect_symbol": "zjs_collect",
+    "result_reset_symbol": null
+  },
+  "exports": [
+    { "export": "zod_js_probe_parse", "symbol": "zjs_probe_parse", "params": [], "returns": "string" },
+    { "export": "zod_js_probe_union", "symbol": "zjs_probe_union", "params": [], "returns": "string" }
+  ]
+}

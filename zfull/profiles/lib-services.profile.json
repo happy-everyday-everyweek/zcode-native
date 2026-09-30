@@ -1,0 +1,14 @@
+{
+  "profile_format": 1,
+  "name": "zcode-services",
+  "entry": "../entries/services.ts",
+  "emission": "llvm",
+  "abi": {
+    "prefix": "zsv_",
+    "init_symbol": "zsv_init",
+    "sink_register_symbol": "zsv_set_panic_sink",
+    "collect_symbol": "zsv_collect",
+    "result_reset_symbol": null
+  },
+  "exports": []
+}

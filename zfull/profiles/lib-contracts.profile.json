@@ -1,0 +1,14 @@
+{
+  "profile_format": 1,
+  "name": "zcode-contracts",
+  "entry": "../entries/contracts.ts",
+  "emission": "llvm",
+  "abi": {
+    "prefix": "zct_",
+    "init_symbol": "zct_init",
+    "sink_register_symbol": "zct_set_panic_sink",
+    "collect_symbol": "zct_collect",
+    "result_reset_symbol": null
+  },
+  "exports": []
+}

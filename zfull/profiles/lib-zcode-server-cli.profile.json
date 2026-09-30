@@ -1,0 +1,14 @@
+{
+  "profile_format": 1,
+  "name": "zcode-zcode-server-cli",
+  "entry": "../entries/zcode-server-cli.ts",
+  "emission": "llvm",
+  "abi": {
+    "prefix": "zsc_",
+    "init_symbol": "zsc_init",
+    "sink_register_symbol": "zsc_set_panic_sink",
+    "collect_symbol": "zsc_collect",
+    "result_reset_symbol": null
+  },
+  "exports": []
+}

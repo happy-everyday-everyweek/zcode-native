@@ -1,0 +1,17 @@
+{
+  "profile_format": 1,
+  "name": "zod-probe",
+  "entry": "../entries/zod-probe.ts",
+  "emission": "llvm",
+  "abi": {
+    "prefix": "zodp_",
+    "init_symbol": "zodp_init",
+    "sink_register_symbol": "zodp_set_panic_sink",
+    "collect_symbol": "zodp_collect",
+    "result_reset_symbol": null
+  },
+  "exports": [
+    { "export": "zod_probe_parse", "symbol": "zodp_probe_parse", "params": [], "returns": "string" },
+    { "export": "zod_probe_union", "symbol": "zodp_probe_union", "params": [], "returns": "string" }
+  ]
+}

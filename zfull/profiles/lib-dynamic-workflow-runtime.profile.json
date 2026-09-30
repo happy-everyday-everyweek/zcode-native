@@ -1,0 +1,14 @@
+{
+  "profile_format": 1,
+  "name": "zcode-dynamic-workflow-runtime",
+  "entry": "../entries/dynamic-workflow-runtime.ts",
+  "emission": "llvm",
+  "abi": {
+    "prefix": "zdr_",
+    "init_symbol": "zdr_init",
+    "sink_register_symbol": "zdr_set_panic_sink",
+    "collect_symbol": "zdr_collect",
+    "result_reset_symbol": null
+  },
+  "exports": []
+}

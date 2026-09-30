@@ -1,0 +1,14 @@
+{
+  "profile_format": 1,
+  "name": "zcode-cli",
+  "entry": "../entries/cli.ts",
+  "emission": "llvm",
+  "abi": {
+    "prefix": "zcl_",
+    "init_symbol": "zcl_init",
+    "sink_register_symbol": "zcl_set_panic_sink",
+    "collect_symbol": "zcl_collect",
+    "result_reset_symbol": null
+  },
+  "exports": []
+}

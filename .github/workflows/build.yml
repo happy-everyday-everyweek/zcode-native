@@ -102,6 +102,8 @@ jobs:
           cd ZCode
           git apply ../patches/zcode-adaptations.patch
           cd ..
+      - name: Fix type-only imports (scriptc module linker bindings)
+        run: python3 ci/fix_type_only_imports.py ZCode
       - name: Install scriptc (npm)
         run: |
           mkdir -p scriptc-try
@@ -166,6 +168,10 @@ jobs:
           $TC/llvm-readelf -sW ../out/libzcode_rpc.so | awk '$7=="UND" && $8 != "" {print $8}' | grep -v '@' | sort -u | tee /tmp/und.txt || true
           if grep -q 'scr_' /tmp/und.txt; then echo 'UNRESOLVED scr_* SYMBOLS:'; cat /tmp/und.txt; exit 1; fi
           echo 'no unresolved scr_* symbols'
+          echo '=== module binding holes check ==='
+          H=$(strings -a ../out/libzcode_rpc.so | grep -o "does not provide an export named '[^']*'" | sort -u || true)
+          if [ -n "$H" ]; then echo 'MODULE BINDING HOLES:'; echo "$H"; exit 1; fi
+          echo 'no module binding holes'
 
       - name: Upload aarch64 library
         if: always()
@@ -199,6 +205,8 @@ jobs:
           cd ZCode
           git apply ../patches/zcode-adaptations.patch
           cd ..
+      - name: Fix type-only imports (scriptc module linker bindings)
+        run: python3 ci/fix_type_only_imports.py ZCode
       - name: Install scriptc (npm)
         run: |
           mkdir -p scriptc-try
@@ -260,6 +268,10 @@ jobs:
           $TC/llvm-readelf -sW /tmp/libzcodecore.so | awk '$7=="UND" && $8 != "" {print $8}' | grep -v '@' | sort -u | tee /tmp/und.txt || true
           if grep -q 'scr_' /tmp/und.txt; then echo 'UNRESOLVED scr_* SYMBOLS:'; cat /tmp/und.txt; exit 1; fi
           echo 'no unresolved scr_* symbols'
+          echo '=== module binding holes check ==='
+          H=$(strings -a /tmp/libzcodecore.so | grep -o "does not provide an export named '[^']*'" | sort -u || true)
+          if [ -n "$H" ]; then echo 'MODULE BINDING HOLES:'; echo "$H"; exit 1; fi
+          echo 'no module binding holes'
       - name: Build APK (javac + d8 + aapt2 + zipalign + apksigner)
         run: |
           WS=$GITHUB_WORKSPACE

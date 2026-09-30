@@ -373,6 +373,8 @@ function foldIntersection(json) {
     else {
         const union = unions[0];
         const keyword = UNION_KEYS.find((k) => Array.isArray(union[k]));
+        if (keyword === undefined)
+            return;
         if (Object.keys(union).length !== 1)
             return;
         const rest = allOf.filter((m) => m !== union);

@@ -1535,7 +1535,7 @@ function handleIntersectionResults(result, left, right) {
     if (bothKeys.length) {
         const aggregated = unrecIssue ? bothKeys.filter((k) => unrecIssue.keys.includes(k)) : [];
         if (aggregated.length)
-            result.issues.push({ ...unrecIssue, keys: aggregated });
+            result.issues.push(Object.assign({}, unrecIssue, { keys: aggregated }));
         for (const k of bothKeys) {
             if (!aggregated.includes(k) && keyIssues.has(k))
                 result.issues.push(keyIssues.get(k));

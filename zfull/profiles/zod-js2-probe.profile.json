@@ -1,0 +1,17 @@
+{
+  "profile_format": 1,
+  "name": "zod-js2-probe",
+  "entry": "../entries/zod-js2-probe.ts",
+  "emission": "llvm",
+  "abi": {
+    "prefix": "zj2_",
+    "init_symbol": "zj2_init",
+    "sink_register_symbol": "zj2_set_panic_sink",
+    "collect_symbol": "zj2_collect",
+    "result_reset_symbol": null
+  },
+  "exports": [
+    { "export": "zod_js2_probe_parse", "symbol": "zj2_probe_parse", "params": [], "returns": "string" },
+    { "export": "zod_js2_probe_union", "symbol": "zj2_probe_union", "params": [], "returns": "string" }
+  ]
+}

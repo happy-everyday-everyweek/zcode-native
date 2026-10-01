@@ -487,6 +487,7 @@ jobs:
           }
           run_one zod-probe profiles/zod-probe.profile.json || true
           run_one zod-js-probe profiles/zod-js-probe.profile.json || true
+          run_one zod-js2-probe profiles/zod-js2-probe.profile.json || true
           run_one contracts profiles/lib-contracts.profile.json || true
           run_one shared profiles/lib-shared.profile.json || true
           run_one core profiles/lib-core.profile.json || true

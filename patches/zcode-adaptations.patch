@@ -2700,10 +2700,60 @@ index d895b8b..886a9fe 100644
      durationMs: z.number().int().nonnegative(),
      numFiles: z.number().int().nonnegative(),
 diff --git a/apps/zcode-cli/packages/contracts/src/tools/json-schema.ts b/apps/zcode-cli/packages/contracts/src/tools/json-schema.ts
-index 21d92dc..ff7a374 100644
+index 21d92dc..e28e09b 100644
 --- a/apps/zcode-cli/packages/contracts/src/tools/json-schema.ts
 +++ b/apps/zcode-cli/packages/contracts/src/tools/json-schema.ts
-@@ -106,7 +106,7 @@ function inferSchemaType(schema: Record<string, unknown>): string | undefined {
+@@ -1,3 +1,4 @@
++import { isArray } from "@zcode/native-checks";
+ // ============================================================
+ // Zod -> provider-neutral JSON Schema for tool contracts
+ // ============================================================
+@@ -6,6 +7,16 @@ import { zodToJsonSchema } from "zod-to-json-schema";
+ import type { ZodTypeAny } from "zod";
+ import type { JsonSchema } from "../model/index.js";
+ 
++/** scriptc 对未知元素类型的数组不提供 Array.prototype.includes lowering，用循环替掉。 */
++function includesValue(arr: any[], v: any): boolean {
++  for (const item of arr) {
++    if (item === v) {
++      return true;
++    }
++  }
++  return false;
++}
++
+ const STRIPPED_SCHEMA_KEYS = new Set([
+   "$schema",
+   "$id",
+@@ -75,9 +86,9 @@ function normalizeSchemaNode(value: unknown): void {
+     }
+   }
+ 
+-  const typeValues = Array.isArray(value.type) ? value.type : [value.type];
++  const typeValues: any[] = isArray(value.type) ? (value.type as any[]) : [value.type];
+   if (
+-    typeValues.includes("object") &&
++    includesValue(typeValues, "object") &&
+     !isRecord(value.properties) &&
+     isRecord(value.additionalProperties) &&
+     value.propertyNames === undefined
+@@ -85,13 +96,13 @@ function normalizeSchemaNode(value: unknown): void {
+     value.propertyNames = { type: "string" };
+   }
+   if (
+-    typeValues.includes("object") &&
++    includesValue(typeValues, "object") &&
+     !isRecord(value.properties) &&
+     value.additionalProperties === undefined
+   ) {
+     value.properties = {};
+   }
+-  if (typeValues.includes("array") && value.items === undefined) {
++  if (includesValue(typeValues, "array") && value.items === undefined) {
+     value.items = {};
+   }
+ }
+@@ -106,7 +117,7 @@ function inferSchemaType(schema: Record<string, unknown>): string | undefined {
    if (Array.isArray(schema.enum)) {
      return inferTypeFromValues(schema.enum);
    }
@@ -5459,7 +5509,7 @@ index 2e562be..e0aa302 100644
      "moduleResolution": "NodeNext",
      "outDir": "./dist",
 diff --git a/apps/zcode-cli/packages/telemetry/src/agent-trace-runtime.ts b/apps/zcode-cli/packages/telemetry/src/agent-trace-runtime.ts
-index ad852df..0dcae66 100644
+index ad852df..9a316d6 100644
 --- a/apps/zcode-cli/packages/telemetry/src/agent-trace-runtime.ts
 +++ b/apps/zcode-cli/packages/telemetry/src/agent-trace-runtime.ts
 @@ -1546,7 +1546,7 @@ const NOOP_SCOPE = {
@@ -5467,7 +5517,7 @@ index ad852df..0dcae66 100644
  };
  
 -const NOOP_COMMAND_WRITER: CommandExecutionSpanWriter = {
-+const NOOP_COMMAND_WRITER: CommandExecutionSpanWriter: any = {
++const NOOP_COMMAND_WRITER: any = {
    ...NOOP_SCOPE,
    finishBackgrounded() {},
    finishCancelled() {},
@@ -5476,7 +5526,7 @@ index ad852df..0dcae66 100644
  };
  
 -const NOOP_TOOL_WRITER: ToolExecutionSpanWriter = {
-+const NOOP_TOOL_WRITER: ToolExecutionSpanWriter: any = {
++const NOOP_TOOL_WRITER: any = {
    ...NOOP_SCOPE,
    finishCancelled() {},
    finishCompleted() {},
@@ -5485,7 +5535,7 @@ index ad852df..0dcae66 100644
  };
  
 -const NOOP_STEP_WRITER: AgentStepSpanWriter = {
-+const NOOP_STEP_WRITER: AgentStepSpanWriter: any = {
++const NOOP_STEP_WRITER: any = {
    ...NOOP_SCOPE,
    finishCancelled() {},
    finishCompleted() {},
@@ -5494,7 +5544,7 @@ index ad852df..0dcae66 100644
  };
  
 -const NOOP_TURN_WRITER: AgentTurnSpanWriter = {
-+const NOOP_TURN_WRITER: AgentTurnSpanWriter: any = {
++const NOOP_TURN_WRITER: any = {
    ...NOOP_SCOPE,
    finishCancelled() {},
    finishCompleted() {},
@@ -5502,7 +5552,7 @@ index ad852df..0dcae66 100644
  };
  
 -const NOOP_COMPACTION_WRITER: ContextCompactionSpanWriter = {
-+const NOOP_COMPACTION_WRITER: ContextCompactionSpanWriter: any = {
++const NOOP_COMPACTION_WRITER: any = {
    ...NOOP_SCOPE,
    finishCancelled() {},
    finishCompleted() {},
@@ -5511,7 +5561,7 @@ index ad852df..0dcae66 100644
  };
  
 -const NOOP_DETACHED_WRITER: DetachedOperationSpanWriter = {
-+const NOOP_DETACHED_WRITER: DetachedOperationSpanWriter: any = {
++const NOOP_DETACHED_WRITER: any = {
    ...NOOP_SCOPE,
    finishCancelled() {},
    finishCompleted() {},
@@ -5520,7 +5570,7 @@ index ad852df..0dcae66 100644
  };
  
 -const NOOP_MODEL_ATTEMPT_WRITER: ModelAttemptSpanWriter = {
-+const NOOP_MODEL_ATTEMPT_WRITER: ModelAttemptSpanWriter: any = {
++const NOOP_MODEL_ATTEMPT_WRITER: any = {
    ...NOOP_SCOPE,
    finishAbandoned() {},
    finishCancelled() {},
@@ -9146,7 +9196,7 @@ index 9bbfb1f..ec2095b 100644
    })
    .strict();
 diff --git a/packages/shared/src/env.ts b/packages/shared/src/env.ts
-index e2baa3c..c67867a 100644
+index e2baa3c..4025928 100644
 --- a/packages/shared/src/env.ts
 +++ b/packages/shared/src/env.ts
 @@ -13,9 +13,7 @@ export function normalizeZCodeEnv(value: string | undefined): ZCodeEnv {
@@ -9160,7 +9210,7 @@ index e2baa3c..c67867a 100644
  
  /**
   * 身份缺省跟随后端环境（test → preview，production → production）。
-@@ -33,10 +31,7 @@ export function normalizeZCodeProductFlavor(
+@@ -33,17 +31,14 @@ export function normalizeZCodeProductFlavor(
    return zcodeEnv === "production" ? "production" : "preview";
  }
  
@@ -9172,6 +9222,28 @@ index e2baa3c..c67867a 100644
  export const ZCODE_APP_VERSION_ENV = "ZCODE_APP_VERSION" as const;
  export const ZCODE_BUILD_COMMIT_ID_ENV = "ZCODE_BUILD_COMMIT_ID" as const;
  
+ // ── 运行时环境变量（不经过编译打包，启动时从 process.env 读取） ──
+ // 启用调试模式，值为 inspect-brk 的端口号，如 ZCODE_DEBUG=9230
+ export const RUNTIME_ZCODE_DEBUG =
+-  typeof process !== "undefined" ? process.env.ZCODE_DEBUG : undefined;
++  undefined;
+ 
+ // 恢复原因：写死 false 会让运行时已配置的数仓/ARMS 永远空转。
+ // 功能保持可用；实际出网由各出口的运行时端点检查决定，未配置不上报。
+@@ -51,11 +46,11 @@ export const ZCODE_TELEMETRY_ENABLED: boolean = true;
+ 
+ /** 数仓事件上报端点：由运行时环境变量提供，未配置即停用，构建产物不内嵌。 */
+ export const ZCODE_TELEMETRY_REPORT_ENDPOINT =
+-  typeof process !== "undefined" ? (process.env.ZCODE_TELEMETRY_REPORT_ENDPOINT ?? "") : "";
++  "";
+ 
+ /** ARMS RUM 接入端点：由运行时环境变量提供，未配置即停用，构建产物不内嵌。 */
+ export const ZCODE_ARMS_RUM_ENDPOINT =
+-  typeof process !== "undefined" ? (process.env.ZCODE_ARMS_RUM_ENDPOINT ?? "") : "";
++  "";
+ 
+ /** 将本地运行态与编译期 ZCODE_ENV 映射为 ARMS 控制台识别的上报环境标签 */
+ export function mapZCodeEnvToArmsRumEnv(runtimeEnv: ZCodeRuntimeEnv): ArmsRumEnv {
 diff --git a/packages/shared/src/execution-output-preview.ts b/packages/shared/src/execution-output-preview.ts
 index c2118f4..b7b6bc6 100644
 --- a/packages/shared/src/execution-output-preview.ts
@@ -9242,6 +9314,22 @@ index cf82297..e10860f 100644
          headers,
          signal: AbortSignal.timeout(10_000),
        });
+diff --git a/packages/shared/src/intranetDefaults.ts b/packages/shared/src/intranetDefaults.ts
+index 0a07bcd..9b925b8 100644
+--- a/packages/shared/src/intranetDefaults.ts
++++ b/packages/shared/src/intranetDefaults.ts
+@@ -5,9 +5,8 @@ type IntranetEnv = {
+ };
+ 
+ function readProcessEnv(): IntranetEnv {
+-  const maybeProcess = (globalThis as typeof globalThis & { process?: { env?: IntranetEnv } })
+-    .process;
+-  return maybeProcess?.env ?? {};
++  // native 侧没有 process 全局（也不读运行时环境变量），统一返回空配置。
++  return {};
+ }
+ 
+ export function resolveIntranetMachineHost(env: IntranetEnv = readProcessEnv()) {
 diff --git a/packages/shared/src/localTtft.ts b/packages/shared/src/localTtft.ts
 index 27d7065..21db3dc 100644
 --- a/packages/shared/src/localTtft.ts

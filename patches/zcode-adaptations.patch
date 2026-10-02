@@ -5423,6 +5423,53 @@ index 62c5204..21ffab6 100644
    const pathApi = getToolPathApi(platform);
    const isWindows = platform === "win32";
    const resolvedCwd = normalizeCwdBoundary(input.resolvedCwd ?? "", isWindows);
+diff --git a/apps/zcode-cli/packages/core/src/tool/handlers/bash.ts b/apps/zcode-cli/packages/core/src/tool/handlers/bash.ts
+index 8315932..5c64e6a 100644
+--- a/apps/zcode-cli/packages/core/src/tool/handlers/bash.ts
++++ b/apps/zcode-cli/packages/core/src/tool/handlers/bash.ts
+@@ -14,7 +14,6 @@ import {
+   type BashInput,
+   type BashOutput,
+   type CommandCategory,
+-  type CommandExecutionSpanWriter,
+   type CommandShellKind,
+   type ExecutionEvent,
+   type ExecutionRequest,
+@@ -38,6 +37,7 @@ import type {
+   ToolHandler,
+   ToolRuntimePermissionCapability,
+   ToolRuntimePermissionCapabilityContext,
++  ToolTelemetryWriter,
+ } from "../types.js";
+ import { supportsBashBackgroundLifecycle } from "./bash-background-lifecycle.js";
+ import { isBashAutoBackgroundEligible } from "./bash-background-policy.js";
+@@ -267,7 +267,7 @@ function toBackgroundedBashOutput(
+ function createExecutionRunOptions(
+   context: ToolExecutionContext,
+   progressTiming?: BashProgressTiming,
+-  telemetry?: CommandExecutionSpanWriter,
++  telemetry?: ToolTelemetryWriter,
+ ): ExecutionRunOptions {
+   return {
+     signal: context.abortSignal,
+@@ -289,7 +289,7 @@ function createExecutionRunOptions(
+ function startBashCommandTelemetry(
+   input: BashInput,
+   context: ToolExecutionContext,
+-): CommandExecutionSpanWriter | undefined {
++): ToolTelemetryWriter | undefined {
+   const identity = classifySafeCommandIdentity(input.command);
+   return context.telemetry?.startCommand({
+     category: commandCategory(input.command),
+@@ -301,7 +301,7 @@ function startBashCommandTelemetry(
+ }
+ 
+ function finishBashCommandTelemetry(
+-  telemetry: CommandExecutionSpanWriter | undefined,
++  telemetry: ToolTelemetryWriter | undefined,
+   result: ExecutionResult,
+ ): void {
+   if (!telemetry) return;
 diff --git a/apps/zcode-cli/packages/core/src/tool/handlers/create-workflow-source.ts b/apps/zcode-cli/packages/core/src/tool/handlers/create-workflow-source.ts
 index ebac052..209dc47 100644
 --- a/apps/zcode-cli/packages/core/src/tool/handlers/create-workflow-source.ts
@@ -5648,6 +5695,64 @@ index 461d678..4934bd4 100644
  ): ReadFileStateEntry | undefined {
    if (!readFileState) return undefined;
  
+diff --git a/apps/zcode-cli/packages/core/src/tool/types.ts b/apps/zcode-cli/packages/core/src/tool/types.ts
+index 051a9c5..5ece0fe 100644
+--- a/apps/zcode-cli/packages/core/src/tool/types.ts
++++ b/apps/zcode-cli/packages/core/src/tool/types.ts
+@@ -52,8 +52,8 @@ import type {
+   ToolResultBudgetStrategy,
+   ToolResultDisplayPayload,
+   ToolTimeoutPolicy,
+-  ToolExecutionSpanWriter,
+   ToolExecutionTelemetry,
++  ExecutionFailure,
+ } from "@zcode/contracts";
+ import type {
+   PersistedReadFileStateMetadata,
+@@ -128,12 +128,42 @@ export interface BackgroundTaskControlPort {
+   ): Promise<BackgroundTaskControlStopResult>;
+ }
+ 
++/** Bash 启动一次命令时写入器需要的命令事实。见 {@link ToolTelemetryWriter.startCommand}。 */
++export interface ToolTelemetryCommandStart {
++  category: string;
++  commandCount: number;
++  safeName: string;
++  sandboxed: boolean;
++  shellKind: string;
++}
++
++/**
++ * ToolExecutionContext.telemetry 的窄投影。
++ *
++ * 修复依据：契约里的 ToolExecutionSpanWriter 记录含 scriptc 编不出来的成员
++ * （finishFailed 的可选 unknown 形参），只要工具上下文引用它，所有 ToolHandler /
++ * ToolEntry 值都会被判成不可编译并连带 187 条报错。这里按上下文实际读取的方法重述一份
++ * 本包自有的写入器类型；executor 在注入处按本类型收窄一次。
++ */
++export interface ToolTelemetryWriter {
++  startCommand(input: ToolTelemetryCommandStart): ToolTelemetryWriter;
++  markFirstOutput(): void;
++  setExitCode(exitCode: number): void;
++  setSignal(signal: string): void;
++  setOutputBytes(bytes: number): void;
++  setTimedOut(timedOut: boolean): void;
++  markTerminationRequested(reason: string): void;
++  finishFailed(stage: string, category: string, error?: ExecutionFailure): void;
++  finishCancelled(reason: string): void;
++  finishCompleted(): void;
++}
++
+ export interface ToolExecutionContext {
+   toolCallId: string;
+   /**
+    * 当前 Tool 的实时观测写入器。Handler 只能通过窄接口写事实，不能接触原始 OTel Span。
+    */
+-  telemetry?: ToolExecutionSpanWriter;
++  telemetry?: ToolTelemetryWriter;
+   /** 当前工具调用是否属于 automation 派发轮；写工具 handler 用它做最终权限校验。 */
+   automationTurn?: boolean;
+   /** 当前工具调用是否属于闲时任务派发轮；OffPeakCreate handler 用它做最终拒绝。 */
 diff --git a/apps/zcode-cli/packages/core/src/workflow/expert/graph-artifacts.ts b/apps/zcode-cli/packages/core/src/workflow/expert/graph-artifacts.ts
 index abd7b0b..7ead897 100644
 --- a/apps/zcode-cli/packages/core/src/workflow/expert/graph-artifacts.ts

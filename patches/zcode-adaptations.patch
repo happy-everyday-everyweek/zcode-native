@@ -4244,7 +4244,7 @@ index 520b025..ffec081 100644
 +  }
 +}
 diff --git a/apps/zcode-cli/packages/core/src/runtime/command-queue.ts b/apps/zcode-cli/packages/core/src/runtime/command-queue.ts
-index 8d2697f..421ebf2 100644
+index 8d2697f..09030ef 100644
 --- a/apps/zcode-cli/packages/core/src/runtime/command-queue.ts
 +++ b/apps/zcode-cli/packages/core/src/runtime/command-queue.ts
 @@ -183,11 +183,11 @@ export function createRuntimeCommandQueue(): RuntimeCommandQueue {
@@ -4270,7 +4270,7 @@ index 8d2697f..421ebf2 100644
      },
  
      enqueue(command: RuntimeCommand): void {
-@@ -208,11 +208,10 @@ export function createRuntimeCommandQueue(): RuntimeCommandQueue {
+@@ -208,11 +208,9 @@ export function createRuntimeCommandQueue(): RuntimeCommandQueue {
  
      getByMaxPriority(maxPriority: RuntimeCommandPriority): readonly RuntimeCommand[] {
        const maxPriorityRank = RUNTIME_COMMAND_PRIORITY_ORDER[maxPriority];
@@ -4280,12 +4280,11 @@ index 8d2697f..421ebf2 100644
            (command) => RUNTIME_COMMAND_PRIORITY_ORDER[command.priority] <= maxPriorityRank,
 -        ),
 -      );
-+        )
-+      ;
++        );
      },
  
      hasPending(): boolean {
-@@ -235,7 +234,7 @@ export function createRuntimeCommandQueue(): RuntimeCommandQueue {
+@@ -235,7 +233,7 @@ export function createRuntimeCommandQueue(): RuntimeCommandQueue {
      },
  
      snapshot(): readonly RuntimeCommand[] {
@@ -5210,7 +5209,7 @@ index beb7e9a..447f619 100644
  
    static empty(): ModelConfigRules {
 diff --git a/packages/provider/src/config/provider-config.ts b/packages/provider/src/config/provider-config.ts
-index a566b13..ca22d1a 100644
+index a566b13..89d35a3 100644
 --- a/packages/provider/src/config/provider-config.ts
 +++ b/packages/provider/src/config/provider-config.ts
 @@ -31,7 +31,7 @@ export type ApiKeyAccessConfigInput = Omit<ApiKeyAccessConfigObject, "type"> & {
@@ -5337,7 +5336,7 @@ index a566b13..ca22d1a 100644
    }
  
    static empty(): ProviderTemplateMap {
-@@ -359,20 +359,19 @@ export class ProviderTemplateMap extends ConfigOverlay<ProviderTemplateMap> {
+@@ -359,20 +359,18 @@ export class ProviderTemplateMap extends ConfigOverlay<ProviderTemplateMap> {
  function freezeProviderLogo(
    logo: ProviderLogoRef | null | undefined,
  ): ProviderLogoRef | null | undefined {
@@ -5357,12 +5356,11 @@ index a566b13..ca22d1a 100644
        return normalized;
 -    }),
 -  );
-+    })
-+  ;
++    });
  }
  
  export type ProviderConfigRule = Readonly<
-@@ -389,10 +388,10 @@ export class ProviderConfigMap extends ConfigOverlay<ProviderConfigMap> {
+@@ -389,10 +387,10 @@ export class ProviderConfigMap extends ConfigOverlay<ProviderConfigMap> {
      for (const entry of entries) {
        const rule = "providerId" in entry ? entry : { providerId: entry[0], config: entry[1] };
        if (values.has(rule.providerId)) throw new Error(`重复 Provider key: ${rule.providerId}`);
@@ -5807,7 +5805,7 @@ index 107bbf2..5e3fd7d 100644
 +  };
  }
 diff --git a/packages/provider/src/registry.ts b/packages/provider/src/registry.ts
-index 4b92e76..68abd99 100644
+index 4b92e76..de62f89 100644
 --- a/packages/provider/src/registry.ts
 +++ b/packages/provider/src/registry.ts
 @@ -94,7 +94,7 @@ export class ProviderRegistry {
@@ -5819,7 +5817,7 @@ index 4b92e76..68abd99 100644
      for (const listener of this.#listeners) listener(event);
    }
  
-@@ -152,15 +152,14 @@ export function validateModelSelectionOptions(
+@@ -152,15 +152,15 @@ export function validateModelSelectionOptions(
        providerId: selection.providerId,
        modelId: selection.modelId,
        reasoningLevel,
@@ -5833,15 +5831,20 @@ index 4b92e76..68abd99 100644
  function freezeView(revision: number, providers: readonly Provider[]): ProviderRegistryView {
 -  const frozenProviders = providers.map((provider) =>
 -    Object.freeze({
-+  const frozenProviders = providers.map((provider) => ({
++  const frozenProviders = providers.map((provider) => {
++    return {
        providerId: provider.providerId,
        // 名称与模板已从 config 外移；冻结时漏拷贝会让所有 Selection View 丢失元数据。
        providerName: provider.providerName,
-@@ -173,5 +172,5 @@ function freezeView(revision: number, providers: readonly Provider[]): ProviderR
+@@ -171,7 +171,7 @@ function freezeView(revision: number, providers: readonly Provider[]): ProviderR
+           Object.freeze({ modelId: model.modelId, config: model.config }),
+         ),
        ),
-     }),
-   );
+-    }),
+-  );
 -  return Object.freeze({ revision, providers: Object.freeze(frozenProviders) });
++    };
++  });
 +  return { revision, providers: Object.freeze(frozenProviders) };
  }
 diff --git a/packages/provider/src/resolver.ts b/packages/provider/src/resolver.ts

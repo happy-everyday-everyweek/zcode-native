@@ -1,7 +1,7 @@
 {
   "profile_format": 1,
   "name": "zcode-core-port",
-  "entry": "port-entry.ts",
+  "entry": "../entries/port-entry.ts",
   "emission": "llvm",
   "abi": {
     "prefix": "zc_",
@@ -11,12 +11,49 @@
     "result_reset_symbol": null
   },
   "exports": [
-    { "export": "portSessionId", "symbol": "zc_session_id", "params": [], "returns": "string" },
-    { "export": "portTurnId", "symbol": "zc_turn_id", "params": [], "returns": "string" },
-    { "export": "portEventId", "symbol": "zc_event_id", "params": [], "returns": "string" },
-    { "export": "portTraceId", "symbol": "zc_trace_id", "params": [], "returns": "string" },
-    { "export": "portUuid7", "symbol": "zc_uuid7", "params": [], "returns": "string" },
-    { "export": "portUuid", "symbol": "zc_uuid", "params": [], "returns": "string" },
-    { "export": "portEgressCheck", "symbol": "zc_egress_check", "params": ["string"], "returns": "string" }
+    {
+      "export": "portSessionId",
+      "symbol": "zc_session_id",
+      "params": [],
+      "returns": "string"
+    },
+    {
+      "export": "portTurnId",
+      "symbol": "zc_turn_id",
+      "params": [],
+      "returns": "string"
+    },
+    {
+      "export": "portEventId",
+      "symbol": "zc_event_id",
+      "params": [],
+      "returns": "string"
+    },
+    {
+      "export": "portTraceId",
+      "symbol": "zc_trace_id",
+      "params": [],
+      "returns": "string"
+    },
+    {
+      "export": "portUuid7",
+      "symbol": "zc_uuid7",
+      "params": [],
+      "returns": "string"
+    },
+    {
+      "export": "portUuid",
+      "symbol": "zc_uuid",
+      "params": [],
+      "returns": "string"
+    },
+    {
+      "export": "portEgressCheck",
+      "symbol": "zc_egress_check",
+      "params": [
+        "string"
+      ],
+      "returns": "string"
+    }
   ]
 }

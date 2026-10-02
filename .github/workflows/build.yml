@@ -159,18 +159,21 @@ jobs:
 
       - name: Build static slice (library mode, aarch64)
         run: |
-          cd zfull
-          mkdir -p out
+          # library 模式下 profile 的 entry 相对 profile 文件所在目录解析，
+          # 而 profile 位于 profiles/、入口位于 entries/，故这里从 entries/ 调用
+          # 并显式给出 ../profiles/... 的相对路径。
+          cd zfull/entries
           SCRIPTC_CC=zigcc SCRIPTC_TARGET=aarch64-linux-android \
-            node ../scriptc-try/node_modules/.bin/scriptc build --lib --profile profiles/lib-port.profile.json
-          find . -name '*.lib.a' -print
+            node ../../scriptc-try/node_modules/.bin/scriptc build --lib --profile ../profiles/lib-port.profile.json
+          find .. -name '*.lib.a' -print
 
       - name: Build dynamic-tier program (aarch64)
         run: |
-          cd zfull
+          cd zfull/entries
+          mkdir -p ../out
           SCRIPTC_CC=zigcc SCRIPTC_TARGET=aarch64-linux-android \
-            node ../scriptc-try/node_modules/.bin/scriptc build entries/port-cli.ts --emit=exe --dynamic -o out/zcodecore
-          ls -la out/
+            node ../../scriptc-try/node_modules/.bin/scriptc build port-cli.ts --emit=exe --dynamic -o ../out/zcodecore
+          ls -la ../out/
 
       - name: Link libzcodecore.so
         run: |

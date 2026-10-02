@@ -10067,12 +10067,18 @@ index 00553a5..5bc122d 100644
      })
      .nullish(),
 diff --git a/packages/shared/src/config-schema.ts b/packages/shared/src/config-schema.ts
-index 2d75ead..a10f3c6 100644
+index 2d75ead..451b1c0 100644
 --- a/packages/shared/src/config-schema.ts
 +++ b/packages/shared/src/config-schema.ts
-@@ -1,8 +1,25 @@
+@@ -1,8 +1,31 @@
 -import type { z } from "zod";
 +import type { ZodRawShape } from "zod";
++
++/**
++ * scriptc: `Object.keys` 属于标准库类型但没有对应 lowering（SC2020），两个 shape 复制函数
++ * 改用 `for...in` 枚举键。这里处理的都是本地构造的普通记录（原型上无可枚举属性），
++ * 枚举结果与 `Object.keys` 的自有可枚举字符串键一致。
++ */
  
  /** 每个字段保持原 schema，只派生覆盖所需的缺省/null；嵌套结构由调用方显式派生。 */
 -export function sparseShape<T extends Record<string, z.ZodType>>(shape: T) {
@@ -10081,7 +10087,7 @@ index 2d75ead..a10f3c6 100644
 -  ) as { [K in keyof T]: z.ZodOptional<z.ZodNullable<T[K]>> };
 +export function sparseShape(shape: Record<string, any>): ZodRawShape {
 +  const sparse: ZodRawShape = {};
-+  for (const key of Object.keys(shape)) {
++  for (const key in shape) {
 +    const schema = shape[key];
 +    sparse[key] = schema.nullable().optional();
 +  }
@@ -10096,7 +10102,7 @@ index 2d75ead..a10f3c6 100644
 + */
 +export function copyShape(shape: Record<string, any>): ZodRawShape {
 +  const copied: ZodRawShape = {};
-+  for (const key of Object.keys(shape)) {
++  for (const key in shape) {
 +    copied[key] = shape[key];
 +  }
 +  return copied;

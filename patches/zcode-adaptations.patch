@@ -10663,6 +10663,37 @@ index 33d41b7..1935d5c 100644
          foregroundModel: z.literal("submission"),
          background: z.literal("deny"),
        })
+diff --git a/packages/shared/src/model-provider-family.ts b/packages/shared/src/model-provider-family.ts
+index 52ab99c..d4ce316 100644
+--- a/packages/shared/src/model-provider-family.ts
++++ b/packages/shared/src/model-provider-family.ts
+@@ -50,18 +50,17 @@ const MODEL_PROVIDER_FAMILY_SPEC_BY_ID = new Map<ModelProviderFamilyId, ModelPro
+   MODEL_PROVIDER_FAMILY_SPECS.map((spec) => [spec.id, spec]),
+ );
+ 
++const modelProviderFamilyIdEntries: Array<[BuiltinModelProviderId, ModelProviderFamilyId]> = [];
++for (const spec of MODEL_PROVIDER_FAMILY_SPECS) {
++  modelProviderFamilyIdEntries.push([spec.startPlanProviderId, spec.id]);
++  modelProviderFamilyIdEntries.push([spec.individualCodingPlanProviderId, spec.id]);
++  modelProviderFamilyIdEntries.push([spec.teamCodingPlanProviderId, spec.id]);
++}
++
+ const MODEL_PROVIDER_FAMILY_ID_BY_PROVIDER_ID = new Map<
+   BuiltinModelProviderId,
+   ModelProviderFamilyId
+->(
+-  MODEL_PROVIDER_FAMILY_SPECS.flatMap((spec) =>
+-    [
+-      spec.startPlanProviderId,
+-      spec.individualCodingPlanProviderId,
+-      spec.teamCodingPlanProviderId,
+-    ].map((providerId) => [providerId, spec.id] as const),
+-  ),
+-);
++>(modelProviderFamilyIdEntries);
+ 
+ export function getModelProviderFamilySpec(
+   familyId: ModelProviderFamilyId,
 diff --git a/packages/shared/src/model-selection.ts b/packages/shared/src/model-selection.ts
 index 5f46f4c..708c225 100644
 --- a/packages/shared/src/model-selection.ts
@@ -10696,6 +10727,33 @@ index b498b20..cfaf733 100644
    .transform((file) =>
      file.version === 1 ? { ...file, version: 2 as const, decisions: [] } : file,
    );
+diff --git a/packages/shared/src/pluginStoreOrder.ts b/packages/shared/src/pluginStoreOrder.ts
+index 388cdc2..89ca4cc 100644
+--- a/packages/shared/src/pluginStoreOrder.ts
++++ b/packages/shared/src/pluginStoreOrder.ts
+@@ -1,6 +1,21 @@
+ import { z } from "zod";
+ 
+-const orderList = z.array(z.string().trim().min(1)).transform((items) => [...new Set(items)]);
++const orderList = z.array(z.string().trim().min(1)).transform((items) => {
++  const out: string[] = [];
++  for (const item of items) {
++    let exists = false;
++    for (const seen of out) {
++      if (seen === item) {
++        exists = true;
++        break;
++      }
++    }
++    if (!exists) {
++      out.push(item);
++    }
++  }
++  return out;
++});
+ const modeOrderSchema = z.object({
+   categoryOrder: orderList.optional(),
+   pluginOrder: z.record(z.string(), orderList).optional(),
 diff --git a/packages/shared/src/pluginStoreOrdering.ts b/packages/shared/src/pluginStoreOrdering.ts
 index 284634c..f83404c 100644
 --- a/packages/shared/src/pluginStoreOrdering.ts
@@ -10808,6 +10866,38 @@ index 433fadb..dc27324 100644
      syncId: nonEmptyString,
      status: z.enum(["applied", "already-applied", "unsupported", "failed", "rollback_failed"]),
      personalProviderCount: z.number().int().nonnegative(),
+diff --git a/packages/shared/src/remoteResourcePackages.ts b/packages/shared/src/remoteResourcePackages.ts
+index e0f3e95..b127c26 100644
+--- a/packages/shared/src/remoteResourcePackages.ts
++++ b/packages/shared/src/remoteResourcePackages.ts
+@@ -29,12 +29,21 @@ export const REMOTE_RESOURCE_PACKAGE_DEPENDENCIES: Partial<
+   Record<RemoteResourcePackageId, readonly RemoteResourcePackageId[]>
+ > = {};
+ 
+-export const OPTIONAL_REMOTE_RESOURCE_PACKAGE_IDS = ACTIVE_REMOTE_RESOURCE_PACKAGE_IDS.filter(
+-  (id) =>
+-    !REQUIRED_REMOTE_RESOURCE_PACKAGE_IDS.includes(
+-      id as (typeof REQUIRED_REMOTE_RESOURCE_PACKAGE_IDS)[number],
+-    ),
+-);
++const optionalRemoteResourcePackageIds: RemoteResourcePackageId[] = [];
++for (const id of ACTIVE_REMOTE_RESOURCE_PACKAGE_IDS) {
++  let isRequired = false;
++  for (const requiredId of REQUIRED_REMOTE_RESOURCE_PACKAGE_IDS) {
++    if (requiredId === id) {
++      isRequired = true;
++      break;
++    }
++  }
++  if (!isRequired) {
++    optionalRemoteResourcePackageIds.push(id);
++  }
++}
++
++export const OPTIONAL_REMOTE_RESOURCE_PACKAGE_IDS = optionalRemoteResourcePackageIds;
+ 
+ export interface RemoteResourcePackageSelection {
+   selectedPackageIds?: string[];
 diff --git a/packages/shared/src/rendererActionTrace.ts b/packages/shared/src/rendererActionTrace.ts
 index a6e3875..e312968 100644
 --- a/packages/shared/src/rendererActionTrace.ts
@@ -12386,6 +12476,31 @@ index 879e136..61ca75c 100644
    .trim()
    .max(WSL_USER_MAX_LENGTH)
    .refine((value) => value.length === 0 || isValidWslUser(value), {
+diff --git a/packages/shared/src/zcode-agent-runtime.ts b/packages/shared/src/zcode-agent-runtime.ts
+index 374218a..47ab28e 100644
+--- a/packages/shared/src/zcode-agent-runtime.ts
++++ b/packages/shared/src/zcode-agent-runtime.ts
+@@ -23,6 +23,8 @@ export function resolvePlatformBinaryName(binaryName: string, platform: string):
+   return platform === "win32" ? `${binaryName}.exe` : binaryName;
+ }
+ 
++const ZCODE_AGENT_NODE_BUNDLE_ENTRY_FILE = "zcode.cjs";
++
+ export const ZCODE_AGENT_RUNTIME: ZCodeAgentRuntimeDescriptor = {
+   binaryKind: "native-binary",
+   binaryEnvVar: "GLM_BINARY_PATH",
+@@ -34,9 +36,9 @@ export const ZCODE_AGENT_RUNTIME: ZCodeAgentRuntimeDescriptor = {
+   missingBinaryMessage:
+     "[ZCode Agent] glm binary 未找到，请设置 GLM_BINARY_PATH 或先准备 GLM 运行时资源",
+   resolveEntrySegments: (platform) => [resolvePlatformBinaryName("zcode-agent", platform)],
+-  nodeBundleEntryFile: "zcode.cjs",
++  nodeBundleEntryFile: ZCODE_AGENT_NODE_BUNDLE_ENTRY_FILE,
+   resolveNodeBundleSegments() {
+-    return [this.nodeBundleEntryFile];
++    return [ZCODE_AGENT_NODE_BUNDLE_ENTRY_FILE];
+   },
+ };
+ 
 diff --git a/packages/shared/src/zcode-protocol-legacy-types.ts b/packages/shared/src/zcode-protocol-legacy-types.ts
 index dadd482..f518a5a 100644
 --- a/packages/shared/src/zcode-protocol-legacy-types.ts
@@ -14774,10 +14889,10 @@ index 7168ad8..478544d 100644
      /** 有界化后的正文；running 行与 failed 行缺席。 */
      result: z.unknown().optional(),
 diff --git a/packages/shared/src/zcode-protocol-v4/workspace-hook-review.ts b/packages/shared/src/zcode-protocol-v4/workspace-hook-review.ts
-index 120f95f..e4eeac0 100644
+index 120f95f..7f346cd 100644
 --- a/packages/shared/src/zcode-protocol-v4/workspace-hook-review.ts
 +++ b/packages/shared/src/zcode-protocol-v4/workspace-hook-review.ts
-@@ -17,8 +17,7 @@ export const workspaceHookReviewTrustStateSchema = z.enum([
+@@ -17,21 +17,20 @@ export const workspaceHookReviewTrustStateSchema = z.enum([
  ]);
  export type WorkspaceHookReviewTrustState = z.infer<typeof workspaceHookReviewTrustStateSchema>;
  
@@ -14787,7 +14902,13 @@ index 120f95f..e4eeac0 100644
      action: z.literal("trust_selected"),
      reviewItemIds: z.array(nonEmptyStringSchema).min(1),
    })
-@@ -30,8 +29,7 @@ export const workspaceHookReviewDecisionSchema = z
+   .strict()
+   .superRefine((decision, context) => {
+-    if ("reviewItemIds" in decision && decision.reviewItemIds) {
++    // scriptc 不会对 any 类型接收者上的 `in` 运算符做降级，故直接取属性判断
++    if (decision.reviewItemIds) {
+       addDuplicateItemIssue(decision.reviewItemIds, context, ["reviewItemIds"]);
+     }
    });
  export type WorkspaceHookReviewDecision = z.infer<typeof workspaceHookReviewDecisionSchema>;
  
@@ -14797,7 +14918,7 @@ index 120f95f..e4eeac0 100644
      sessionId: nonEmptyStringSchema,
      taskId: nonEmptyStringSchema,
      runId: nonEmptyStringSchema,
-@@ -47,8 +45,7 @@ export type WorkspaceHookReviewCommandTarget = z.infer<
+@@ -47,8 +46,7 @@ export type WorkspaceHookReviewCommandTarget = z.infer<
    typeof workspaceHookReviewCommandTargetSchema
  >;
  
@@ -14807,7 +14928,7 @@ index 120f95f..e4eeac0 100644
      sessionId: nonEmptyStringSchema,
      remoteSessionId: nonEmptyStringSchema.optional(),
      workspaceIdentity: nonEmptyStringSchema,
-@@ -64,8 +61,7 @@ export type WorkspaceHookTrustRevokeTarget = z.infer<typeof workspaceHookTrustRe
+@@ -64,8 +62,7 @@ export type WorkspaceHookTrustRevokeTarget = z.infer<typeof workspaceHookTrustRe
  // 软门禁：按需开审核 flow 的命令 target。
  // 克隆 revoke 的 non-flow target 变体,但不需要 hookDeclarationDigests
  // (审核 flow 从当前 snapshot 拉取全部 pending items,而非指定 declarations)。
@@ -14817,7 +14938,7 @@ index 120f95f..e4eeac0 100644
      sessionId: nonEmptyStringSchema,
      remoteSessionId: nonEmptyStringSchema.optional(),
      workspaceIdentity: nonEmptyStringSchema,
-@@ -76,8 +72,7 @@ export type RequestWorkspaceHookReviewTarget = z.infer<
+@@ -76,8 +73,7 @@ export type RequestWorkspaceHookReviewTarget = z.infer<
    typeof requestWorkspaceHookReviewTargetSchema
  >;
  
@@ -14827,7 +14948,7 @@ index 120f95f..e4eeac0 100644
      kind: z.literal("workspaceHookReview"),
      reviewFlowId: nonEmptyStringSchema,
      generation: positiveIntegerSchema,
-@@ -92,24 +87,21 @@ export const workspaceHookReviewRequestPayloadSchema = z
+@@ -92,24 +88,21 @@ export const workspaceHookReviewRequestPayloadSchema = z
      createdAt: timestampSchema,
      deadlineAt: timestampSchema,
      sourceFiles: z.array(
@@ -14855,7 +14976,17 @@ index 120f95f..e4eeac0 100644
            reviewItemId: nonEmptyStringSchema,
            event: z.enum([
              "SessionStart",
-@@ -180,8 +172,7 @@ export type WorkspaceHookReviewRequestPayload = z.infer<
+@@ -152,7 +145,8 @@ export const workspaceHookReviewRequestPayloadSchema = z
+         message: "hookCount must match the immutable request items",
+       });
+     }
+-    const eventCount = new Set(request.items.map((item) => item.event)).size;
++    // scriptc 要求 Set 元素类型为 string 或 number，这里显式标注为 string
++    const eventCount = new Set<string>(request.items.map((item) => item.event)).size;
+     if (request.summary.eventCount !== eventCount) {
+       context.addIssue({
+         code: z.ZodIssueCode.custom,
+@@ -180,8 +174,7 @@ export type WorkspaceHookReviewRequestPayload = z.infer<
    typeof workspaceHookReviewRequestPayloadSchema
  >;
  
@@ -14865,7 +14996,7 @@ index 120f95f..e4eeac0 100644
      reviewFlowId: nonEmptyStringSchema,
      generation: positiveIntegerSchema,
      interactionId: nonEmptyStringSchema,
-@@ -199,7 +190,7 @@ export type PresentWorkspaceHookReviewRequest = z.infer<
+@@ -199,7 +192,7 @@ export type PresentWorkspaceHookReviewRequest = z.infer<
  function addDuplicateItemIssue(
    values: readonly string[],
    context: z.RefinementCtx,

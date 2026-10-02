@@ -23,7 +23,8 @@ export class z {
   static ZodError: any = ZodError;
   static array: (...args: any[]) => any = array;
   static boolean: (...args: any[]) => any = boolean;
-  static coerce: (...args: any[]) => any = coerce;
+  // coerce 是对象（{string(), number(), boolean(), date()}），不是函数，不能标函数类型。
+  static coerce: any = coerce;
   static date: (...args: any[]) => any = date;
   static discriminatedUnion: (...args: any[]) => any = discriminatedUnion;
   static enum: (...args: any[]) => any = enumOf;

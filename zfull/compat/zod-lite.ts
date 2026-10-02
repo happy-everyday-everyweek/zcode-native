@@ -4,7 +4,7 @@
 export * from "./zod-lite-core.js";
 
 import {
-  ZodFirstPartyTypeKind, ZodIssueCode, ZodObject, array, boolean, coerce, date,
+  ZodFirstPartyTypeKind, ZodIssueCode, ZodObject, ZodError, array, boolean, coerce, date,
   discriminatedUnion, enum as enumOf, literal, never, number, object, partialRecord,
   preprocess, record, strictObject, string, undefined as undefinedFactory, union, unknown, uuid,
   zodToJsonSchemaInternal,
@@ -20,6 +20,7 @@ export class z {
   static ZodFirstPartyTypeKind = ZodFirstPartyTypeKind;
   static ZodIssueCode = ZodIssueCode;
   static ZodObject = ZodObject;
+  static ZodError = ZodError;
   static array = array;
   static boolean = boolean;
   static coerce = coerce;

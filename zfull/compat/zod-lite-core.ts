@@ -125,7 +125,7 @@ export const ZodFirstPartyTypeKind = {
   ZodReadonly: "ZodReadonly",
 };
 
-export type ZodRawShape = Record<string, ZodType<any>>;
+export type ZodRawShape = Record<string, any>;
 export type OutOf1<T extends ZodType> = T["_output"];
 export type ShapeOut<T extends ZodRawShape> = { [K in keyof T]: unknown };
 
@@ -313,8 +313,8 @@ class ZBase {
   _litVal: string = "";
   _litMap: Record<string, string> | undefined = undefined;
 
-  get shape(): Record<string, ZodType<any>> {
-    return castTo<Record<string, ZodType<any>>>(this._shapeObjs);
+  get shape(): any {
+    return this._shapeObjs;
   }
 
   _parse(input: any, ctx: ParseCtx): unknown {

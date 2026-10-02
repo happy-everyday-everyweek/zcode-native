@@ -260,7 +260,7 @@ index dd72b03..05bb510 100644
  ): Promise<string | undefined> {
    if (typeof init?.body === "string") return init.body;
 diff --git a/apps/zcode-cli/packages/adapters/src/model/model.ts b/apps/zcode-cli/packages/adapters/src/model/model.ts
-index 7a6211c..f2981ec 100644
+index 7a6211c..c9150f4 100644
 --- a/apps/zcode-cli/packages/adapters/src/model/model.ts
 +++ b/apps/zcode-cli/packages/adapters/src/model/model.ts
 @@ -50,9 +50,9 @@ class ExecutableModel implements Model {
@@ -280,11 +280,14 @@ index 7a6211c..f2981ec 100644
  
  function freezeOptionSpecs(specs: ModelOptionSpecs): ModelOptionSpecs {
 -  return Object.freeze({
+-    maxOutputTokens: Object.freeze({ ...specs.maxOutputTokens }),
+-    reasoningLevel: Object.freeze({
 +  return {
-     maxOutputTokens: Object.freeze({ ...specs.maxOutputTokens }),
-     reasoningLevel: Object.freeze({
++    maxOutputTokens: ({ ...specs.maxOutputTokens }),
++    reasoningLevel: ({
        ...specs.reasoningLevel,
-       values: Object.freeze([...specs.reasoningLevel.values]),
+-      values: Object.freeze([...specs.reasoningLevel.values]),
++      values: ([...specs.reasoningLevel.values]),
      }),
 -  });
 +  };
@@ -522,7 +525,7 @@ index 3d81295..4124fc2 100644
 +  return cachedNativeHandlers;
 +}
 diff --git a/apps/zcode-cli/packages/bootstrap/src/zcode-protocol/model-execution.ts b/apps/zcode-cli/packages/bootstrap/src/zcode-protocol/model-execution.ts
-index 03f16a0..e45fc7a 100644
+index 03f16a0..8e924d9 100644
 --- a/apps/zcode-cli/packages/bootstrap/src/zcode-protocol/model-execution.ts
 +++ b/apps/zcode-cli/packages/bootstrap/src/zcode-protocol/model-execution.ts
 @@ -20,8 +20,8 @@ export function createModelExecutionContext(
@@ -532,8 +535,9 @@ index 03f16a0..e45fc7a 100644
 -  return Object.freeze({
 +  return {
      ...(input.apiKey ? { apiKey: input.apiKey } : {}),
-     ...(input.headers ? { headers: Object.freeze({ ...input.headers }) } : {}),
+-    ...(input.headers ? { headers: Object.freeze({ ...input.headers }) } : {}),
 -  });
++    ...(input.headers ? { headers: ({ ...input.headers }) } : {}),
 +  };
  }
 diff --git a/apps/zcode-cli/packages/contracts/src/compact/index.ts b/apps/zcode-cli/packages/contracts/src/compact/index.ts
@@ -4197,23 +4201,37 @@ index d7d7346..09ea4bc 100644
  import { WORKFLOW_DRAFTS_DIR } from "@zcode/contracts";
  
 diff --git a/apps/zcode-cli/packages/core/src/repl/node-repl-runtime-helpers.ts b/apps/zcode-cli/packages/core/src/repl/node-repl-runtime-helpers.ts
-index 2a52842..1c8c5aa 100644
+index 2a52842..3b7c1c8 100644
 --- a/apps/zcode-cli/packages/core/src/repl/node-repl-runtime-helpers.ts
 +++ b/apps/zcode-cli/packages/core/src/repl/node-repl-runtime-helpers.ts
-@@ -3,7 +3,7 @@ import { inspect } from "node:util";
+@@ -3,24 +3,24 @@ import { inspect } from "node:util";
  export const PROCESS_MODULE_IDS = new Set(["process", "node:process"]);
  
  export function createRestrictedProcessFacade(): Readonly<Record<string, unknown>> {
 -  return Object.freeze({
 +  return {
      arch: process.arch,
-     argv: Object.freeze([...process.argv]),
+-    argv: Object.freeze([...process.argv]),
++    argv: ([...process.argv]),
      cwd: () => process.cwd(),
-@@ -20,7 +20,7 @@ export function createRestrictedProcessFacade(): Readonly<Record<string, unknown
+-    env: Object.freeze({ ...process.env }),
+-    execArgv: Object.freeze([...process.execArgv]),
++    env: ({ ...process.env }),
++    execArgv: ([...process.execArgv]),
+     execPath: process.execPath,
+     hrtime: process.hrtime.bind(process),
+     memoryUsage: process.memoryUsage.bind(process),
+     nextTick: process.nextTick.bind(process),
+     pid: process.pid,
+     platform: process.platform,
+-    release: Object.freeze({ ...process.release }),
++    release: ({ ...process.release }),
+     resourceUsage: process.resourceUsage.bind(process),
      uptime: process.uptime.bind(process),
      version: process.version,
-     versions: Object.freeze({ ...process.versions }),
+-    versions: Object.freeze({ ...process.versions }),
 -  });
++    versions: ({ ...process.versions }),
 +  };
  }
  
@@ -4932,7 +4950,7 @@ index 016b335..1084232 100644
  
  function signatureOf(release: ZCodeBuiltinRelease): string {
 diff --git a/packages/provider-node/src/zcode-builtin-release.ts b/packages/provider-node/src/zcode-builtin-release.ts
-index 0f1327b..d521f74 100644
+index 0f1327b..cdcc7da 100644
 --- a/packages/provider-node/src/zcode-builtin-release.ts
 +++ b/packages/provider-node/src/zcode-builtin-release.ts
 @@ -22,12 +22,10 @@ export interface ZCodeBuiltinRelease {
@@ -4950,7 +4968,7 @@ index 0f1327b..d521f74 100644
          providerConfigRules: z.unknown(),
          modelConfigRules: z.unknown(),
        })
-@@ -45,7 +43,7 @@ export function decodeZCodeBuiltinRelease(input: unknown): ZCodeBuiltinRelease {
+@@ -45,15 +43,15 @@ export function decodeZCodeBuiltinRelease(input: unknown): ZCodeBuiltinRelease {
    if (providers.has(RETIRED_ZAPI_PROVIDER_ID)) {
      throw new Error(`ZCode Built-in Release 包含已退出的 Provider: ${RETIRED_ZAPI_PROVIDER_ID}`);
    }
@@ -4958,8 +4976,9 @@ index 0f1327b..d521f74 100644
 +  return {
      schemaVersion: ZCODE_BUILTIN_RELEASE_SCHEMA_VERSION,
      revision: parsed.revision,
-     config: Object.freeze({
-@@ -53,7 +51,7 @@ export function decodeZCodeBuiltinRelease(input: unknown): ZCodeBuiltinRelease {
+-    config: Object.freeze({
++    config: ({
+       providers,
        providerTemplates,
        modelConfigRules: parseZCodeBuiltinModelConfigRules(parsed.config.modelConfigRules),
      }),
@@ -4969,7 +4988,7 @@ index 0f1327b..d521f74 100644
  
  export function encodeZCodeBuiltinRelease(release: ZCodeBuiltinRelease): object {
 diff --git a/packages/provider/src/account-provider-resolution.ts b/packages/provider/src/account-provider-resolution.ts
-index a9a097c..910e950 100644
+index a9a097c..ebe1f14 100644
 --- a/packages/provider/src/account-provider-resolution.ts
 +++ b/packages/provider/src/account-provider-resolution.ts
 @@ -73,18 +73,18 @@ export function createAccountProviderConfigResolver(
@@ -4991,7 +5010,7 @@ index a9a097c..910e950 100644
 +      };
      }
 -    return Object.freeze({ providers, states: Object.freeze(states) });
-+    return { providers, states: Object.freeze(states) };
++    return { providers, states: (states) };
    };
  }
  
@@ -5012,7 +5031,7 @@ index a9a097c..910e950 100644
 +  return result;
  }
 diff --git a/packages/provider/src/account-provider-service.ts b/packages/provider/src/account-provider-service.ts
-index cbf46f0..2c57a70 100644
+index cbf46f0..96e2032 100644
 --- a/packages/provider/src/account-provider-service.ts
 +++ b/packages/provider/src/account-provider-service.ts
 @@ -161,7 +161,7 @@ export class AccountProviderService implements ProviderSource<AccountProviderCon
@@ -5029,7 +5048,7 @@ index cbf46f0..2c57a70 100644
          }
        } catch (error) {
 -        const event = Object.freeze({ error, reasons: Object.freeze(reasons) });
-+        const event = { error, reasons: Object.freeze(reasons) };
++        const event = { error, reasons: (reasons) };
          for (const listener of this.#errorListeners) listener(event);
          if (!latest && config) {
            // 首次账号网络/凭据解析失败被当成整个 Registry 的 ready barrier，
@@ -5065,7 +5084,7 @@ index 5ae36c6..67222ed 100644
  
    deletePersonalProvider(providerId: ProviderId): Promise<ProviderConfigLayerSnapshot> {
 diff --git a/packages/provider/src/config/model-config.ts b/packages/provider/src/config/model-config.ts
-index beb7e9a..447f619 100644
+index beb7e9a..f191141 100644
 --- a/packages/provider/src/config/model-config.ts
 +++ b/packages/provider/src/config/model-config.ts
 @@ -34,11 +34,11 @@ import {
@@ -5203,7 +5222,7 @@ index beb7e9a..447f619 100644
    constructor(rules: readonly ModelConfigRule[] = []) {
 -    this.#rules = Object.freeze(rules.map((rule) => Object.freeze({ ...rule })));
 -    Object.freeze(this);
-+    this.#rules = rules.map((rule) => Object.freeze({ ...rule }));
++    this.#rules = rules.map((rule) => ({ ...rule }));
 +    this;
    }
  
@@ -5546,7 +5565,7 @@ index 07f2307..2008efa 100644
    })
    .strict()
 diff --git a/packages/provider/src/effective-model-selection.ts b/packages/provider/src/effective-model-selection.ts
-index bee940e..8aa0120 100644
+index bee940e..31157e4 100644
 --- a/packages/provider/src/effective-model-selection.ts
 +++ b/packages/provider/src/effective-model-selection.ts
 @@ -23,7 +23,7 @@ export function resolveEffectiveModelSelection(input: {
@@ -5593,7 +5612,8 @@ index bee940e..8aa0120 100644
      providerId,
      modelId: original.modelId,
      ...(validation.ok && normalized.options
-       ? { options: Object.freeze({ ...normalized.options }) }
+-      ? { options: Object.freeze({ ...normalized.options }) }
++      ? { options: ({ ...normalized.options }) }
        : {}),
 -  });
 -  return Object.freeze({
@@ -5609,7 +5629,7 @@ index bee940e..8aa0120 100644
 +  };
  }
 diff --git a/packages/provider/src/facades.ts b/packages/provider/src/facades.ts
-index 015acca..494b106 100644
+index 015acca..771ffa1 100644
 --- a/packages/provider/src/facades.ts
 +++ b/packages/provider/src/facades.ts
 @@ -251,13 +251,13 @@ export class ProviderSettingsFacade {
@@ -5620,7 +5640,8 @@ index 015acca..494b106 100644
 +      return {
          inheritedConfig: config.toJSON(),
          effectiveConfig: config.toJSON(),
-         issues: Object.freeze([
+-        issues: Object.freeze([
++        issues: ([
            ...config.validateComplete(["providers", input.providerId, "models", input.modelId]),
          ]),
 -      });
@@ -5636,7 +5657,8 @@ index 015acca..494b106 100644
 +    return {
        inheritedConfig: inheritedConfig.toJSON(),
        effectiveConfig: config.toJSON(),
-       issues: Object.freeze([
+-      issues: Object.freeze([
++      issues: ([
          ...config.validateComplete(["providers", input.providerId, "models", input.modelId]),
        ]),
 -    });
@@ -5644,15 +5666,18 @@ index 015acca..494b106 100644
    }
  
    onDidChange(listener: (view: ProviderSettingsView) => void): () => void {
-@@ -439,7 +439,7 @@ export class ProviderSettingsFacade {
+@@ -439,9 +439,9 @@ export class ProviderSettingsFacade {
      if (!provider) throw new Error(`Provider 不存在: ${providerId}`);
      // 配置成员与可执行模型不是同一名单：禁用、无权益和不完整模型仍可编辑。
      // Account 的空/替换名单也必须原样使用，不能再与静态 Built-in 取并集。
 -    return Object.freeze({
 +    return {
        providerId,
-       inheritedModelIds: Object.freeze(
+-      inheritedModelIds: Object.freeze(
++      inheritedModelIds: (
          provider.models.filter((model) => model.source === "builtin").map((model) => model.modelId),
+       ),
+       personalRevision: snapshot.config.personalRevision,
 @@ -449,7 +449,7 @@ export class ProviderSettingsFacade {
          if (this.#source.getSnapshot() !== snapshot)
            throw new Error("Provider Settings snapshot revision conflict");
@@ -5662,15 +5687,18 @@ index 015acca..494b106 100644
    }
  
    async #mutate(
-@@ -542,7 +542,7 @@ export class ModelSelectionFacade {
+@@ -542,9 +542,9 @@ export class ModelSelectionFacade {
        registry,
        configuredDefault: normalizedDefault,
      });
 -    return Object.freeze({
 +    return {
        revision: revision ?? registry.revision,
-       providers: Object.freeze(
+-      providers: Object.freeze(
++      providers: (
          registry.providers
+           .filter((provider) => provider.config.visibility !== "hidden")
+           .map(projectModelSelectionProviderView),
 @@ -559,7 +559,7 @@ export class ModelSelectionFacade {
              resolveLegacyReasoningLevel,
            })
@@ -5680,7 +5708,7 @@ index 015acca..494b106 100644
    }
  
    onDidChange(listener: (view: ModelSelectionView) => void): () => void {
-@@ -571,7 +571,7 @@ export class ModelSelectionFacade {
+@@ -571,20 +571,20 @@ export class ModelSelectionFacade {
  export function projectModelSelectionProviderView(
    provider: ProviderRegistryView["providers"][number],
  ): ModelSelectionProviderView {
@@ -5689,7 +5717,14 @@ index 015acca..494b106 100644
      providerId: provider.providerId,
      providerName: provider.providerName,
      templateId: provider.templateId,
-@@ -584,7 +584,7 @@ export function projectModelSelectionProviderView(
+     config: serializeRegistryProviderConfig(provider.config),
+-    models: Object.freeze(
++    models: (
+       provider.models.map((model) =>
+-        Object.freeze({
++        ({
+           modelId: model.modelId,
+           config: serializeRegistryModelConfig(model.config),
          }),
        ),
      ),
@@ -5707,7 +5742,25 @@ index 015acca..494b106 100644
        providerId: provider.providerId,
        providerName: provider.providerName,
        templateId: provider.templateId,
-@@ -659,13 +659,13 @@ function createProviderSettingsView(input: {
+@@ -632,7 +632,7 @@ function createProviderSettingsView(input: {
+       ...(personalConfig ? { personalConfig: personalConfig.toJSON() } : {}),
+       effectiveConfig: provider.config.toJSON(),
+       issues: provider.providerIssues,
+-      models: Object.freeze(
++      models: (
+         provider.models.map((model) => {
+           const personalModelConfig = input.personalModels.getExact(
+             provider.providerId,
+@@ -642,7 +642,7 @@ function createProviderSettingsView(input: {
+             provider.providerId,
+             model.modelId,
+           );
+-          return Object.freeze({
++          return ({
+             kind: model.kind,
+             modelId: model.modelId,
+             builtin: model.source === "builtin",
+@@ -659,30 +659,30 @@ function createProviderSettingsView(input: {
            });
          }),
        ),
@@ -5721,17 +5774,32 @@ index 015acca..494b106 100644
 -  return Object.freeze({
 +  return {
      revision: input.revision,
-     providerTemplates: Object.freeze(
+-    providerTemplates: Object.freeze(
++    providerTemplates: (
        (input.zcodeBuiltinProviderTemplates ?? ProviderTemplateMap.empty())
-@@ -684,5 +684,5 @@ function createProviderSettingsView(input: {
+         .entries()
+         .map(([templateId, template]) =>
+-          Object.freeze({
++          ({
+             templateId,
+             templateNameMap: template.templateNameMap,
+             config: template.config.toJSON(),
+           }),
+         ),
+     ),
+-    providerOrder: Object.freeze(
++    providerOrder: (
+       configuredProviders
+         .filter((provider) => provider.config.group === "standard-personal")
          .map((provider) => provider.providerId),
      ),
-     providers: Object.freeze(configuredProviders.map(projectProvider)),
+-    providers: Object.freeze(configuredProviders.map(projectProvider)),
 -  });
++    providers: (configuredProviders.map(projectProvider)),
 +  };
  }
 diff --git a/packages/provider/src/model-selection-config.ts b/packages/provider/src/model-selection-config.ts
-index 6da5cfe..7d45ba8 100644
+index 6da5cfe..dc22662 100644
 --- a/packages/provider/src/model-selection-config.ts
 +++ b/packages/provider/src/model-selection-config.ts
 @@ -104,9 +104,9 @@ function isSelectable(registry: ProviderRegistryView, selection: ModelSelection)
@@ -5742,24 +5810,28 @@ index 6da5cfe..7d45ba8 100644
 +  return {
      providerId: selection.providerId,
      modelId: selection.modelId,
-     ...(selection.options ? { options: Object.freeze({ ...selection.options }) } : {}),
+-    ...(selection.options ? { options: Object.freeze({ ...selection.options }) } : {}),
 -  });
++    ...(selection.options ? { options: ({ ...selection.options }) } : {}),
 +  };
  }
 diff --git a/packages/provider/src/registry-service.ts b/packages/provider/src/registry-service.ts
-index 107bbf2..5e3fd7d 100644
+index 107bbf2..99d2613 100644
 --- a/packages/provider/src/registry-service.ts
 +++ b/packages/provider/src/registry-service.ts
-@@ -230,7 +230,7 @@ export class ProviderRegistryService {
+@@ -230,16 +230,16 @@ export class ProviderRegistryService {
            personalProviderOrder: config.personalProviderOrder,
          });
          this.#registry.replace(resolution.registryProviders, [...reasons].join(","));
 -        const snapshot = Object.freeze({
+-          sourceRevisions: Object.freeze({
 +        const snapshot = {
-           sourceRevisions: Object.freeze({
++          sourceRevisions: ({
              config: config.revision,
              account: account.revision,
-@@ -239,7 +239,7 @@ export class ProviderRegistryService {
+           }),
+-          config: Object.freeze({ ...config }),
++          config: ({ ...config }),
            account: freezeAccountSnapshot(account),
            resolution,
            registry: this.#registry.getView(),
@@ -5775,8 +5847,9 @@ index 107bbf2..5e3fd7d 100644
 -    const event = Object.freeze({
 +    const event = {
        snapshot,
-       reasons: Object.freeze([...reasons]),
+-      reasons: Object.freeze([...reasons]),
 -    });
++      reasons: ([...reasons]),
 +    };
      for (const listener of this.#changeListeners) listener(event);
    }
@@ -5785,8 +5858,9 @@ index 107bbf2..5e3fd7d 100644
 -    const event = Object.freeze({
 +    const event = {
        error,
-       reasons: Object.freeze([...reasons]),
+-      reasons: Object.freeze([...reasons]),
 -    });
++      reasons: ([...reasons]),
 +    };
      for (const listener of this.#errorListeners) listener(event);
    }
@@ -5805,7 +5879,7 @@ index 107bbf2..5e3fd7d 100644
 +  };
  }
 diff --git a/packages/provider/src/registry.ts b/packages/provider/src/registry.ts
-index 4b92e76..de62f89 100644
+index 4b92e76..d50cbb9 100644
 --- a/packages/provider/src/registry.ts
 +++ b/packages/provider/src/registry.ts
 @@ -94,7 +94,7 @@ export class ProviderRegistry {
@@ -5817,7 +5891,7 @@ index 4b92e76..de62f89 100644
      for (const listener of this.#listeners) listener(event);
    }
  
-@@ -152,15 +152,15 @@ export function validateModelSelectionOptions(
+@@ -152,26 +152,26 @@ export function validateModelSelectionOptions(
        providerId: selection.providerId,
        modelId: selection.modelId,
        reasoningLevel,
@@ -5836,8 +5910,13 @@ index 4b92e76..de62f89 100644
        providerId: provider.providerId,
        // 名称与模板已从 config 外移；冻结时漏拷贝会让所有 Selection View 丢失元数据。
        providerName: provider.providerName,
-@@ -171,7 +171,7 @@ function freezeView(revision: number, providers: readonly Provider[]): ProviderR
-           Object.freeze({ modelId: model.modelId, config: model.config }),
+       templateId: provider.templateId,
+       config: provider.config,
+-      models: Object.freeze(
++      models: (
+         provider.models.map((model) =>
+-          Object.freeze({ modelId: model.modelId, config: model.config }),
++          ({ modelId: model.modelId, config: model.config }),
          ),
        ),
 -    }),
@@ -5845,10 +5924,10 @@ index 4b92e76..de62f89 100644
 -  return Object.freeze({ revision, providers: Object.freeze(frozenProviders) });
 +    };
 +  });
-+  return { revision, providers: Object.freeze(frozenProviders) };
++  return { revision, providers: (frozenProviders) };
  }
 diff --git a/packages/provider/src/resolver.ts b/packages/provider/src/resolver.ts
-index 9a24ad4..b7fa89a 100644
+index 9a24ad4..102ba49 100644
 --- a/packages/provider/src/resolver.ts
 +++ b/packages/provider/src/resolver.ts
 @@ -111,7 +111,7 @@ export function createRegistryProviderConfig(
@@ -5878,7 +5957,7 @@ index 9a24ad4..b7fa89a 100644
        // 账号权益与当前连接是两件事。非当前账号仍保留设置展示，不向普通 Registry 发布模型。
        // Off-Peak 不定义 current，沿用其独立调度、隐藏和鉴权规则。
        const accountCurrent = input.accountStates?.[providerId]?.current !== false;
-@@ -278,7 +278,7 @@ export class ProviderConfigResolver {
+@@ -278,20 +278,20 @@ export class ProviderConfigResolver {
          const modelEnabled = modelConfig.enabled === true;
          const executable = providerExecutable && modelEnabled && modelIssues.length === 0;
          const selectable = executable && config.visibility !== "hidden";
@@ -5887,7 +5966,10 @@ index 9a24ad4..b7fa89a 100644
            kind: "candidate",
            modelId,
            source: builtinIds.has(modelId) ? "builtin" : "personal",
-@@ -288,10 +288,10 @@ export class ProviderConfigResolver {
+           config: modelConfig,
+           effectiveBuiltinConfig,
+-          issues: Object.freeze(modelIssues),
++          issues: (modelIssues),
            enabled: modelEnabled,
            executable,
            selectable,
@@ -5900,11 +5982,15 @@ index 9a24ad4..b7fa89a 100644
          providerId,
          enabled,
          providerName,
-@@ -303,7 +303,7 @@ export class ProviderConfigResolver {
+@@ -301,9 +301,9 @@ export class ProviderConfigResolver {
+         ...(effectiveBuiltinProviders.get(providerId)
+           ? { effectiveBuiltinConfig: effectiveBuiltinProviders.get(providerId) }
            : {}),
-         providerIssues: Object.freeze([...providerIssues]),
-         models: Object.freeze(models),
+-        providerIssues: Object.freeze([...providerIssues]),
+-        models: Object.freeze(models),
 -      });
++        providerIssues: ([...providerIssues]),
++        models: (models),
 +      };
        resolvedProviders.push(resolvedProvider);
  
@@ -5924,8 +6010,9 @@ index 9a24ad4..b7fa89a 100644
            providerName,
            templateId,
            config: registryProviderResult.config,
-           models: Object.freeze(validModels),
+-          models: Object.freeze(validModels),
 -        }),
++          models: (validModels),
 +        },
        );
      }
@@ -5934,10 +6021,13 @@ index 9a24ad4..b7fa89a 100644
 +    return {
        effectiveBuiltinProviders,
        effectiveProviders,
-       resolvedProviders: Object.freeze(resolvedProviders),
-       registryProviders: Object.freeze(registryProviders),
-       issues: Object.freeze(issues),
+-      resolvedProviders: Object.freeze(resolvedProviders),
+-      registryProviders: Object.freeze(registryProviders),
+-      issues: Object.freeze(issues),
 -    });
++      resolvedProviders: (resolvedProviders),
++      registryProviders: (registryProviders),
++      issues: (issues),
 +    };
    }
  }
@@ -6297,7 +6387,7 @@ index efe794d..4f8e95f 100644
      this._onDidAddConnection.dispose();
      this._onDidRemoveConnection.dispose();
 diff --git a/packages/services/src/coding-plan-subscription/bigmodelCodingPlanSubscriptionProvider.ts b/packages/services/src/coding-plan-subscription/bigmodelCodingPlanSubscriptionProvider.ts
-index d3a75a5..2ed0095 100644
+index d3a75a5..a213190 100644
 --- a/packages/services/src/coding-plan-subscription/bigmodelCodingPlanSubscriptionProvider.ts
 +++ b/packages/services/src/coding-plan-subscription/bigmodelCodingPlanSubscriptionProvider.ts
 @@ -1346,7 +1346,7 @@ export function resolveOffPeakClientConfig(
@@ -6307,8 +6397,9 @@ index d3a75a5..2ed0095 100644
 -const EMPTY_OFF_PEAK_MODEL_SELECTION_VIEW: ModelSelectionView = Object.freeze({
 +const EMPTY_OFF_PEAK_MODEL_SELECTION_VIEW: ModelSelectionView = {
    revision: 0,
-   providers: Object.freeze([]),
+-  providers: Object.freeze([]),
 -});
++  providers: ([]),
 +};
 diff --git a/packages/services/src/conversation-share/conversationShareService.ts b/packages/services/src/conversation-share/conversationShareService.ts
 index d7e96c8..0d97043 100644
@@ -6475,7 +6566,7 @@ index c63ada4..64935ec 100644
      provider: z.record(z.string(), zcodeOpenCodeProviderConfigSchema).optional(),
    })
 diff --git a/packages/services/src/model-provider/offPeakModelSelectionView.ts b/packages/services/src/model-provider/offPeakModelSelectionView.ts
-index 57c4875..fe321be 100644
+index 57c4875..2c53ac7 100644
 --- a/packages/services/src/model-provider/offPeakModelSelectionView.ts
 +++ b/packages/services/src/model-provider/offPeakModelSelectionView.ts
 @@ -12,8 +12,8 @@ export function buildOffPeakModelSelectionView(registry: ProviderRegistryView):
@@ -6485,8 +6576,9 @@ index 57c4875..fe321be 100644
 -  return Object.freeze({
 +  return {
      revision: registry.revision,
-     providers: Object.freeze(providers.map(projectModelSelectionProviderView)),
+-    providers: Object.freeze(providers.map(projectModelSelectionProviderView)),
 -  });
++    providers: (providers.map(projectModelSelectionProviderView)),
 +  };
  }
 diff --git a/packages/services/src/process/processResourceSampler.ts b/packages/services/src/process/processResourceSampler.ts
@@ -7520,18 +7612,20 @@ index 00553a5..5bc122d 100644
      })
      .nullish(),
 diff --git a/packages/shared/src/config-schema.ts b/packages/shared/src/config-schema.ts
-index 2d75ead..996b61d 100644
+index 2d75ead..2fbce3d 100644
 --- a/packages/shared/src/config-schema.ts
 +++ b/packages/shared/src/config-schema.ts
-@@ -1,7 +1,7 @@
+@@ -1,8 +1,8 @@
  import type { z } from "zod";
  
  /** 每个字段保持原 schema，只派生覆盖所需的缺省/null；嵌套结构由调用方显式派生。 */
 -export function sparseShape<T extends Record<string, z.ZodType>>(shape: T) {
-+export function sparseShape<T extends Record<string, any>>(shape: T) {
++export function sparseShape(shape: Record<string, any>): Record<string, any> {
    return Object.fromEntries(
      Object.entries(shape).map(([key, schema]) => [key, schema.nullable().optional()]),
-   ) as { [K in keyof T]: z.ZodOptional<z.ZodNullable<T[K]>> };
+-  ) as { [K in keyof T]: z.ZodOptional<z.ZodNullable<T[K]>> };
++  ) as Record<string, any>;
+ }
 diff --git a/packages/shared/src/conversation-share.ts b/packages/shared/src/conversation-share.ts
 index 6c210a6..3e6e5f3 100644
 --- a/packages/shared/src/conversation-share.ts
@@ -14173,7 +14267,7 @@ index 8369d0a..ca26dc4 100644
 +  return `${target.protocol}//${target.host}${parsed.pathname}${parsed.search}${parsed.hash}`;
  }
 diff --git a/packages/ui/src/feedback/feedbackSubmissionJob.ts b/packages/ui/src/feedback/feedbackSubmissionJob.ts
-index c119d29..bdaad60 100644
+index c119d29..7609197 100644
 --- a/packages/ui/src/feedback/feedbackSubmissionJob.ts
 +++ b/packages/ui/src/feedback/feedbackSubmissionJob.ts
 @@ -414,14 +414,14 @@ export function startFeedbackSubmissionJob(
@@ -14181,7 +14275,7 @@ index c119d29..bdaad60 100644
  function createFeedbackSubmitDraftSnapshot(draft: FeedbackSubmitDraft): FeedbackSubmitDraft {
    const screenshots = draft.screenshots
 -    ? Object.freeze(draft.screenshots.map((screenshot) => Object.freeze({ ...screenshot })))
-+    ? draft.screenshots.map((screenshot) => Object.freeze({ ...screenshot }))
++    ? draft.screenshots.map((screenshot) => ({ ...screenshot }))
      : undefined;
    // job 暴露给全局卡片和弹窗共同读取，必须冻结复制后的快照，
    // 防止任一订阅者改写描述或附件后污染同一后台任务的恢复内容。
@@ -14217,10 +14311,10 @@ index 523b204..484b86f 100644
  export function legacyTelemetryProviderId(providerId: string): string {
    return Object.hasOwn(legacyProviderIds, providerId) ? legacyProviderIds[providerId]! : providerId;
 diff --git a/packages/ui/src/store/conversationShareSelectionStore.ts b/packages/ui/src/store/conversationShareSelectionStore.ts
-index 56177c7..33edbc0 100644
+index 56177c7..5d8d267 100644
 --- a/packages/ui/src/store/conversationShareSelectionStore.ts
 +++ b/packages/ui/src/store/conversationShareSelectionStore.ts
-@@ -80,7 +80,7 @@ interface ConversationShareSelectionState {
+@@ -80,17 +80,17 @@ interface ConversationShareSelectionState {
    resetForTests: () => void;
  }
  
@@ -14229,9 +14323,12 @@ index 56177c7..33edbc0 100644
    scope: "all",
    stage: "selection",
    view: "timeline",
-@@ -88,9 +88,9 @@ const EMPTY_DRAFT: ConversationShareSelectionDraft = Object.freeze({
-   excludedRowIds: Object.freeze([]),
-   productTurnIdByRowId: Object.freeze({}),
+-  availableRowIds: Object.freeze([]),
+-  excludedRowIds: Object.freeze([]),
+-  productTurnIdByRowId: Object.freeze({}),
++  availableRowIds: ([]),
++  excludedRowIds: ([]),
++  productTurnIdByRowId: ({}),
    accessMode: DEFAULT_CONVERSATION_SHARE_ACCESS_MODE,
 -});
 +};
@@ -14251,10 +14348,10 @@ index 56177c7..33edbc0 100644
  function normalizeRowIds(rowIds: readonly number[]): number[] {
    return [...new Set(rowIds.filter(Number.isSafeInteger))].sort((left, right) => left - right);
 diff --git a/packages/ui/src/v4/composer/composerSubmissionConfig.ts b/packages/ui/src/v4/composer/composerSubmissionConfig.ts
-index 6ad5d54..d981d05 100644
+index 6ad5d54..20fec24 100644
 --- a/packages/ui/src/v4/composer/composerSubmissionConfig.ts
 +++ b/packages/ui/src/v4/composer/composerSubmissionConfig.ts
-@@ -32,7 +32,7 @@ export function createComposerSubmissionConfig(
+@@ -32,13 +32,13 @@ export function createComposerSubmissionConfig(
    if (!mode.success || !selection || !model || !validateModelSelectionOptions(model, selection).ok)
      return null;
    // 不读取 Session 或显示别名；复制所有选择叶子，防止 await 后用户切模改变本次请求。
@@ -14262,10 +14359,12 @@ index 6ad5d54..d981d05 100644
 +  return {
      mode: mode.data === "plan" ? "build" : mode.data,
      planEnabled: resolveExecutionState(composer).planEnabled,
-     modelSelection: Object.freeze({
-@@ -40,5 +40,5 @@ export function createComposerSubmissionConfig(
+-    modelSelection: Object.freeze({
++    modelSelection: ({
+       providerId: selection.providerId,
        modelId: selection.modelId,
-       options: Object.freeze({ reasoningLevel: selection.options!.reasoningLevel! }),
+-      options: Object.freeze({ reasoningLevel: selection.options!.reasoningLevel! }),
++      options: ({ reasoningLevel: selection.options!.reasoningLevel! }),
      }),
 -  });
 +  };

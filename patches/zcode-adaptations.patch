@@ -668,7 +668,7 @@ index a2f0592..a5852d7 100644
      const modelId = (model.id ?? modelKey).trim();
      if (!modelId || seen.has(modelId)) continue;
 diff --git a/apps/zcode-cli/packages/bootstrap/src/app/process-provider-registry-runtime.ts b/apps/zcode-cli/packages/bootstrap/src/app/process-provider-registry-runtime.ts
-index b8e0eb1..c6de350 100644
+index b8e0eb1..00ba6d7 100644
 --- a/apps/zcode-cli/packages/bootstrap/src/app/process-provider-registry-runtime.ts
 +++ b/apps/zcode-cli/packages/bootstrap/src/app/process-provider-registry-runtime.ts
 @@ -145,7 +145,7 @@ export async function startProcessProviderRegistryRuntime(
@@ -689,7 +689,14 @@ index b8e0eb1..c6de350 100644
      } catch (error) {
        disposeCredentialSubscription?.();
        modelSelectionConfigRepository.dispose();
-@@ -215,11 +215,11 @@ export function parseProcessAccountProviderConfigSnapshot(input: {
+@@ -209,17 +209,17 @@ export function parseProcessAccountProviderConfigSnapshot(input: {
+     if (
+       isBuiltinModelProviderId(providerId) &&
+       provider.access?.type === "zhipu-account" &&
+-      provider.access.entitled &&
++      (provider.access as any).entitled &&
+       typeof input.states?.[providerId]?.current !== "boolean"
+     ) {
        throw new Error(`Account State 缺少 current: ${providerId}`);
      }
    }
@@ -703,6 +710,46 @@ index b8e0eb1..c6de350 100644
 -  });
 +  };
  }
+diff --git a/apps/zcode-cli/packages/bootstrap/src/app/standalone-account-provider-runtime.ts b/apps/zcode-cli/packages/bootstrap/src/app/standalone-account-provider-runtime.ts
+index d3bd8df..4eb7892 100644
+--- a/apps/zcode-cli/packages/bootstrap/src/app/standalone-account-provider-runtime.ts
++++ b/apps/zcode-cli/packages/bootstrap/src/app/standalone-account-provider-runtime.ts
+@@ -41,10 +41,10 @@ async function readStandaloneCodingPlanCatalog(
+         const access = provider.access;
+         const modelId = provider.builtinModelIds?.find((candidate) => candidate.trim())?.trim();
+         return access?.type === "zhipu-account" &&
+-          access.mode === "individual-coding-plan" &&
+-          access.accountType &&
++          (access as any).mode === "individual-coding-plan" &&
++          (access as any).accountType &&
+           modelId
+-          ? [{ family: access.accountType, modelId, providerId }]
++          ? [{ family: (access as any).accountType, modelId, providerId }]
+           : [];
+       }),
+     };
+@@ -162,7 +162,7 @@ export async function hasStandaloneCodingPlanAccess(
+   return (await readStandaloneAccountProviderConfigSnapshot(credentialStore, env)).providers
+     .entries()
+     .some(([, provider]) =>
+-      provider.access?.type === "zhipu-account" ? provider.access.entitled === true : false,
++      provider.access?.type === "zhipu-account" ? (provider.access as any).entitled === true : false,
+     );
+ }
+ 
+diff --git a/apps/zcode-cli/packages/bootstrap/src/app/workspace-hook-review-request.ts b/apps/zcode-cli/packages/bootstrap/src/app/workspace-hook-review-request.ts
+index 3da5c63..372523c 100644
+--- a/apps/zcode-cli/packages/bootstrap/src/app/workspace-hook-review-request.ts
++++ b/apps/zcode-cli/packages/bootstrap/src/app/workspace-hook-review-request.ts
+@@ -84,7 +84,7 @@ export function resolveWorkspaceHookReviewDigests(
+   return [...new Set(reviewItemIds)].map((reviewItemId) => {
+     const entry = byId.get(reviewItemId);
+     if (!entry) throw new Error(`Unknown Workspace Hook review item: ${reviewItemId}`);
+-    return entry.hookDeclarationDigest;
++    return (entry as any).hookDeclarationDigest;
+   });
+ }
+ 
 diff --git a/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/commands/executor.ts b/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/commands/executor.ts
 index 883aad6..79c902a 100644
 --- a/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/commands/executor.ts
@@ -785,7 +832,7 @@ index 3d81295..4124fc2 100644
 +  return cachedNativeHandlers;
 +}
 diff --git a/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/product-projection.ts b/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/product-projection.ts
-index b965640..66cab61 100644
+index b965640..7fddf9f 100644
 --- a/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/product-projection.ts
 +++ b/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/product-projection.ts
 @@ -148,6 +148,7 @@ import {
@@ -805,6 +852,26 @@ index b965640..66cab61 100644
          !sameSparseModelSelection(config.modelSelection, seed.modelSelection)
        ) {
          // 恢复的空选择也有明确语义，不能因为 falsy 而保留历史事件里的旧选型。
+@@ -1225,7 +1226,7 @@ export class ProductProjection {
+       }
+       const headerId = this.turnHeaderRowIdByTurnId.get(latestAssistant.turnId);
+       const header = headerId === undefined ? undefined : rowById.get(headerId);
+-      if (header?.kind !== "turnHeader" || header.state === "running") return undefined;
++      if ((header as any)?.kind !== "turnHeader" || (header as any).state === "running") return undefined;
+       const canonicalUserRow = rows.find(
+         (row) =>
+           row.turnId === latestAssistant.turnId &&
+@@ -1288,8 +1289,8 @@ export class ProductProjection {
+         const canFork =
+           !compactActive &&
+           row.state === "complete" &&
+-          header?.kind === "turnHeader" &&
+-          header.state === "completedSuccess" &&
++          (header as any)?.kind === "turnHeader" &&
++          (header as any).state === "completedSuccess" &&
+           latestAssistantRowIdByTurn.get(row.turnId) === row.rowId &&
+           this.messageIdByRowId.has(row.rowId);
+         if (canFork) nextActions.canFork = true;
 @@ -1564,7 +1565,7 @@ export class ProductProjection {
          ? { toolName: payload.toolName ?? previousExecution?.toolName }
          : {}),
@@ -814,6 +881,54 @@ index b965640..66cab61 100644
        previousExecutions.map((candidate) => [candidate.hookRunId, candidate]),
      );
      byRunId.set(execution.hookRunId, execution);
+@@ -3959,7 +3960,7 @@ export class ProductProjection {
+     for (const [childSessionId, row] of latestRowByChildId) {
+       if (row.status !== "running") continue;
+       const previousItem = previousRunningById.get(childSessionId);
+-      const title = previousItem?.title || row.summaryText.trim() || row.subagentType;
++      const title = (previousItem as any)?.title || row.summaryText.trim() || row.subagentType;
+       running.push({
+         childSessionId,
+         agentId: row.entityId,
+diff --git a/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/v4-gateway.ts b/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/v4-gateway.ts
+index 6585dbd..af88b20 100644
+--- a/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/v4-gateway.ts
++++ b/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/v4-gateway.ts
+@@ -3335,15 +3335,15 @@ export class ConversationV4Gateway {
+     // resync/subscribe recovery 已进入 request-scoped outbox 时，online
+     // flush 若复用同一 inFlight 会让 physical wire 抢在 ACK response 前出站。
+     if (this.controlReservations.has(reservation)) return false;
+-    const sessionId = parseConversationTopic(reservation.frame.topic);
++    const sessionId = parseConversationTopic((reservation.frame as any).topic);
+     const route = this.flushStates.get(
+       subscriptionRouteKey(
+-        reservation.frame.topic,
+-        reservation.frame.subscriptionId,
++        (reservation.frame as any).topic,
++        (reservation.frame as any).subscriptionId,
+         sessionId
+           ? (this.publishers
+               .get(sessionId)
+-              ?.connectionIdForSubscription(reservation.frame.subscriptionId) ?? "")
++              ?.connectionIdForSubscription((reservation.frame as any).subscriptionId) ?? "")
+           : "",
+       ),
+     );
+@@ -3351,12 +3351,12 @@ export class ConversationV4Gateway {
+       sessionId &&
+       route?.deliveryProfile === "continuous" &&
+       reservation.deliveryKind === "online" &&
+-      reservation.frame.payload.kind === "deltas" &&
++      (reservation.frame as any).payload.kind === "deltas" &&
+       this.localTtft.forSession(sessionId)
+     ) {
+       const rows = this.publishers.get(sessionId)?.getSnapshot().rows.window ?? [];
+       const turns = new Set<string>();
+-      for (const delta of reservation.frame.payload.deltas) {
++      for (const delta of (reservation.frame as any).payload.deltas) {
+         if (delta.op === "row.appended" || delta.op === "row.upserted") turns.add(delta.row.turnId);
+         else if (delta.op === "row.delta") {
+           const row = rows.find((item) => item.rowId === delta.rowId);
 diff --git a/apps/zcode-cli/packages/bootstrap/src/zcode-protocol/model-execution.ts b/apps/zcode-cli/packages/bootstrap/src/zcode-protocol/model-execution.ts
 index 03f16a0..8e924d9 100644
 --- a/apps/zcode-cli/packages/bootstrap/src/zcode-protocol/model-execution.ts
@@ -843,6 +958,19 @@ index 194247f..00519d3 100644
    try {
      return schema.parse(params);
    } catch (error) {
+diff --git a/apps/zcode-cli/packages/bootstrap/src/zcode-protocol/server.ts b/apps/zcode-cli/packages/bootstrap/src/zcode-protocol/server.ts
+index 5dee835..f5dcdc1 100644
+--- a/apps/zcode-cli/packages/bootstrap/src/zcode-protocol/server.ts
++++ b/apps/zcode-cli/packages/bootstrap/src/zcode-protocol/server.ts
+@@ -424,7 +424,7 @@ export class ZCodeProtocolAgentServer {
+     if (isNotification(message)) {
+       this.logger?.debug("ZCode Protocol notification ignored", {
+         event: "zcode_protocol.notification.ignored",
+-        method: message.method,
++        method: (message as any).method,
+         module: "bootstrap.zcode_protocol",
+       });
+     }
 diff --git a/apps/zcode-cli/packages/bootstrap/tsconfig.json b/apps/zcode-cli/packages/bootstrap/tsconfig.json
 index 2e562be..e0aa302 100644
 --- a/apps/zcode-cli/packages/bootstrap/tsconfig.json
@@ -7686,7 +7814,7 @@ index d7e96c8..0d97043 100644
      shareId: z.string().trim().min(1),
      contextId: z.string().trim().min(1),
 diff --git a/packages/services/src/model-provider/accountProviderConnectionResolver.ts b/packages/services/src/model-provider/accountProviderConnectionResolver.ts
-index 2925509..265d006 100644
+index 2925509..f44dc08 100644
 --- a/packages/services/src/model-provider/accountProviderConnectionResolver.ts
 +++ b/packages/services/src/model-provider/accountProviderConnectionResolver.ts
 @@ -95,11 +95,11 @@ export function createAccountProviderConnectionResolver(
@@ -7706,6 +7834,75 @@ index 2925509..265d006 100644
              : [],
          );
        if (configured.length === 0) continue;
+@@ -153,25 +153,25 @@ export function createAccountProviderConnectionResolver(
+     for (const [providerId, config] of configuredProviders.entries()) {
+       const access = config.access;
+       if (access?.type !== "zhipu-account") continue;
+-      if (!access.accountType || !access.mode) {
++      if (!(access as any).accountType || !(access as any).mode) {
+         connections.push({ providerId, status: "unavailable" });
+         continue;
+       }
+-      const selection = settings.selections[access.accountType];
++      const selection = settings.selections[(access as any).accountType];
+       // last-known-good 只对同账号、同 Team 身份成立。切账号后的网络失败不能复活旧权益。
+       const scope = JSON.stringify([
+-        await loadAccountIdentity(access.accountType),
+-        access.mode === "team-coding-plan" && selection?.kind === "team-coding-plan"
++        await loadAccountIdentity((access as any).accountType),
++        (access as any).mode === "team-coding-plan" && selection?.kind === "team-coding-plan"
+           ? [selection.organizationId, selection.projectId, selection.productId]
+           : null,
+       ]);
+       scopes.set(providerId, scope);
+       const resetPrevious =
+         previousScopes.has(providerId) && previousScopes.get(providerId) !== scope;
+-      if (access.mode === "off-peak") {
++      if ((access as any).mode === "off-peak") {
+         const selectedPlanKind = selection?.kind;
+         const matchingPlanAvailable =
+-          settings.providerFamilyDomain === access.accountType &&
++          settings.providerFamilyDomain === (access as any).accountType &&
+           (selectedPlanKind === "individual-coding-plan" ||
+             selectedPlanKind === "team-coding-plan") &&
+           configuredProviders
+@@ -179,8 +179,8 @@ export function createAccountProviderConnectionResolver(
+             .some(
+               ([candidateId, candidate]) =>
+                 candidate.access?.type === "zhipu-account" &&
+-                candidate.access.accountType === access.accountType &&
+-                candidate.access.mode === selectedPlanKind &&
++                (candidate.access as any).accountType === (access as any).accountType &&
++                (candidate.access as any).mode === selectedPlanKind &&
+                 availabilityByProviderId.get(candidateId)?.kind === "available",
+             );
+         connections.push({
+@@ -204,18 +204,18 @@ export function createAccountProviderConnectionResolver(
+           : {}),
+         // Start 跟随登录身份，付费套餐跟随连接选择；两者可同时 current，不改写权益或配置。
+         current:
+-          settings.providerFamilyDomain === access.accountType &&
+-          (access.mode === "start-plan"
+-            ? Boolean(await loadAccountIdentity(access.accountType))
+-            : selection?.kind === access.mode),
++          settings.providerFamilyDomain === (access as any).accountType &&
++          ((access as any).mode === "start-plan"
++            ? Boolean(await loadAccountIdentity((access as any).accountType))
++            : selection?.kind === (access as any).mode),
+         // 两个 Team 共用 Provider ID，观察器必须按同一快照中的完整身份比较，
+         // 不能把手动换套餐/账号误当成原套餐失效。它只进入 Account State，不进入 Config。
+         connectionKey: createHash("sha256")
+           .update(
+             JSON.stringify([
+-              await loadAccountIdentity(access.accountType),
+-              access.accountType,
+-              access.mode === "start-plan" ? { kind: "start-plan" } : (selection ?? null),
++              await loadAccountIdentity((access as any).accountType),
++              (access as any).accountType,
++              (access as any).mode === "start-plan" ? { kind: "start-plan" } : (selection ?? null),
+             ]),
+           )
+           .digest("hex"),
 @@ -240,7 +240,7 @@ export function createAccountProviderConnectionResolver(
        throw new Error("账号查询期间连接或身份发生变化，丢弃过期结果");
      }
@@ -8097,7 +8294,7 @@ index afa9f5d..8cd3a23 100644
              JSON.stringify(retainLegacyAccountConnectionFields(latest)) !==
                JSON.stringify(retainLegacyAccountConnectionFields(original))
 diff --git a/packages/services/src/settings-sync/settingsSyncService.ts b/packages/services/src/settings-sync/settingsSyncService.ts
-index 492984b..f11a334 100644
+index 492984b..a296207 100644
 --- a/packages/services/src/settings-sync/settingsSyncService.ts
 +++ b/packages/services/src/settings-sync/settingsSyncService.ts
 @@ -800,7 +800,7 @@ async function collectPluginPaths(rootPath: string): Promise<string[]> {
@@ -8109,6 +8306,42 @@ index 492984b..f11a334 100644
    for (const entry of entries) {
      if (!entry.isDirectory() && !entry.isSymbolicLink()) {
        continue;
+@@ -1322,7 +1322,7 @@ async function buildSourceRootSummaries(
+       discoveredCount: groupCandidates.length,
+       importableCount,
+       skippedCount: groupCandidates.length - importableCount,
+-      skills: skills.sort((left, right) => left.name.localeCompare(right.name)),
++      skills: skills.sort((left, right) => (left as any).name.localeCompare((right as any).name)),
+     });
+   }
+ 
+@@ -1374,7 +1374,7 @@ async function buildCommandSourceRootSummaries(
+       discoveredCount: groupCandidates.length,
+       importableCount,
+       skippedCount: groupCandidates.length - importableCount,
+-      commands: commands.sort((left, right) => left.name.localeCompare(right.name)),
++      commands: commands.sort((left, right) => (left as any).name.localeCompare((right as any).name)),
+     });
+   }
+ 
+@@ -1427,7 +1427,7 @@ async function buildPluginSourceRootSummaries(
+       discoveredCount: groupCandidates.length,
+       importableCount,
+       skippedCount: groupCandidates.length - importableCount,
+-      plugins: plugins.sort((left, right) => left.name.localeCompare(right.name)),
++      plugins: plugins.sort((left, right) => (left as any).name.localeCompare((right as any).name)),
+     });
+   }
+ 
+@@ -1479,7 +1479,7 @@ async function buildMcpSourceRootSummaries(
+       discoveredCount: groupCandidates.length,
+       importableCount,
+       skippedCount: groupCandidates.length - importableCount,
+-      mcpServers: mcpServers.sort((left, right) => left.name.localeCompare(right.name)),
++      mcpServers: mcpServers.sort((left, right) => (left as any).name.localeCompare((right as any).name)),
+     });
+   }
+ 
 diff --git a/packages/services/test/nonCliAcpRetirement.test.ts b/packages/services/test/nonCliAcpRetirement.test.ts
 index d69fe69..151151b 100644
 --- a/packages/services/test/nonCliAcpRetirement.test.ts
@@ -16208,6 +16441,24 @@ index 16ef2d8..02e7ed1 100644
              id: z.string().min(1),
              sha256: z.string().regex(/^[a-f0-9]{64}$/i),
              paths: z.array(z.string().min(1)).min(1),
+diff --git a/packages/zcode-server-cli/src/runtime/updatePreparation.ts b/packages/zcode-server-cli/src/runtime/updatePreparation.ts
+index 67ed2dd..6736c7c 100644
+--- a/packages/zcode-server-cli/src/runtime/updatePreparation.ts
++++ b/packages/zcode-server-cli/src/runtime/updatePreparation.ts
+@@ -188,10 +188,10 @@ async function prepareComponentUpdate(input: {
+       );
+       const pathsUnchanged =
+         currentComponent && remoteComponent
+-          ? currentComponent.paths.length === remoteComponent.paths.length &&
+-            currentComponent.paths.every((path, index) => path === remoteComponent.paths[index])
++          ? (currentComponent as any).paths.length === remoteComponent.paths.length &&
++            (currentComponent as any).paths.every((path, index) => path === remoteComponent.paths[index])
+           : false;
+-      if (currentComponent?.sha256 === component.sha256 && pathsUnchanged) continue;
++      if ((currentComponent as any)?.sha256 === component.sha256 && pathsUnchanged) continue;
+       if (!component.archiveUrl || !component.archiveSha256) return null;
+       const extension = component.archiveUrl.toLowerCase().endsWith(".zip") ? "zip" : "tar.gz";
+       const cachedArchive = await cache.findArchive({
 diff --git a/tsconfig.base.json b/tsconfig.base.json
 index 4d5d641..9687cd4 100644
 --- a/tsconfig.base.json

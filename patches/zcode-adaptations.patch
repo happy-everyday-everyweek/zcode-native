@@ -551,6 +551,22 @@ index f39234b..ffafbd9 100644
  import type { SessionId, SessionGoal, GoalStatus } from "@zcode/contracts";
  
  interface TargetRow {
+diff --git a/apps/zcode-cli/packages/adapters/tsconfig.json b/apps/zcode-cli/packages/adapters/tsconfig.json
+index 2e562be..e0aa302 100644
+--- a/apps/zcode-cli/packages/adapters/tsconfig.json
++++ b/apps/zcode-cli/packages/adapters/tsconfig.json
+@@ -1,5 +1,11 @@
+ {
+   "compilerOptions": {
++    "paths": {
++    "@zcode/native-checks": ["../../../../native-shims/native-checks.d.ts"],
++    "@zcode/node-sqlite": ["../../../../native-shims/node-sqlite.d.ts"],
++    "@zcode/node-vm": ["../../../../native-shims/node-vm.d.ts"]
++  },
++  
+     "module": "NodeNext",
+     "moduleResolution": "NodeNext",
+     "outDir": "./dist",
 diff --git a/apps/zcode-cli/packages/bootstrap/src/app/legacy-cli-model-config.ts b/apps/zcode-cli/packages/bootstrap/src/app/legacy-cli-model-config.ts
 index 19acf60..d5174ee 100644
 --- a/apps/zcode-cli/packages/bootstrap/src/app/legacy-cli-model-config.ts
@@ -796,6 +812,38 @@ index 03f16a0..8e924d9 100644
 +    ...(input.headers ? { headers: ({ ...input.headers }) } : {}),
 +  };
  }
+diff --git a/apps/zcode-cli/packages/bootstrap/tsconfig.json b/apps/zcode-cli/packages/bootstrap/tsconfig.json
+index 2e562be..e0aa302 100644
+--- a/apps/zcode-cli/packages/bootstrap/tsconfig.json
++++ b/apps/zcode-cli/packages/bootstrap/tsconfig.json
+@@ -1,5 +1,11 @@
+ {
+   "compilerOptions": {
++    "paths": {
++    "@zcode/native-checks": ["../../../../native-shims/native-checks.d.ts"],
++    "@zcode/node-sqlite": ["../../../../native-shims/node-sqlite.d.ts"],
++    "@zcode/node-vm": ["../../../../native-shims/node-vm.d.ts"]
++  },
++  
+     "module": "NodeNext",
+     "moduleResolution": "NodeNext",
+     "outDir": "./dist",
+diff --git a/apps/zcode-cli/packages/browser-use-plugin/tsconfig.json b/apps/zcode-cli/packages/browser-use-plugin/tsconfig.json
+index d9d9d4f..fc839ba 100644
+--- a/apps/zcode-cli/packages/browser-use-plugin/tsconfig.json
++++ b/apps/zcode-cli/packages/browser-use-plugin/tsconfig.json
+@@ -1,5 +1,11 @@
+ {
+   "compilerOptions": {
++    "paths": {
++    "@zcode/native-checks": ["../../../../native-shims/native-checks.d.ts"],
++    "@zcode/node-sqlite": ["../../../../native-shims/node-sqlite.d.ts"],
++    "@zcode/node-vm": ["../../../../native-shims/node-vm.d.ts"]
++  },
++  
+     "module": "NodeNext",
+     "moduleResolution": "NodeNext",
+     "outDir": "./dist-types",
 diff --git a/apps/zcode-cli/packages/cli/src/dwf-child-command.ts b/apps/zcode-cli/packages/cli/src/dwf-child-command.ts
 index 203f83a..3485d89 100644
 --- a/apps/zcode-cli/packages/cli/src/dwf-child-command.ts
@@ -809,6 +857,22 @@ index 203f83a..3485d89 100644
  import { ZCODE_DWF_CHILD_COMMAND } from "@zcode/contracts";
  import type { RunContext } from "@zcode/shared-types";
  
+diff --git a/apps/zcode-cli/packages/cli/tsconfig.json b/apps/zcode-cli/packages/cli/tsconfig.json
+index bde55e7..c7127dc 100644
+--- a/apps/zcode-cli/packages/cli/tsconfig.json
++++ b/apps/zcode-cli/packages/cli/tsconfig.json
+@@ -1,5 +1,11 @@
+ {
+   "compilerOptions": {
++    "paths": {
++    "@zcode/native-checks": ["../../../../native-shims/native-checks.d.ts"],
++    "@zcode/node-sqlite": ["../../../../native-shims/node-sqlite.d.ts"],
++    "@zcode/node-vm": ["../../../../native-shims/node-vm.d.ts"]
++  },
++  
+     "module": "NodeNext",
+     "moduleResolution": "NodeNext",
+     "esModuleInterop": true,
 diff --git a/apps/zcode-cli/packages/contracts/src/compact/index.ts b/apps/zcode-cli/packages/contracts/src/compact/index.ts
 index f125336..bef8d0b 100644
 --- a/apps/zcode-cli/packages/contracts/src/compact/index.ts
@@ -4345,6 +4409,22 @@ index 9441711..81670a1 100644
          cacheRead: z.number().int().nonnegative(),
          cacheWrite: z.number().int().nonnegative(),
          input: z.number().int().nonnegative(),
+diff --git a/apps/zcode-cli/packages/contracts/tsconfig.json b/apps/zcode-cli/packages/contracts/tsconfig.json
+index 5606e40..ca32afb 100644
+--- a/apps/zcode-cli/packages/contracts/tsconfig.json
++++ b/apps/zcode-cli/packages/contracts/tsconfig.json
+@@ -1,5 +1,11 @@
+ {
+   "compilerOptions": {
++    "paths": {
++    "@zcode/native-checks": ["../../../../native-shims/native-checks.d.ts"],
++    "@zcode/node-sqlite": ["../../../../native-shims/node-sqlite.d.ts"],
++    "@zcode/node-vm": ["../../../../native-shims/node-vm.d.ts"]
++  },
++  
+     "module": "NodeNext",
+     "moduleResolution": "NodeNext",
+     "outDir": "./dist",
 diff --git a/apps/zcode-cli/packages/core/src/agent/turn-machine.ts b/apps/zcode-cli/packages/core/src/agent/turn-machine.ts
 index 6401158..2c3fe8b 100644
 --- a/apps/zcode-cli/packages/core/src/agent/turn-machine.ts
@@ -4973,6 +5053,22 @@ index 0fb8dac..c817819 100644
        options.executableNodeIds ?? options.snapshot.graph.nodes.map((node) => node.id),
      );
      const resumeRepair = reconcileWorkflowSnapshotForResume(options.snapshot, {
+diff --git a/apps/zcode-cli/packages/core/tsconfig.json b/apps/zcode-cli/packages/core/tsconfig.json
+index 0d5e854..8290f0d 100644
+--- a/apps/zcode-cli/packages/core/tsconfig.json
++++ b/apps/zcode-cli/packages/core/tsconfig.json
+@@ -1,5 +1,11 @@
+ {
+   "compilerOptions": {
++    "paths": {
++    "@zcode/native-checks": ["../../../../native-shims/native-checks.d.ts"],
++    "@zcode/node-sqlite": ["../../../../native-shims/node-sqlite.d.ts"],
++    "@zcode/node-vm": ["../../../../native-shims/node-vm.d.ts"]
++  },
++  
+     "module": "NodeNext",
+     "moduleResolution": "NodeNext",
+     "outDir": "./dist",
 diff --git a/apps/zcode-cli/packages/debug/server/sources.ts b/apps/zcode-cli/packages/debug/server/sources.ts
 index e935755..8af8688 100644
 --- a/apps/zcode-cli/packages/debug/server/sources.ts
@@ -4986,6 +5082,22 @@ index e935755..8af8688 100644
  import type {
    DbMessageRecord,
    DbObservation,
+diff --git a/apps/zcode-cli/packages/debug/tsconfig.json b/apps/zcode-cli/packages/debug/tsconfig.json
+index 9f788ae..b916573 100644
+--- a/apps/zcode-cli/packages/debug/tsconfig.json
++++ b/apps/zcode-cli/packages/debug/tsconfig.json
+@@ -1,5 +1,11 @@
+ {
+   "compilerOptions": {
++    "paths": {
++    "@zcode/native-checks": ["../../../../native-shims/native-checks.d.ts"],
++    "@zcode/node-sqlite": ["../../../../native-shims/node-sqlite.d.ts"],
++    "@zcode/node-vm": ["../../../../native-shims/node-vm.d.ts"]
++  },
++  
+     "allowSyntheticDefaultImports": true,
+     "esModuleInterop": true,
+     "forceConsistentCasingInFileNames": true,
 diff --git a/apps/zcode-cli/packages/dynamic-workflow-runtime/src/child-source.ts b/apps/zcode-cli/packages/dynamic-workflow-runtime/src/child-source.ts
 index 4492d49..3d4417c 100644
 --- a/apps/zcode-cli/packages/dynamic-workflow-runtime/src/child-source.ts
@@ -5008,6 +5120,54 @@ index 4492d49..3d4417c 100644
  
  export const payload = ${JSON.stringify(payload)};
  
+diff --git a/apps/zcode-cli/packages/dynamic-workflow-runtime/tsconfig.json b/apps/zcode-cli/packages/dynamic-workflow-runtime/tsconfig.json
+index 283656d..e859df7 100644
+--- a/apps/zcode-cli/packages/dynamic-workflow-runtime/tsconfig.json
++++ b/apps/zcode-cli/packages/dynamic-workflow-runtime/tsconfig.json
+@@ -1,5 +1,11 @@
+ {
+   "compilerOptions": {
++    "paths": {
++    "@zcode/native-checks": ["../../../../native-shims/native-checks.d.ts"],
++    "@zcode/node-sqlite": ["../../../../native-shims/node-sqlite.d.ts"],
++    "@zcode/node-vm": ["../../../../native-shims/node-vm.d.ts"]
++  },
++  
+     "module": "NodeNext",
+     "moduleResolution": "NodeNext",
+     "target": "ES2022",
+diff --git a/apps/zcode-cli/packages/dynamic-workflow/tsconfig.json b/apps/zcode-cli/packages/dynamic-workflow/tsconfig.json
+index 283656d..e859df7 100644
+--- a/apps/zcode-cli/packages/dynamic-workflow/tsconfig.json
++++ b/apps/zcode-cli/packages/dynamic-workflow/tsconfig.json
+@@ -1,5 +1,11 @@
+ {
+   "compilerOptions": {
++    "paths": {
++    "@zcode/native-checks": ["../../../../native-shims/native-checks.d.ts"],
++    "@zcode/node-sqlite": ["../../../../native-shims/node-sqlite.d.ts"],
++    "@zcode/node-vm": ["../../../../native-shims/node-vm.d.ts"]
++  },
++  
+     "module": "NodeNext",
+     "moduleResolution": "NodeNext",
+     "target": "ES2022",
+diff --git a/apps/zcode-cli/packages/i18n/tsconfig.json b/apps/zcode-cli/packages/i18n/tsconfig.json
+index 5606e40..ca32afb 100644
+--- a/apps/zcode-cli/packages/i18n/tsconfig.json
++++ b/apps/zcode-cli/packages/i18n/tsconfig.json
+@@ -1,5 +1,11 @@
+ {
+   "compilerOptions": {
++    "paths": {
++    "@zcode/native-checks": ["../../../../native-shims/native-checks.d.ts"],
++    "@zcode/node-sqlite": ["../../../../native-shims/node-sqlite.d.ts"],
++    "@zcode/node-vm": ["../../../../native-shims/node-vm.d.ts"]
++  },
++  
+     "module": "NodeNext",
+     "moduleResolution": "NodeNext",
+     "outDir": "./dist",
 diff --git a/apps/zcode-cli/packages/node-repl-host/src/server.ts b/apps/zcode-cli/packages/node-repl-host/src/server.ts
 index e50333e..026d8b1 100644
 --- a/apps/zcode-cli/packages/node-repl-host/src/server.ts
@@ -5031,6 +5191,54 @@ index e50333e..026d8b1 100644
      parent_span_id: z.string().optional(),
      runtime_scope: z.enum(["main", "subagent"]).default("main"),
      session_id: z.string().trim().min(1).optional(),
+diff --git a/apps/zcode-cli/packages/node-repl-host/tsconfig.json b/apps/zcode-cli/packages/node-repl-host/tsconfig.json
+index d9d9d4f..fc839ba 100644
+--- a/apps/zcode-cli/packages/node-repl-host/tsconfig.json
++++ b/apps/zcode-cli/packages/node-repl-host/tsconfig.json
+@@ -1,5 +1,11 @@
+ {
+   "compilerOptions": {
++    "paths": {
++    "@zcode/native-checks": ["../../../../native-shims/native-checks.d.ts"],
++    "@zcode/node-sqlite": ["../../../../native-shims/node-sqlite.d.ts"],
++    "@zcode/node-vm": ["../../../../native-shims/node-vm.d.ts"]
++  },
++  
+     "module": "NodeNext",
+     "moduleResolution": "NodeNext",
+     "outDir": "./dist-types",
+diff --git a/apps/zcode-cli/packages/shared-types/tsconfig.json b/apps/zcode-cli/packages/shared-types/tsconfig.json
+index 2e562be..e0aa302 100644
+--- a/apps/zcode-cli/packages/shared-types/tsconfig.json
++++ b/apps/zcode-cli/packages/shared-types/tsconfig.json
+@@ -1,5 +1,11 @@
+ {
+   "compilerOptions": {
++    "paths": {
++    "@zcode/native-checks": ["../../../../native-shims/native-checks.d.ts"],
++    "@zcode/node-sqlite": ["../../../../native-shims/node-sqlite.d.ts"],
++    "@zcode/node-vm": ["../../../../native-shims/node-vm.d.ts"]
++  },
++  
+     "module": "NodeNext",
+     "moduleResolution": "NodeNext",
+     "outDir": "./dist",
+diff --git a/apps/zcode-cli/packages/swift-bridge/tsconfig.json b/apps/zcode-cli/packages/swift-bridge/tsconfig.json
+index 2e562be..e0aa302 100644
+--- a/apps/zcode-cli/packages/swift-bridge/tsconfig.json
++++ b/apps/zcode-cli/packages/swift-bridge/tsconfig.json
+@@ -1,5 +1,11 @@
+ {
+   "compilerOptions": {
++    "paths": {
++    "@zcode/native-checks": ["../../../../native-shims/native-checks.d.ts"],
++    "@zcode/node-sqlite": ["../../../../native-shims/node-sqlite.d.ts"],
++    "@zcode/node-vm": ["../../../../native-shims/node-vm.d.ts"]
++  },
++  
+     "module": "NodeNext",
+     "moduleResolution": "NodeNext",
+     "outDir": "./dist",
 diff --git a/apps/zcode-cli/packages/telemetry/src/otlp-exporter.ts b/apps/zcode-cli/packages/telemetry/src/otlp-exporter.ts
 index d3e7c4b..4fc7527 100644
 --- a/apps/zcode-cli/packages/telemetry/src/otlp-exporter.ts
@@ -5044,6 +5252,38 @@ index d3e7c4b..4fc7527 100644
    try {
      return await Promise.race([
        promise,
+diff --git a/apps/zcode-cli/packages/telemetry/tsconfig.json b/apps/zcode-cli/packages/telemetry/tsconfig.json
+index 2e562be..e0aa302 100644
+--- a/apps/zcode-cli/packages/telemetry/tsconfig.json
++++ b/apps/zcode-cli/packages/telemetry/tsconfig.json
+@@ -1,5 +1,11 @@
+ {
+   "compilerOptions": {
++    "paths": {
++    "@zcode/native-checks": ["../../../../native-shims/native-checks.d.ts"],
++    "@zcode/node-sqlite": ["../../../../native-shims/node-sqlite.d.ts"],
++    "@zcode/node-vm": ["../../../../native-shims/node-vm.d.ts"]
++  },
++  
+     "module": "NodeNext",
+     "moduleResolution": "NodeNext",
+     "outDir": "./dist",
+diff --git a/apps/zcode-cli/packages/tui/tsconfig.json b/apps/zcode-cli/packages/tui/tsconfig.json
+index 13fe0d7..5766081 100644
+--- a/apps/zcode-cli/packages/tui/tsconfig.json
++++ b/apps/zcode-cli/packages/tui/tsconfig.json
+@@ -1,5 +1,11 @@
+ {
+   "compilerOptions": {
++    "paths": {
++    "@zcode/native-checks": ["../../../../native-shims/native-checks.d.ts"],
++    "@zcode/node-sqlite": ["../../../../native-shims/node-sqlite.d.ts"],
++    "@zcode/node-vm": ["../../../../native-shims/node-vm.d.ts"]
++  },
++  
+     "module": "NodeNext",
+     "moduleResolution": "NodeNext",
+     "outDir": "./dist",
 diff --git a/apps/zcode-cli/tools/prompt-trajectory/src/openai-provider-proxy.ts b/apps/zcode-cli/tools/prompt-trajectory/src/openai-provider-proxy.ts
 index d98946c..71d04ff 100644
 --- a/apps/zcode-cli/tools/prompt-trajectory/src/openai-provider-proxy.ts
@@ -5065,6 +5305,39 @@ index d98946c..71d04ff 100644
    const match = isRecord(value.match) ? readMockResponseMatch(value.match) : undefined;
    return {
      ...(match ? { match } : {}),
+diff --git a/apps/zcode-cli/tools/prompt-trajectory/tsconfig.json b/apps/zcode-cli/tools/prompt-trajectory/tsconfig.json
+index 8fdf508..a838ac2 100644
+--- a/apps/zcode-cli/tools/prompt-trajectory/tsconfig.json
++++ b/apps/zcode-cli/tools/prompt-trajectory/tsconfig.json
+@@ -1,5 +1,11 @@
+ {
+   "compilerOptions": {
++    "paths": {
++    "@zcode/native-checks": ["../../../../native-shims/native-checks.d.ts"],
++    "@zcode/node-sqlite": ["../../../../native-shims/node-sqlite.d.ts"],
++    "@zcode/node-vm": ["../../../../native-shims/node-vm.d.ts"]
++  },
++  
+     "module": "NodeNext",
+     "moduleResolution": "NodeNext",
+     "noEmit": true,
+diff --git a/apps/zcode-cli/tools/typescript/tsconfig.json b/apps/zcode-cli/tools/typescript/tsconfig.json
+index 3da3f3a..02bf21d 100644
+--- a/apps/zcode-cli/tools/typescript/tsconfig.json
++++ b/apps/zcode-cli/tools/typescript/tsconfig.json
+@@ -1,6 +1,12 @@
+ {
+   "$schema": "https://json-schema.org/draft-07/schema#",
+   "compilerOptions": {
++    "paths": {
++    "@zcode/native-checks": ["../../../../native-shims/native-checks.d.ts"],
++    "@zcode/node-sqlite": ["../../../../native-shims/node-sqlite.d.ts"],
++    "@zcode/node-vm": ["../../../../native-shims/node-vm.d.ts"]
++  },
++  
+     "allowSyntheticDefaultImports": true,
+     "declaration": true,
+     "declarationMap": true,
 diff --git a/native-shims/native-checks.d.ts b/native-shims/native-checks.d.ts
 new file mode 100644
 index 0000000..10d399b
@@ -6992,6 +7265,23 @@ index efe794d..4f8e95f 100644
      this.channels.clear();
      this._onDidAddConnection.dispose();
      this._onDidRemoveConnection.dispose();
+diff --git a/packages/rpc/tsconfig.json b/packages/rpc/tsconfig.json
+index 1a1678f..52317a0 100644
+--- a/packages/rpc/tsconfig.json
++++ b/packages/rpc/tsconfig.json
+@@ -2,6 +2,12 @@
+   // 这里改成 composite project，是因为之前 consumers 会顺着 package export 直接把 rpc 源码拖进来重复检查。
+   // 改成可被 project references 消费的独立工程后，typecheck 会优先复用 rpc 自己生成的声明产物，避免同一批错误被放大打印。
+   "compilerOptions": {
++    "paths": {
++    "@zcode/native-checks": ["../../native-shims/native-checks.d.ts"],
++    "@zcode/node-sqlite": ["../../native-shims/node-sqlite.d.ts"],
++    "@zcode/node-vm": ["../../native-shims/node-vm.d.ts"]
++  },
++  
+     "target": "ES2022",
+     "module": "ES2022",
+     "moduleResolution": "bundler",
 diff --git a/packages/services/src/bots/storageMigration.ts b/packages/services/src/bots/storageMigration.ts
 index e36da37..d5c40d6 100644
 --- a/packages/services/src/bots/storageMigration.ts

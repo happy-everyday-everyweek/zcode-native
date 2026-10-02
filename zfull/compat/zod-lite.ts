@@ -17,30 +17,30 @@ import type {
 } from "./zod-lite-core.js";
 
 export class z {
-  static ZodFirstPartyTypeKind = ZodFirstPartyTypeKind;
-  static ZodIssueCode = ZodIssueCode;
-  static ZodObject = ZodObject;
-  static ZodError = ZodError;
-  static array = array;
-  static boolean = boolean;
-  static coerce = coerce;
-  static date = date;
-  static discriminatedUnion = discriminatedUnion;
-  static enum = enumOf;
-  static literal = literal;
-  static never = never;
-  static number = number;
-  static object = object;
-  static partialRecord = partialRecord;
-  static preprocess = preprocess;
-  static record = record;
-  static strictObject = strictObject;
-  static string = string;
-  static undefined = undefinedFactory;
-  static union = union;
-  static unknown = unknown;
-  static uuid = uuid;
-  static zodToJsonSchemaInternal = zodToJsonSchemaInternal;
+  static ZodFirstPartyTypeKind: any = ZodFirstPartyTypeKind;
+  static ZodIssueCode: any = ZodIssueCode;
+  static ZodObject: (...args: any[]) => any = ZodObject;
+  static ZodError: any = ZodError;
+  static array: (...args: any[]) => any = array;
+  static boolean: (...args: any[]) => any = boolean;
+  static coerce: (...args: any[]) => any = coerce;
+  static date: (...args: any[]) => any = date;
+  static discriminatedUnion: (...args: any[]) => any = discriminatedUnion;
+  static enum: (...args: any[]) => any = enumOf;
+  static literal: (...args: any[]) => any = literal;
+  static never: (...args: any[]) => any = never;
+  static number: (...args: any[]) => any = number;
+  static object: (...args: any[]) => any = object;
+  static partialRecord: (...args: any[]) => any = partialRecord;
+  static preprocess: (...args: any[]) => any = preprocess;
+  static record: (...args: any[]) => any = record;
+  static strictObject: (...args: any[]) => any = strictObject;
+  static string: (...args: any[]) => any = string;
+  static undefined: (...args: any[]) => any = undefinedFactory;
+  static union: (...args: any[]) => any = union;
+  static unknown: (...args: any[]) => any = unknown;
+  static uuid: (...args: any[]) => any = uuid;
+  static zodToJsonSchemaInternal: (...args: any[]) => any = zodToJsonSchemaInternal;
 }
 
 export namespace z {

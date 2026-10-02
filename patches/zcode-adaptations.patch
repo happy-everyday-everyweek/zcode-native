@@ -802,6 +802,35 @@ index 3da5c63..372523c 100644
    });
  }
  
+diff --git a/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/command-inbox.ts b/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/command-inbox.ts
+index 13b42ad..2924f1b 100644
+--- a/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/command-inbox.ts
++++ b/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/command-inbox.ts
+@@ -45,10 +45,20 @@ interface InFlightEntry {
+   resolveFinal: (ack: CommandAck) => void;
+ }
+ 
+-type CommandFinal = Pick<
+-  CommandAck,
+-  "status" | "reasonCode" | "message" | "result" | "memoryEnabled"
+->;
++/**
++ * 命令终态：可从 execute 回写进 ACK 的字段子集。
++ *
++ * 不用 `Pick<CommandAck, …>`：CommandAck 由 z.infer 派生，scriptc 会把它降级为 any，
++ * 而 `Pick<any, …>` 会把所有键都变成必填——只回写子集（noop/failed final）就报 SC0001
++ * （v4-gateway 8 条）。这里按 commandAckSchema 的真实可选性手写。
++ */
++type CommandFinal = {
++  status: CommandAck["status"];
++  reasonCode?: CommandAck["reasonCode"];
++  message?: CommandAck["message"];
++  result?: CommandAck["result"];
++  memoryEnabled?: CommandAck["memoryEnabled"];
++};
+ 
+ interface LiveInputEntry {
+   ack: CommandAck;
 diff --git a/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/commands/executor.ts b/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/commands/executor.ts
 index 883aad6..79c902a 100644
 --- a/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/commands/executor.ts
@@ -971,11 +1000,36 @@ index b965640..cd4f017 100644
        }
      }
      return prospective?.kind === "subagent" ? prospective : null;
+diff --git a/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/projection-state.ts b/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/projection-state.ts
+index 46a3ca3..b6b16ee 100644
+--- a/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/projection-state.ts
++++ b/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/projection-state.ts
+@@ -216,5 +216,9 @@ export function deltaBumpsRevision(delta: ConversationDelta): boolean {
+     case "workflowRun.updated":
+     case "workflowRun.removed":
+       return false;
++    // scriptc 把 z.infer 的 ConversationDelta 降级成 any，穷尽性无法静态证明；
++    // 未知 op 不改变快照修订（与原 never 断言语义一致）。
++    default:
++      return false;
+   }
+ }
 diff --git a/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/v4-gateway.ts b/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/v4-gateway.ts
-index 6585dbd..af88b20 100644
+index 6585dbd..77c9c30 100644
 --- a/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/v4-gateway.ts
 +++ b/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/v4-gateway.ts
-@@ -3335,15 +3335,15 @@ export class ConversationV4Gateway {
+@@ -2432,9 +2432,7 @@ export class ConversationV4Gateway {
+         reportError("v4.command.input.cancel", cancelError);
+       }
+     };
+-    const releaseDurableInput = (
+-      final: Pick<CommandAck, "status" | "reasonCode" | "message" | "result">,
+-    ) => {
++    const releaseDurableInput = (final: CommandFinal) => {
+       if (!durableInputIntent || outcome.envelope.sessionId === null) return;
+       try {
+         this.inbox.releaseLiveInput(
+@@ -3335,15 +3333,15 @@ export class ConversationV4Gateway {
      // resync/subscribe recovery 已进入 request-scoped outbox 时，online
      // flush 若复用同一 inFlight 会让 physical wire 抢在 ACK response 前出站。
      if (this.controlReservations.has(reservation)) return false;
@@ -995,7 +1049,7 @@ index 6585dbd..af88b20 100644
            : "",
        ),
      );
-@@ -3351,12 +3351,12 @@ export class ConversationV4Gateway {
+@@ -3351,12 +3349,12 @@ export class ConversationV4Gateway {
        sessionId &&
        route?.deliveryProfile === "continuous" &&
        reservation.deliveryKind === "online" &&
@@ -1010,6 +1064,22 @@ index 6585dbd..af88b20 100644
          if (delta.op === "row.appended" || delta.op === "row.upserted") turns.add(delta.row.turnId);
          else if (delta.op === "row.delta") {
            const row = rows.find((item) => item.rowId === delta.rowId);
+diff --git a/apps/zcode-cli/packages/bootstrap/src/zcode-protocol/automation-port.ts b/apps/zcode-cli/packages/bootstrap/src/zcode-protocol/automation-port.ts
+index 1eaecf4..75c01a2 100644
+--- a/apps/zcode-cli/packages/bootstrap/src/zcode-protocol/automation-port.ts
++++ b/apps/zcode-cli/packages/bootstrap/src/zcode-protocol/automation-port.ts
+@@ -237,8 +237,9 @@ function normalizeCronAutomationMode(
+     case "autoEdit":
+       return "build";
+     default: {
+-      const exhaustiveMode: never = mode;
+-      return exhaustiveMode;
++      // scriptc 把 `ZCodeAutomationProtocol["mode"]` 降级成 any，`const x: never = mode`
++      // 穷尽断言报 SC0001；未知 mode 与原 auto/autoEdit 同义，收口到 build。
++      return "build";
+     }
+   }
+ }
 diff --git a/apps/zcode-cli/packages/bootstrap/src/zcode-protocol/model-execution.ts b/apps/zcode-cli/packages/bootstrap/src/zcode-protocol/model-execution.ts
 index 03f16a0..8e924d9 100644
 --- a/apps/zcode-cli/packages/bootstrap/src/zcode-protocol/model-execution.ts
@@ -5717,11 +5787,40 @@ index 2e562be..e0aa302 100644
      "module": "NodeNext",
      "moduleResolution": "NodeNext",
      "outDir": "./dist",
+diff --git a/apps/zcode-cli/packages/telemetry/src/agent-metrics.ts b/apps/zcode-cli/packages/telemetry/src/agent-metrics.ts
+index 0f6d09a..cad8ae3 100644
+--- a/apps/zcode-cli/packages/telemetry/src/agent-metrics.ts
++++ b/apps/zcode-cli/packages/telemetry/src/agent-metrics.ts
+@@ -192,7 +192,9 @@ function duration(meter: Meter, name: string): Histogram {
+   });
+ }
+ 
+-const COMMON_TERMINAL_LABELS = ["error_category", "outcome"] as const;
++// scriptc 只支持「同元素类型数组」的展开：`as const` 元组展开进 string[] 字面量会报
++// SC1090，这里显式声明成 readonly string[]，所有 TERMINAL_LABELS 条目才可编译。
++const COMMON_TERMINAL_LABELS: readonly string[] = ["error_category", "outcome"];
+ const MODEL_CALL_LABELS = [
+   ...COMMON_TERMINAL_LABELS,
+   "call_cause",
 diff --git a/apps/zcode-cli/packages/telemetry/src/agent-trace-runtime.ts b/apps/zcode-cli/packages/telemetry/src/agent-trace-runtime.ts
-index ad852df..9a316d6 100644
+index ad852df..81fae85 100644
 --- a/apps/zcode-cli/packages/telemetry/src/agent-trace-runtime.ts
 +++ b/apps/zcode-cli/packages/telemetry/src/agent-trace-runtime.ts
-@@ -1546,7 +1546,7 @@ const NOOP_SCOPE = {
+@@ -94,10 +94,9 @@ interface StartWriterOptions {
+   toolCallId?: string;
+ }
+ 
+-type TrackedWriter = BaseSpanWriter & {
+-  abandon(reason: AgentTelemetryAbandonReason): void;
+-  readonly state: ActiveWriterContext;
+-};
++// scriptc 不支持交叉类型（`BaseSpanWriter & {…}` 报 SC2009「TrackedWriter does not compile」）；
++// 所有被 track 的 writer 都继承自 TrackedBaseWriter（同时提供 abandon 与 state），直接用类类型。
++type TrackedWriter = TrackedBaseWriter;
+ 
+ export class AgentExecutionTelemetryRuntime
+   implements AgentExecutionTelemetryPort, ModelExecutionTelemetryPort
+@@ -1546,7 +1545,7 @@ const NOOP_SCOPE = {
    run: <T>(execute: () => T): T => execute(),
  };
  
@@ -5730,7 +5829,7 @@ index ad852df..9a316d6 100644
    ...NOOP_SCOPE,
    finishBackgrounded() {},
    finishCancelled() {},
-@@ -1560,7 +1560,7 @@ const NOOP_COMMAND_WRITER: CommandExecutionSpanWriter = {
+@@ -1560,7 +1559,7 @@ const NOOP_COMMAND_WRITER: CommandExecutionSpanWriter = {
    setTimedOut() {},
  };
  
@@ -5739,7 +5838,7 @@ index ad852df..9a316d6 100644
    ...NOOP_SCOPE,
    finishCancelled() {},
    finishCompleted() {},
-@@ -1573,7 +1573,7 @@ const NOOP_TOOL_WRITER: ToolExecutionSpanWriter = {
+@@ -1573,7 +1572,7 @@ const NOOP_TOOL_WRITER: ToolExecutionSpanWriter = {
    startCommand: () => NOOP_COMMAND_WRITER,
  };
  
@@ -5748,7 +5847,7 @@ index ad852df..9a316d6 100644
    ...NOOP_SCOPE,
    finishCancelled() {},
    finishCompleted() {},
-@@ -1581,14 +1581,14 @@ const NOOP_STEP_WRITER: AgentStepSpanWriter = {
+@@ -1581,14 +1580,14 @@ const NOOP_STEP_WRITER: AgentStepSpanWriter = {
    finishFailed() {},
  };
  
@@ -5765,7 +5864,7 @@ index ad852df..9a316d6 100644
    ...NOOP_SCOPE,
    finishCancelled() {},
    finishCompleted() {},
-@@ -1599,7 +1599,7 @@ const NOOP_COMPACTION_WRITER: ContextCompactionSpanWriter = {
+@@ -1599,7 +1598,7 @@ const NOOP_COMPACTION_WRITER: ContextCompactionSpanWriter = {
    setOutputTokens() {},
  };
  
@@ -5774,7 +5873,7 @@ index ad852df..9a316d6 100644
    ...NOOP_SCOPE,
    finishCancelled() {},
    finishCompleted() {},
-@@ -1607,7 +1607,7 @@ const NOOP_DETACHED_WRITER: DetachedOperationSpanWriter = {
+@@ -1607,7 +1606,7 @@ const NOOP_DETACHED_WRITER: DetachedOperationSpanWriter = {
    setResultType() {},
  };
  
@@ -5783,6 +5882,28 @@ index ad852df..9a316d6 100644
    ...NOOP_SCOPE,
    finishAbandoned() {},
    finishCancelled() {},
+@@ -1636,7 +1635,9 @@ const NOOP_MODEL_ATTEMPT_WRITER: ModelAttemptSpanWriter = {
+   setStreamOutputCommitted() {},
+ };
+ 
+-const NOOP_MODEL_CALL_WRITER: ModelCallSpanWriter = {
++// 与其余 NOOP_* 一致标 any：ModelCallSpanWriter 的 startAttempt 参数类型在 scriptc 下
++// 无法编译（SC2009），精确形状校验只会连带整条链一起失败。
++const NOOP_MODEL_CALL_WRITER: any = {
+   ...NOOP_SCOPE,
+   finishAbandoned() {},
+   finishCancelled() {},
+@@ -1653,7 +1654,9 @@ export class NoopAgentExecutionTelemetry
+   captureCausation() {
+     return undefined;
+   }
+-  startCall(): ModelCallSpanWriter {
++  // 返回类型标 any：ModelCallSpanWriter 记录里 startAttempt 的参数类型在 scriptc 下
++  // 无法编译（SC2009），标注具体类型会让整个 Noop 类的 lowering 被拒。
++  startCall(): any {
+     return NOOP_MODEL_CALL_WRITER;
+   }
+   startCompaction(): ContextCompactionSpanWriter {
 diff --git a/apps/zcode-cli/packages/telemetry/src/otlp-exporter.ts b/apps/zcode-cli/packages/telemetry/src/otlp-exporter.ts
 index d3e7c4b..4fc7527 100644
 --- a/apps/zcode-cli/packages/telemetry/src/otlp-exporter.ts

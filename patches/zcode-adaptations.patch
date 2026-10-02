@@ -1266,7 +1266,7 @@ index f125336..bef8d0b 100644
      strategy: z.enum([MicrocompactStrategy.LocalToolResultClear]),
      preMicrocompactTokenCount: z.number().int().nonnegative(),
 diff --git a/apps/zcode-cli/packages/contracts/src/events/event-reducer-helpers.ts b/apps/zcode-cli/packages/contracts/src/events/event-reducer-helpers.ts
-index 8b61463..c539c8f 100644
+index 8b61463..743fdca 100644
 --- a/apps/zcode-cli/packages/contracts/src/events/event-reducer-helpers.ts
 +++ b/apps/zcode-cli/packages/contracts/src/events/event-reducer-helpers.ts
 @@ -22,7 +22,9 @@ import type {
@@ -1280,6 +1280,15 @@ index 8b61463..c539c8f 100644
    createdAt: new Date(),
    updatedAt: new Date(),
    mode: "build" as CollaborationMode,
+@@ -36,7 +38,7 @@ export const initialSessionProjection = {
+   activeToolCalls: [] as ActiveToolCall[],
+   streamingToolLedger: [] as SessionProjection["streamingToolLedger"],
+   backgroundTasks: [] as SessionProjection["backgroundTasks"],
+-  currentTurnId: undefined as string | undefined,
++  currentTurnId: undefined as SessionProjection["currentTurnId"],
+   lastError: undefined as SessionProjection["lastError"],
+   lastCompact: undefined as SessionProjection["lastCompact"],
+   lastCheckpoint: undefined as SessionProjection["lastCheckpoint"],
 diff --git a/apps/zcode-cli/packages/contracts/src/events/session.events.ts b/apps/zcode-cli/packages/contracts/src/events/session.events.ts
 index 655c088..06998e6 100644
 --- a/apps/zcode-cli/packages/contracts/src/events/session.events.ts
@@ -1368,16 +1377,20 @@ index 0ecadd8..f964578 100644
        reason: nonEmptyStringSchema.optional(),
        policyRevision: nonEmptyStringSchema,
 diff --git a/apps/zcode-cli/packages/contracts/src/hooks/workspace-hook-trust.ts b/apps/zcode-cli/packages/contracts/src/hooks/workspace-hook-trust.ts
-index 9ea064b..8112a54 100644
+index 9ea064b..8612595 100644
 --- a/apps/zcode-cli/packages/contracts/src/hooks/workspace-hook-trust.ts
 +++ b/apps/zcode-cli/packages/contracts/src/hooks/workspace-hook-trust.ts
-@@ -129,13 +129,34 @@ export const WORKSPACE_HOOK_STATE_ADMISSION_MAP = {
+@@ -129,13 +129,38 @@ export const WORKSPACE_HOOK_STATE_ADMISSION_MAP = {
    }
  >;
  
 +// ZCode Android port: scriptc 不支持用字面量联合 key 索引记录（SC1090），
 +// 改为显式 switch 分发；行为与查表一致。
-+function admissionForTrustState(trustState: string) {
++function admissionForTrustState(trustState: string): {
++  admissionClass: WorkspaceHookAdmissionClass;
++  effectiveRunnable: false | "configured";
++  reasonCode: WorkspaceHookReasonCode;
++} {
 +  switch (trustState) {
 +    case "trusted_persistent":
 +      return WORKSPACE_HOOK_STATE_ADMISSION_MAP.trusted_persistent;
@@ -1408,7 +1421,7 @@ index 9ea064b..8112a54 100644
      reviewItemId: nonEmptyStringSchema,
      sourceRootEnabled: z.boolean(),
      declarationEnabled: z.boolean(),
-@@ -153,7 +174,7 @@ export const workspaceHookEffectiveStateSchema = z
+@@ -153,7 +178,7 @@ export const workspaceHookEffectiveStateSchema = z
    })
    .strict()
    .superRefine((state, context) => {
@@ -1417,7 +1430,7 @@ index 9ea064b..8112a54 100644
      if (state.admissionClass !== expected.admissionClass) {
        context.addIssue({
          code: z.ZodIssueCode.custom,
-@@ -217,16 +238,14 @@ const canonicalEntryBaseShape = {
+@@ -217,16 +242,14 @@ const canonicalEntryBaseShape = {
  } as const;
  
  export const canonicalWorkspaceHookEntrySchema = z.discriminatedUnion("type", [
@@ -1436,7 +1449,7 @@ index 9ea064b..8112a54 100644
        ...canonicalEntryBaseShape,
        type: z.literal("process"),
        args: z.array(z.string()).optional(),
-@@ -235,22 +254,19 @@ export const canonicalWorkspaceHookEntrySchema = z.discriminatedUnion("type", [
+@@ -235,22 +258,19 @@ export const canonicalWorkspaceHookEntrySchema = z.discriminatedUnion("type", [
  ]);
  export type CanonicalWorkspaceHookEntry = z.infer<typeof canonicalWorkspaceHookEntrySchema>;
  
@@ -1462,7 +1475,7 @@ index 9ea064b..8112a54 100644
                enabled: z.boolean().optional(),
                timeoutMs: z.number().finite().positive().optional(),
                maxOutputBytes: z.number().finite().positive().optional(),
-@@ -272,8 +288,7 @@ export function createWorkspaceHookBundleSnapshot(value: unknown): WorkspaceHook
+@@ -272,8 +292,7 @@ export function createWorkspaceHookBundleSnapshot(value: unknown): WorkspaceHook
    return deepFreeze(workspaceHookBundleSnapshotSchema.parse(value)) as WorkspaceHookBundleSnapshot;
  }
  
@@ -1472,7 +1485,7 @@ index 9ea064b..8112a54 100644
      reviewFlowId: nonEmptyStringSchema,
      generation: positiveIntegerSchema,
      interactionId: nonEmptyStringSchema,
-@@ -311,14 +326,13 @@ export const workspaceHookReviewFlowStateSchema = z
+@@ -311,14 +330,13 @@ export const workspaceHookReviewFlowStateSchema = z
    });
  export type WorkspaceHookReviewFlowState = z.infer<typeof workspaceHookReviewFlowStateSchema>;
  
@@ -4101,10 +4114,10 @@ index 1ae309e..7ebcacc 100644
      passed: z.boolean(),
      reason: z.string(),
 diff --git a/apps/zcode-cli/packages/contracts/src/tools/task-output.ts b/apps/zcode-cli/packages/contracts/src/tools/task-output.ts
-index b0a0318..dcdc784 100644
+index b0a0318..27a7586 100644
 --- a/apps/zcode-cli/packages/contracts/src/tools/task-output.ts
 +++ b/apps/zcode-cli/packages/contracts/src/tools/task-output.ts
-@@ -22,25 +22,27 @@ export const TASK_OUTPUT_PROVIDER_DESCRIPTION = `DEPRECATED: Background tasks re
+@@ -22,25 +22,26 @@ export const TASK_OUTPUT_PROVIDER_DESCRIPTION = `DEPRECATED: Background tasks re
  - Task IDs can be found using the /tasks command
  - Works with all task types: background shells, async agents, and remote sessions`;
  
@@ -4120,8 +4133,7 @@ index b0a0318..dcdc784 100644
  
  export type TaskOutputInput = z.infer<typeof TaskOutputInputSchema>;
  
-+// ZCode Android port: scriptc 不接受把 ZodDefault<ZodBoolean> 作为泛型实参传入，
-+// 改为 bash.ts 的零参 semanticBoolean 写法，把 default(true) 收进函数体内。
++// ZCode Android port: spread 源必须先绑定为常量，scriptc 才接受（SC1090 computed spread）。
 +const taskOutputInputBaseJsonSchema = toToolJsonSchema(TaskOutputInputSchema);
 +
  export const TaskOutputInputJsonSchema = {
@@ -4138,7 +4150,7 @@ index b0a0318..dcdc784 100644
      task_id: z.string(),
      task_type: z.string(),
      status: z.string(),
-@@ -56,8 +58,7 @@ export const TaskOutputTaskSchema = z
+@@ -56,8 +57,7 @@ export const TaskOutputTaskSchema = z
  
  export type TaskOutputTask = z.infer<typeof TaskOutputTaskSchema>;
  
@@ -4148,7 +4160,7 @@ index b0a0318..dcdc784 100644
      retrieval_status: z.enum(["success", "not_ready", "timeout"]),
      task: TaskOutputTaskSchema.nullable(),
    })
-@@ -67,12 +68,10 @@ export type TaskOutputResult = z.infer<typeof TaskOutputResultSchema>;
+@@ -67,12 +67,10 @@ export type TaskOutputResult = z.infer<typeof TaskOutputResultSchema>;
  
  export const TaskOutputResultJsonSchema = toToolJsonSchema(TaskOutputResultSchema);
  

@@ -2152,7 +2152,7 @@ index 3949c85..9238da1 100644
        .describe("Optional per-question annotations keyed by question text."),
    })
 diff --git a/apps/zcode-cli/packages/contracts/src/tools/automation.ts b/apps/zcode-cli/packages/contracts/src/tools/automation.ts
-index eb6c6a3..88c96f7 100644
+index eb6c6a3..45f646c 100644
 --- a/apps/zcode-cli/packages/contracts/src/tools/automation.ts
 +++ b/apps/zcode-cli/packages/contracts/src/tools/automation.ts
 @@ -8,12 +8,10 @@ import { toToolJsonSchema } from "./json-schema.js";
@@ -2266,6 +2266,34 @@ index eb6c6a3..88c96f7 100644
        .int()
        .min(1)
        .max(200)
+@@ -180,17 +167,17 @@ const CronUpdateInputObjectSchema = z
+   })
+   .strict();
+ 
+-const CRON_UPDATE_FIELDS = [
+-  "cron",
+-  "prompt",
+-  "title",
+-  "recurring",
+-  "maxRuns",
+-  "intervalUnit",
+-  "interval",
+-] as const;
++// ZCode Android port: scriptc 不支持 readonly 元组上的 .some，也避免对 any 做索引，
++// 改为逐个字段比较；字段集合同原 CRON_UPDATE_FIELDS。
+ export const CronUpdateInputSchema = CronUpdateInputObjectSchema.refine(
+-  (input) => CRON_UPDATE_FIELDS.some((field) => input[field] !== undefined),
++  (input) =>
++    input.cron !== undefined ||
++    input.prompt !== undefined ||
++    input.title !== undefined ||
++    input.recurring !== undefined ||
++    input.maxRuns !== undefined ||
++    input.intervalUnit !== undefined ||
++    input.interval !== undefined,
+   { message: "CronUpdate requires at least one field to update" },
+ )
+   .refine((input) => input.maxRuns !== null || input.recurring === true, {
 @@ -235,8 +222,7 @@ export const CronListInputSchema = z.object({}).strict();
  export type CronListInput = z.infer<typeof CronListInputSchema>;
  export const CronListInputJsonSchema = toToolJsonSchema(CronListInputSchema);
@@ -3063,7 +3091,7 @@ index d895b8b..886a9fe 100644
      durationMs: z.number().int().nonnegative(),
      numFiles: z.number().int().nonnegative(),
 diff --git a/apps/zcode-cli/packages/contracts/src/tools/json-schema.ts b/apps/zcode-cli/packages/contracts/src/tools/json-schema.ts
-index 21d92dc..e28e09b 100644
+index 21d92dc..92c91ff 100644
 --- a/apps/zcode-cli/packages/contracts/src/tools/json-schema.ts
 +++ b/apps/zcode-cli/packages/contracts/src/tools/json-schema.ts
 @@ -1,3 +1,4 @@
@@ -3071,10 +3099,17 @@ index 21d92dc..e28e09b 100644
  // ============================================================
  // Zod -> provider-neutral JSON Schema for tool contracts
  // ============================================================
-@@ -6,6 +7,16 @@ import { zodToJsonSchema } from "zod-to-json-schema";
+@@ -6,13 +7,16 @@ import { zodToJsonSchema } from "zod-to-json-schema";
  import type { ZodTypeAny } from "zod";
  import type { JsonSchema } from "../model/index.js";
  
+-const STRIPPED_SCHEMA_KEYS = new Set([
+-  "$schema",
+-  "$id",
+-  "$ref",
+-  "$defs",
+-  "definitions",
+-]);
 +/** scriptc 对未知元素类型的数组不提供 Array.prototype.includes lowering，用循环替掉。 */
 +function includesValue(arr: any[], v: any): boolean {
 +  for (const item of arr) {
@@ -3085,22 +3120,49 @@ index 21d92dc..e28e09b 100644
 +  return false;
 +}
 +
- const STRIPPED_SCHEMA_KEYS = new Set([
-   "$schema",
-   "$id",
-@@ -75,9 +86,9 @@ function normalizeSchemaNode(value: unknown): void {
+ export const TOOL_JSON_SCHEMA_VERSION = "https://json-schema.org/draft/2020-12/schema";
+ 
+ /**
+@@ -47,9 +51,13 @@ function normalizeSchemaNode(value: unknown): void {
+ 
+   if (!isRecord(value)) return;
+ 
+-  for (const key of STRIPPED_SCHEMA_KEYS) {
+-    delete value[key];
+-  }
++  // ZCode Android port: scriptc 不支持对 Record<string, unknown> 执行 delete；
++  // 赋 undefined 在 JSON.stringify 输出上等价（undefined 属性会被省略）。
++  value.$schema = undefined;
++  value.$id = undefined;
++  value.$ref = undefined;
++  value.$defs = undefined;
++  value.definitions = undefined;
+ 
+   if (isRecord(value.properties)) {
+     for (const child of Object.values(value.properties)) {
+@@ -65,7 +73,7 @@ function normalizeSchemaNode(value: unknown): void {
+ 
+   if (Array.isArray(value.anyOf) && value.oneOf === undefined) {
+     value.oneOf = value.anyOf;
+-    delete value.anyOf;
++    value.anyOf = undefined;
+   }
+ 
+   if (value.type === undefined) {
+@@ -75,9 +83,10 @@ function normalizeSchemaNode(value: unknown): void {
      }
    }
  
 -  const typeValues = Array.isArray(value.type) ? value.type : [value.type];
-+  const typeValues: any[] = isArray(value.type) ? (value.type as any[]) : [value.type];
++  // ZCode Android port: isArray 类型守卫已能收窄，去掉 scriptc 不支持的 unknown->any[] 转型。
++  const typeValues: any[] = isArray(value.type) ? value.type : [value.type];
    if (
 -    typeValues.includes("object") &&
 +    includesValue(typeValues, "object") &&
      !isRecord(value.properties) &&
      isRecord(value.additionalProperties) &&
      value.propertyNames === undefined
-@@ -85,13 +96,13 @@ function normalizeSchemaNode(value: unknown): void {
+@@ -85,13 +94,13 @@ function normalizeSchemaNode(value: unknown): void {
      value.propertyNames = { type: "string" };
    }
    if (
@@ -3116,7 +3178,7 @@ index 21d92dc..e28e09b 100644
      value.items = {};
    }
  }
-@@ -106,7 +117,7 @@ function inferSchemaType(schema: Record<string, unknown>): string | undefined {
+@@ -106,7 +115,7 @@ function inferSchemaType(schema: Record<string, unknown>): string | undefined {
    if (Array.isArray(schema.enum)) {
      return inferTypeFromValues(schema.enum);
    }
@@ -3125,6 +3187,16 @@ index 21d92dc..e28e09b 100644
      return inferTypeFromValues([schema.const]);
    }
    if (typeof schema.minLength === "number" || typeof schema.maxLength === "number") {
+@@ -122,7 +131,8 @@ function inferTypeFromValues(values: unknown[]): string | undefined {
+   if (values.length === 0) return undefined;
+   if (values.every((value) => typeof value === "string")) return "string";
+   if (values.every((value) => typeof value === "boolean")) return "boolean";
+-  if (values.every((value) => Number.isInteger(value))) return "integer";
++  // ZCode Android port: Number.isInteger 需要静态 number 实参，先做 typeof 收窄（语义不变）。
++  if (values.every((value) => typeof value === "number" && Number.isInteger(value))) return "integer";
+   if (values.every((value) => typeof value === "number")) return "number";
+   if (values.every((value) => value === null)) return "null";
+   return undefined;
 diff --git a/apps/zcode-cli/packages/contracts/src/tools/list-models.ts b/apps/zcode-cli/packages/contracts/src/tools/list-models.ts
 index 29fa411..6fa3615 100644
 --- a/apps/zcode-cli/packages/contracts/src/tools/list-models.ts
@@ -5235,6 +5307,19 @@ index 39ddb0b..9ac8f5d 100644
 -  return Object.freeze(wrapped);
 +  return wrapped;
  }
+diff --git a/apps/zcode-cli/packages/core/src/system-reminder/incoming-message.ts b/apps/zcode-cli/packages/core/src/system-reminder/incoming-message.ts
+index b286f4d..1c470f5 100644
+--- a/apps/zcode-cli/packages/core/src/system-reminder/incoming-message.ts
++++ b/apps/zcode-cli/packages/core/src/system-reminder/incoming-message.ts
+@@ -28,6 +28,8 @@ export function formatIncomingMessage(
+     case "task_notification":
+       return `${TASK_NOTIFICATION_PREFIX}${body}`;
+   }
++  // scriptc 不按契约包的联合类型判定 switch 穷尽，补一个兜底返回；正常路径不可达。
++  return body;
+ }
+ 
+ export function isMidTurnInputPresentation(presentation: RuntimeInputPresentation): boolean {
 diff --git a/apps/zcode-cli/packages/core/src/system-reminder/source.ts b/apps/zcode-cli/packages/core/src/system-reminder/source.ts
 index 74de0d6..11de3bc 100644
 --- a/apps/zcode-cli/packages/core/src/system-reminder/source.ts
@@ -5299,8 +5384,24 @@ index 8260996..fca470c 100644
        const notes = [
          spec.type,
          spec.required === true ? "required" : undefined,
+diff --git a/apps/zcode-cli/packages/core/src/tool/handlers/saved-workflows/args.ts b/apps/zcode-cli/packages/core/src/tool/handlers/saved-workflows/args.ts
+index 02108b8..623029d 100644
+--- a/apps/zcode-cli/packages/core/src/tool/handlers/saved-workflows/args.ts
++++ b/apps/zcode-cli/packages/core/src/tool/handlers/saved-workflows/args.ts
+@@ -40,7 +40,10 @@ export function validateWorkflowArgs(
+     );
+   }
+ 
+-  for (const [key, spec] of Object.entries(declared)) {
++  // 修复依据：declared 是「声明 | {}」联合，scriptc 对 Object.entries 的值类型推成 unknown，
++  // 显式收窄回契约声明类型后才能读 type/required/default。
++  for (const [key, rawSpec] of Object.entries(declared)) {
++    const spec = rawSpec as SavedWorkflowArgDeclaration;
+     const supplied = given[key];
+     // 缺省与显式 undefined 一视同仁：JSON 里传不出 undefined，所以两者只能是同一件事。
+     if (supplied === undefined) {
 diff --git a/apps/zcode-cli/packages/core/src/tool/handlers/tool-perf.ts b/apps/zcode-cli/packages/core/src/tool/handlers/tool-perf.ts
-index 56e7020..fd90694 100644
+index 56e7020..bc803e2 100644
 --- a/apps/zcode-cli/packages/core/src/tool/handlers/tool-perf.ts
 +++ b/apps/zcode-cli/packages/core/src/tool/handlers/tool-perf.ts
 @@ -3,6 +3,7 @@ import type { CommandExecutionTelemetry, ToolExecutionTelemetry } from "@zcode/c
@@ -5311,7 +5412,18 @@ index 56e7020..fd90694 100644
  
  const COMMAND_HASH_LENGTH = 16;
  const COMMAND_HASH_EDGE_CHARS = 4096;
-@@ -75,7 +76,7 @@ export function classifySafeCommandIdentity(
+@@ -56,7 +57,9 @@ export function classifySafeCommandIdentity(
+   // 类别和 hash 已经有界，但安全命令名仍会把完整 heredoc/inline script
+   // 交给 parser。遥测不能为超大命令额外制造 O(n) CPU/内存；此时宁可少一个 count。
+   if (command.length > MAX_COMMAND_IDENTITY_PARSE_CHARS) {
+-    return { name: "other" };
++    // scriptc 把 Pick<CommandExecutionTelemetry, ...> 的字段摊成必填 any，缺 count 会报错；
++    // 这里补 count: undefined 保持"跳过解析、不计数"的原语义。
++    return { count: undefined, name: "other" };
+   }
+   const analysis = analyzeBashCommand(command);
+   const commandCount = analysis.commands.length;
+@@ -75,7 +78,7 @@ export function classifySafeCommandIdentity(
      count: commandCount,
      // 隐私边界：只允许公开命令表中的静态可执行文件名进入远端 Trace；
      // 自定义脚本名和无法判定的动态表达式统一降级，绝不上传原始 token。
@@ -5609,17 +5721,40 @@ index 8e54ba7..fb36e55 100644
        await ctx.appendLifecycleGraphChanges(cancelled, cancelRepair.nodeChanges);
        await ctx.appendEvent(cancelled.runId, "run_cancelled", {
 diff --git a/apps/zcode-cli/packages/core/src/workflow/expert/runtime.ts b/apps/zcode-cli/packages/core/src/workflow/expert/runtime.ts
-index a4e66d5..275aa4f 100644
+index a4e66d5..6322f3b 100644
 --- a/apps/zcode-cli/packages/core/src/workflow/expert/runtime.ts
 +++ b/apps/zcode-cli/packages/core/src/workflow/expert/runtime.ts
-@@ -5,6 +5,7 @@ import { ExpertWorkflowRuntimeContext, lifecyclePayload } from "./runtime-contex
- import { prepareSnapshotForRetry } from "./retry-state.js";
- import { continueRun } from "./run-loop.js";
+@@ -14,6 +14,7 @@ import type {
+   ExpertWorkflowRuntimeDeps,
+ } from "./types.js";
  import type {
 +  ExpertWorkflowRunSnapshot,
-   ExpertWorkflowCommandResult,
-   ExpertWorkflowEventsOptions,
-   ExpertWorkflowListOptions,
+   SessionEvent,
+   TraceContext,
+   WorkflowEvent,
+@@ -111,8 +112,11 @@ export class ExpertWorkflowRuntime {
+     const resumeRepair = reconcileWorkflowSnapshotForResume(snapshot, {
+       timestamp: this.ctx.timestamp(),
+     });
++    // 修复依据：reconcileWorkflowSnapshotForResume 的泛型快照在 scriptc 里退化成 unknown，
++    // 显式收窄成契约类型后再展开合并。
++    const repairedSnapshot = resumeRepair.snapshot as ExpertWorkflowRunSnapshot;
+     const resumed = {
+-      ...resumeRepair.snapshot,
++      ...repairedSnapshot,
+       status: "running" as const,
+       updatedAt: this.ctx.timestamp(),
+     };
+@@ -232,7 +236,8 @@ export class ExpertWorkflowRuntime {
+     const cancelRepair = cancelWorkflowSnapshot(snapshot, {
+       timestamp: this.ctx.timestamp(),
+     });
+-    const cancelled = cancelRepair.snapshot;
++    // 修复依据同上：cancelWorkflowSnapshot 的泛型快照按契约类型收窄。
++    const cancelled = cancelRepair.snapshot as ExpertWorkflowRunSnapshot;
+     await this.ctx.store.writeSnapshot(cancelled, { signal: options.abortSignal });
+     await this.ctx.appendLifecycleGraphChanges(
+       cancelled,
 diff --git a/apps/zcode-cli/packages/core/src/workflow/lifecycle.ts b/apps/zcode-cli/packages/core/src/workflow/lifecycle.ts
 index f326ae8..82a3f4e 100644
 --- a/apps/zcode-cli/packages/core/src/workflow/lifecycle.ts

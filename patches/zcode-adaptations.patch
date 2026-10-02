@@ -812,6 +812,19 @@ index 03f16a0..8e924d9 100644
 +    ...(input.headers ? { headers: ({ ...input.headers }) } : {}),
 +  };
  }
+diff --git a/apps/zcode-cli/packages/bootstrap/src/zcode-protocol/server-types.ts b/apps/zcode-cli/packages/bootstrap/src/zcode-protocol/server-types.ts
+index 194247f..00519d3 100644
+--- a/apps/zcode-cli/packages/bootstrap/src/zcode-protocol/server-types.ts
++++ b/apps/zcode-cli/packages/bootstrap/src/zcode-protocol/server-types.ts
+@@ -214,7 +214,7 @@ function summarizeParamsError(error: unknown): string | undefined {
+   return parts.join("; ") + more;
+ }
+ 
+-export function parseParams<T>(schema: ParamsSchema<T>, params: unknown): T {
++export function parseParams(schema: any, params: any): any {
+   try {
+     return schema.parse(params);
+   } catch (error) {
 diff --git a/apps/zcode-cli/packages/bootstrap/tsconfig.json b/apps/zcode-cli/packages/bootstrap/tsconfig.json
 index 2e562be..e0aa302 100644
 --- a/apps/zcode-cli/packages/bootstrap/tsconfig.json

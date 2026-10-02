@@ -4463,7 +4463,7 @@ index 520b025..ffec081 100644
 +  }
 +}
 diff --git a/apps/zcode-cli/packages/core/src/runtime/command-queue.ts b/apps/zcode-cli/packages/core/src/runtime/command-queue.ts
-index 8d2697f..c703e85 100644
+index 8d2697f..62b2e29 100644
 --- a/apps/zcode-cli/packages/core/src/runtime/command-queue.ts
 +++ b/apps/zcode-cli/packages/core/src/runtime/command-queue.ts
 @@ -183,11 +183,11 @@ export function createRuntimeCommandQueue(): RuntimeCommandQueue {
@@ -4497,8 +4497,9 @@ index 8d2697f..c703e85 100644
 +      return 
          commands.filter(
            (command) => RUNTIME_COMMAND_PRIORITY_ORDER[command.priority] <= maxPriorityRank,
-         ),
+-        ),
 -      );
++        )
 +      ;
      },
  
@@ -5526,7 +5527,7 @@ index beb7e9a..447f619 100644
  
    static empty(): ModelConfigRules {
 diff --git a/packages/provider/src/config/provider-config.ts b/packages/provider/src/config/provider-config.ts
-index a566b13..340c6e5 100644
+index a566b13..d052f21 100644
 --- a/packages/provider/src/config/provider-config.ts
 +++ b/packages/provider/src/config/provider-config.ts
 @@ -31,7 +31,7 @@ export type ApiKeyAccessConfigInput = Omit<ApiKeyAccessConfigObject, "type"> & {
@@ -5671,8 +5672,9 @@ index a566b13..340c6e5 100644
        const normalized = modelId.trim();
        if (!normalized) throw new Error("Model ID 不能为空");
        return normalized;
-     }),
+-    }),
 -  );
++    })
 +  ;
  }
  

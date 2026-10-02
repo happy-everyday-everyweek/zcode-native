@@ -1280,38 +1280,20 @@ index f125336..bef8d0b 100644
      strategy: z.enum([MicrocompactStrategy.LocalToolResultClear]),
      preMicrocompactTokenCount: z.number().int().nonnegative(),
 diff --git a/apps/zcode-cli/packages/contracts/src/events/event-reducer-helpers.ts b/apps/zcode-cli/packages/contracts/src/events/event-reducer-helpers.ts
-index 8b61463..5c6ce6d 100644
+index 8b61463..c539c8f 100644
 --- a/apps/zcode-cli/packages/contracts/src/events/event-reducer-helpers.ts
 +++ b/apps/zcode-cli/packages/contracts/src/events/event-reducer-helpers.ts
-@@ -22,9 +22,14 @@ import type {
+@@ -22,7 +22,9 @@ import type {
    StreamingToolLedgerPayload,
  } from "./stream-recovery.events.js";
  
 -export const initialSessionProjection = {
--  createdAt: new Date(),
--  updatedAt: new Date(),
-+// ZCode Android port: 保留显式标注（脚本编译器对无标注的字面量会走动态构造），
-+// 但 Date 字段用 undefined 转型，见下方注释。
++// ZCode Android port: 显式标注对象字面量，否则 scriptc 把 Date 字段当动态对象构造，
++// 报 SC1090「Date 不能跨入 any-typed code」。
 +export const initialSessionProjection: Omit<SessionProjection, "id"> = {
-+  // ZCode Android port: 一旦这个字面量被整体判成（或参与）动态记录，`new Date()` 会报
-+  // SC1090「Date 跨入 any-typed code」；`undefined as unknown as Date` 实测 0 错误（探针 e3）。
-+  // 会话创建时 ZCode 会重新赋值这两个字段，初始投影不依赖它们的值。
-+  createdAt: undefined as unknown as Date,
-+  updatedAt: undefined as unknown as Date,
+   createdAt: new Date(),
+   updatedAt: new Date(),
    mode: "build" as CollaborationMode,
-   status: "idle" as SessionStatus,
-   turnCount: 0,
-@@ -36,7 +41,9 @@ export const initialSessionProjection = {
-   activeToolCalls: [] as ActiveToolCall[],
-   streamingToolLedger: [] as SessionProjection["streamingToolLedger"],
-   backgroundTasks: [] as SessionProjection["backgroundTasks"],
--  currentTurnId: undefined as string | undefined,
-+  // ZCode Android port: TurnId 是 branded 联合，`string | undefined` 与字段类型
-+  // `TurnId | undefined` 不匹配（SC0001）；与本字面量其余可选字段一致用索引访问标注。
-+  currentTurnId: undefined as SessionProjection["currentTurnId"],
-   lastError: undefined as SessionProjection["lastError"],
-   lastCompact: undefined as SessionProjection["lastCompact"],
-   lastCheckpoint: undefined as SessionProjection["lastCheckpoint"],
 diff --git a/apps/zcode-cli/packages/contracts/src/events/session.events.ts b/apps/zcode-cli/packages/contracts/src/events/session.events.ts
 index 655c088..06998e6 100644
 --- a/apps/zcode-cli/packages/contracts/src/events/session.events.ts

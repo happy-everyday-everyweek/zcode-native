@@ -18,11 +18,11 @@ import type {
 export type ZodRawShape = ZodRawShapeT;
 
 export class z {
-  static ZodFirstPartyTypeKind: any = ZodFirstPartyTypeKind;
-  static ZodIssueCode: any = ZodIssueCode;
+  static ZodFirstPartyTypeKind: typeof ZodFirstPartyTypeKind = ZodFirstPartyTypeKind;
+  static ZodIssueCode: typeof ZodIssueCode = ZodIssueCode;
   static ZodObject: (shape: ZodRawShapeT) => ZodTypeT<any> = ZodObject;
-  static ZodError: any = ZodError;
-  static coerce: any = coerce;
+  static ZodError: typeof ZodError = ZodError;
+  static coerce: typeof coerce = coerce;
   static array: (element: ZBase) => ZodTypeT<any[]> = array;
   static boolean: () => ZodTypeT<boolean> = boolean;
   static date: () => ZodTypeT<unknown> = date;

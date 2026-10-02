@@ -235,10 +235,11 @@ export type ZodIssueCode = string;
 
 // ---------- error ----------
 
-export class ZodError extends Error {
+export class ZodError {
+  name: string = "ZodError";
+  message: string = "";
   issues: ZodIssue[];
   constructor(issues: ZodIssue[]) {
-    super("Validation failed");
     this.name = "ZodError";
     this.issues = issues;
     const plain: unknown[] = issues;

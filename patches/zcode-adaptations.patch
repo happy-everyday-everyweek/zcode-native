@@ -12008,7 +12008,7 @@ index 7d89774..bcc0ef5 100644
          field: z.enum(["beforeContent", "afterContent"]),
          refId: z.string(),
 diff --git a/packages/shared/src/validationAppSettings.ts b/packages/shared/src/validationAppSettings.ts
-index 3cb58a1..4390074 100644
+index 3cb58a1..491f18d 100644
 --- a/packages/shared/src/validationAppSettings.ts
 +++ b/packages/shared/src/validationAppSettings.ts
 @@ -1,4 +1,5 @@
@@ -12194,7 +12194,7 @@ index 3cb58a1..4390074 100644
    // SSH 部署固定使用完整 active 资源集；旧 setting.json 里的 resourcePackages 是历史裁剪，
    // 在配置入口清掉，避免后续重连或 tab 恢复继续读取。
    return nextTarget;
-@@ -279,137 +282,141 @@ function migrateLegacyWorkspaceSession(value: unknown): unknown {
+@@ -279,137 +282,142 @@ function migrateLegacyWorkspaceSession(value: unknown): unknown {
      return value;
    }
  
@@ -12210,10 +12210,10 @@ index 3cb58a1..4390074 100644
 +  // scriptc 不支持在索引签名记录上做对象展开；omitKey 复制整份记录并去掉迁移结束
 +  // 必然删除的两个旧字段，结果与原来的 `{ ...raw }` + delete 一致。
 +  const migrated = omitKey(omitKey(raw, "lastOpenTabs"), "remoteWorkspaceHistory");
-+  const rawLastWorkspaceSession = raw.lastWorkspaceSession;
-+  // scriptc 不会在条件表达式里用自定义类型谓词收窄 unknown（SC1100）；
-+  // 改用内置 Array.isArray，对 JSON 解析出的设置值行为一致。
-+  const lastWorkspaceSession = Array.isArray(rawLastWorkspaceSession)
++  // scriptc 的类型谓词与 Array.isArray 都不会在条件表达式里收窄 unknown，直接传
++  // unknown 会被当成 any[] 报错；先擦除成 any 再按数组取用，对 JSON 解析值行为一致。
++  const rawLastWorkspaceSession: any = raw.lastWorkspaceSession;
++  const lastWorkspaceSession: any[] = isArray(rawLastWorkspaceSession)
 +    ? rawLastWorkspaceSession
      : [];
  
@@ -12228,8 +12228,9 @@ index 3cb58a1..4390074 100644
  
 -  const legacyRemoteHistory = Array.isArray(raw.remoteWorkspaceHistory)
 -    ? raw.remoteWorkspaceHistory
-+  const rawRemoteWorkspaceHistory = raw.remoteWorkspaceHistory;
-+  const legacyRemoteHistory = Array.isArray(rawRemoteWorkspaceHistory)
++  // 同上：unknown 先擦除成 any，避免 isArray 未收窄时报 any[] 参数类型错误。
++  const rawRemoteWorkspaceHistory: any = raw.remoteWorkspaceHistory;
++  const legacyRemoteHistory: any[] = isArray(rawRemoteWorkspaceHistory)
 +    ? rawRemoteWorkspaceHistory
      : [];
 -  const legacyRemoteHistoryById = new Map(
@@ -12449,7 +12450,7 @@ index 3cb58a1..4390074 100644
      migrated.lastWorkspaceSession = nextWorkspaceSession;
    }
    delete migrated.lastOpenTabs;
-@@ -527,8 +534,7 @@ export const appSettingsPatchSchema = z.object({
+@@ -527,8 +535,7 @@ export const appSettingsPatchSchema = z.object({
    providerFamilyDomainUpdatedAt: z.number().int().nonnegative().optional(),
    providerFamilyDomainMigrated: z.boolean().optional(),
    nativeSearchEnhancementsEnabled: z.boolean().optional(),
@@ -12459,7 +12460,7 @@ index 3cb58a1..4390074 100644
        "office",
        "developer",
        "independent",
-@@ -554,8 +560,7 @@ export const appSettingsPatchSchema = z.object({
+@@ -554,8 +561,7 @@ export const appSettingsPatchSchema = z.object({
    pendingPostUpdateReleaseNotes: postUpdateReleaseNotesPayloadSchema.optional(),
    receivePreviewUpdates: z.boolean().optional(),
    autoDownloadAndInstallUpdates: z.boolean().optional(),
@@ -15013,7 +15014,7 @@ index 7168ad8..478544d 100644
      /** 有界化后的正文；running 行与 failed 行缺席。 */
      result: z.unknown().optional(),
 diff --git a/packages/shared/src/zcode-protocol-v4/workspace-hook-review.ts b/packages/shared/src/zcode-protocol-v4/workspace-hook-review.ts
-index 120f95f..7f346cd 100644
+index 120f95f..a1822f0 100644
 --- a/packages/shared/src/zcode-protocol-v4/workspace-hook-review.ts
 +++ b/packages/shared/src/zcode-protocol-v4/workspace-hook-review.ts
 @@ -17,21 +17,20 @@ export const workspaceHookReviewTrustStateSchema = z.enum([
@@ -15100,17 +15101,22 @@ index 120f95f..7f346cd 100644
            reviewItemId: nonEmptyStringSchema,
            event: z.enum([
              "SessionStart",
-@@ -152,7 +145,8 @@ export const workspaceHookReviewRequestPayloadSchema = z
+@@ -152,7 +145,13 @@ export const workspaceHookReviewRequestPayloadSchema = z
          message: "hookCount must match the immutable request items",
        });
      }
 -    const eventCount = new Set(request.items.map((item) => item.event)).size;
-+    // scriptc 要求 Set 元素类型为 string 或 number，这里显式标注为 string
-+    const eventCount = new Set<string>(request.items.map((item) => item.event)).size;
++    // scriptc 只支持 `new Set<string>()` 后逐个 `.add`，不接受用数组构造 Set；
++    // 这里显式建集合并统计事件种类。
++    const seen = new Set<string>();
++    for (const item of request.items) {
++      seen.add(item.event);
++    }
++    const eventCount = seen.size;
      if (request.summary.eventCount !== eventCount) {
        context.addIssue({
          code: z.ZodIssueCode.custom,
-@@ -180,8 +174,7 @@ export type WorkspaceHookReviewRequestPayload = z.infer<
+@@ -180,8 +179,7 @@ export type WorkspaceHookReviewRequestPayload = z.infer<
    typeof workspaceHookReviewRequestPayloadSchema
  >;
  
@@ -15120,15 +15126,23 @@ index 120f95f..7f346cd 100644
      reviewFlowId: nonEmptyStringSchema,
      generation: positiveIntegerSchema,
      interactionId: nonEmptyStringSchema,
-@@ -199,7 +192,7 @@ export type PresentWorkspaceHookReviewRequest = z.infer<
+@@ -199,9 +197,14 @@ export type PresentWorkspaceHookReviewRequest = z.infer<
  function addDuplicateItemIssue(
    values: readonly string[],
    context: z.RefinementCtx,
 -  path: PropertyKey[],
 +  path: (string | number)[],
  ): void {
-   if (new Set(values).size === values.length) return;
+-  if (new Set(values).size === values.length) return;
++  // scriptc 不支持用数组构造 Set，改为显式建集合后逐个 add。
++  const seen = new Set<string>();
++  for (const value of values) {
++    seen.add(value);
++  }
++  if (seen.size === values.length) return;
    context.addIssue({
+     code: z.ZodIssueCode.custom,
+     path,
 diff --git a/packages/shared/src/zcode-protocol/index.ts b/packages/shared/src/zcode-protocol/index.ts
 index 5b3de01..e33af19 100644
 --- a/packages/shared/src/zcode-protocol/index.ts
@@ -17646,20 +17660,36 @@ index 93f5258..8e5506e 100644
 -  ] as const;
 +  ];
 diff --git a/packages/shared/src/zcodeEndpoint.ts b/packages/shared/src/zcodeEndpoint.ts
-index 8369d0a..fb52603 100644
+index 8369d0a..70df594 100644
 --- a/packages/shared/src/zcodeEndpoint.ts
 +++ b/packages/shared/src/zcodeEndpoint.ts
-@@ -25,10 +25,15 @@ export function pickProductEndpointEnv(
-   );
+@@ -20,15 +20,28 @@ export function pickProductEndpointEnv(
+     "ZAI_OAUTH_CLIENT_ID",
+     "ZAI_OAUTH_APP_ID",
+   ];
+-  return Object.fromEntries(
+-    keys.flatMap((key) => (env[key]?.trim() ? [[key, env[key]!.trim()]] : [])),
+-  );
++  // scriptc 不认 Object.fromEntries，也不支持 flatMap + 条件展开；
++  // 改为逐键 trim 后写回记录，只保留非空值。
++  const picked: Record<string, string> = {};
++  for (const key of keys) {
++    const value = env[key]?.trim();
++    if (value) {
++      picked[key] = value;
++    }
++  }
++  return picked;
  }
  export function readProductEndpointEnv(): Record<string, string | undefined> {
 -  return {
 -    ...(typeof __ZCODE_ENDPOINT_ENV__ === "undefined" ? {} : __ZCODE_ENDPOINT_ENV__),
 -    ...pickProductEndpointEnv(typeof process === "undefined" ? {} : process.env),
 -  };
-+  const productEnv: Record<string, string | undefined> = pickProductEndpointEnv(
-+    typeof process === "undefined" ? {} : process.env,
-+  );
++  // scriptc 没有 process 的 lowering，不能兜底读取 process.env；Node 调用方需要运行时
++  // 环境变量时显式传入 env（见上方注释）。这里传空记录，只保留构建期注入值。
++  const localEnv: Record<string, string | undefined> = {};
++  const productEnv: Record<string, string | undefined> = pickProductEndpointEnv(localEnv);
 +  if (typeof __ZCODE_ENDPOINT_ENV__ === "undefined") {
 +    return productEnv;
 +  }
@@ -17669,7 +17699,7 @@ index 8369d0a..fb52603 100644
  }
  
  export interface ZCodeEndpointUrls {
-@@ -289,8 +294,5 @@ export function rewriteZCodeEndpointUrl(input: string | URL, endpointOrigin: str
+@@ -289,8 +302,5 @@ export function rewriteZCodeEndpointUrl(input: string | URL, endpointOrigin: str
    }
  
    const target = new URL(targetOrigin);

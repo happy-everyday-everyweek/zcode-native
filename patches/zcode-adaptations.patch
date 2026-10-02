@@ -1,5 +1,5 @@
 diff --git a/apps/zcode-cli/packages/adapters/src/config/schema.ts b/apps/zcode-cli/packages/adapters/src/config/schema.ts
-index 4bc74cc..9f5f71a 100644
+index 4bc74cc..19eb792 100644
 --- a/apps/zcode-cli/packages/adapters/src/config/schema.ts
 +++ b/apps/zcode-cli/packages/adapters/src/config/schema.ts
 @@ -51,8 +51,7 @@ const mcpServerBaseSchema = {
@@ -185,6 +185,17 @@ index 4bc74cc..9f5f71a 100644
      $schema: z.string().optional(),
      modelStream: modelStreamSchema.optional(),
      permission: permissionSchema.optional(),
+@@ -434,8 +414,8 @@ function normalizePluginConfig(
+     }
+     delete enabledPlugins[LEGACY_CUA_PLUGIN_ID];
+   }
+-  const suppressedBuiltins = plugins.suppressedBuiltins
+-    ? plugins.suppressedBuiltins.reduce<string[]>((ids, id) => {
++  const suppressedBuiltins: string[] | undefined = plugins.suppressedBuiltins
++    ? plugins.suppressedBuiltins.reduce((ids: string[], id: string) => {
+         const canonicalId = id === LEGACY_CUA_PLUGIN_ID ? CANONICAL_CUA_PLUGIN_ID : id;
+         if (canonicalId === CANONICAL_CUA_PLUGIN_ID && ids.includes(CANONICAL_CUA_PLUGIN_ID)) {
+           return ids;
 diff --git a/apps/zcode-cli/packages/adapters/src/exec/outputEncoding.ts b/apps/zcode-cli/packages/adapters/src/exec/outputEncoding.ts
 index 19d7e10..0c5b4ea 100644
 --- a/apps/zcode-cli/packages/adapters/src/exec/outputEncoding.ts
@@ -1167,6 +1178,38 @@ index 203f83a..3485d89 100644
  import { ZCODE_DWF_CHILD_COMMAND } from "@zcode/contracts";
  import type { RunContext } from "@zcode/shared-types";
  
+diff --git a/apps/zcode-cli/packages/cli/src/shutdown.ts b/apps/zcode-cli/packages/cli/src/shutdown.ts
+index c4e691d..e880374 100644
+--- a/apps/zcode-cli/packages/cli/src/shutdown.ts
++++ b/apps/zcode-cli/packages/cli/src/shutdown.ts
+@@ -1,5 +1,3 @@
+-import { takeCoverage } from "node:v8";
+-
+ const DEFAULT_SHUTDOWN_CLEANUP_TIMEOUT_MS = 2_000;
+ export const DEFAULT_CLI_CLEANUP_TIMEOUT_MS = 6_000;
+ const DEFAULT_CLI_EXIT_WATCHDOG_TIMEOUT_MS = 1_000;
+@@ -75,19 +73,8 @@ export function registerCliShutdownHandlers(options: CliShutdownOptions): () =>
+ }
+ 
+ export async function flushE2ECoverage(): Promise<void> {
+-  if (process.env.ZCODE_E2E_COVERAGE !== "1" || !process.env.NODE_V8_COVERAGE?.trim()) {
+-    return;
+-  }
+-  try {
+-    // Agent shutdown 最终调用 process.exit，SIGTERM 路径不会可靠触发
+-    // NODE_V8_COVERAGE 的自动落盘；只在 E2E coverage 模式下显式刷新。
+-    takeCoverage();
+-    // takeCoverage 会把写盘交给 V8 后台任务；立即 process.exit 偶发只留下 readiness
+-    // marker。coverage 模式留出短暂落盘窗口，普通 CLI shutdown 不增加延迟。
+-    await new Promise<void>((resolve) => setTimeout(resolve, 500));
+-  } catch {
+-    // coverage 是诊断产物，写盘失败不能阻塞 CLI 的既有退出流程。
+-  }
++  // 编译后的原生二进制不嵌入 V8 引擎，node:v8 的 takeCoverage 不可用；
++  // 覆盖率刷新退化为 no-op，shutdown 的其余步骤及其执行顺序保持不变。
+ }
+ 
+ function shutdownSignals(platform: NodeJS.Platform): NodeJS.Signals[] {
 diff --git a/apps/zcode-cli/packages/cli/tsconfig.json b/apps/zcode-cli/packages/cli/tsconfig.json
 index bde55e7..c7127dc 100644
 --- a/apps/zcode-cli/packages/cli/tsconfig.json
@@ -7218,6 +7261,30 @@ index 5ae36c6..67222ed 100644
    }
  
    deletePersonalProvider(providerId: ProviderId): Promise<ProviderConfigLayerSnapshot> {
+diff --git a/packages/provider/src/config/manual-model-config.ts b/packages/provider/src/config/manual-model-config.ts
+index b924248..7043379 100644
+--- a/packages/provider/src/config/manual-model-config.ts
++++ b/packages/provider/src/config/manual-model-config.ts
+@@ -40,7 +40,9 @@ export function clearManualModelConfig(input: z.infer<typeof modelConfigDataSche
+   );
+ }
+ 
+-function omitSchemaFields(schema: z.ZodObject, input: unknown): unknown {
++// compat zod 的 z.ZodObject 是工厂函数而非类，instanceof 收窄结果为 {}，
++// 传入 ZodObject 形参会报 SC0001；这里按动态 schema 处理，两个 helper 都不是导出 API。
++function omitSchemaFields(schema: any, input: unknown): unknown {
+   if (!input || typeof input !== "object" || Array.isArray(input)) return input;
+   return Object.fromEntries(
+     Object.entries(input).flatMap(([key, value]) => {
+@@ -55,7 +57,7 @@ function omitSchemaFields(schema: z.ZodObject, input: unknown): unknown {
+   );
+ }
+ 
+-function pickSchemaFields(schema: z.ZodObject, input: unknown): unknown {
++function pickSchemaFields(schema: any, input: unknown): unknown {
+   if (!input || typeof input !== "object" || Array.isArray(input)) return input;
+   const source = input as Record<string, unknown>;
+   return Object.fromEntries(
 diff --git a/packages/provider/src/config/model-config.ts b/packages/provider/src/config/model-config.ts
 index beb7e9a..f191141 100644
 --- a/packages/provider/src/config/model-config.ts

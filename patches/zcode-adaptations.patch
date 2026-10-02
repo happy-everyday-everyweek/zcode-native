@@ -10983,6 +10983,48 @@ index a6e3875..e312968 100644
      version: z.literal(1),
      rendererInstanceId: boundedIdentifierSchema,
      sequence: z.number().int().nonnegative(),
+diff --git a/packages/shared/src/runtime-tool-runtime.ts b/packages/shared/src/runtime-tool-runtime.ts
+index 94bfc4d..6ce6498 100644
+--- a/packages/shared/src/runtime-tool-runtime.ts
++++ b/packages/shared/src/runtime-tool-runtime.ts
+@@ -38,25 +38,27 @@ export const RUNTIME_TOOL_RUNTIME: Record<RuntimeToolId, RuntimeToolRuntimeDescr
+   },
+ };
+ 
++// scriptc 会按 satisfies 目标的索引签名推断 versions，固定键字面量无法 lift；
++// 这里用显式键类型标注，使形状与字面量一致（版本取值不变）。
++const REMOTE_BFS_VERSIONS: { linux: string } = { linux: "v4.1.1-2" };
++const REMOTE_RIPGREP_VERSIONS: { darwin: string; linux: string } = {
++  darwin: "v13.0.0-10",
++  linux: "v14.1.1-1",
++};
++const REMOTE_UGREP_VERSIONS: { linux: string } = { linux: "v7.8.4-1" };
++
+ export const REMOTE_RUNTIME_TOOL_RUNTIME = {
+   bfs: {
+     ...RUNTIME_TOOL_RUNTIME.bfs,
+-    versions: {
+-      linux: "v4.1.1-2",
+-    },
++    versions: REMOTE_BFS_VERSIONS,
+   },
+   ripgrep: {
+     ...RUNTIME_TOOL_RUNTIME.ripgrep,
+-    versions: {
+-      darwin: "v13.0.0-10",
+-      linux: "v14.1.1-1",
+-    },
++    versions: REMOTE_RIPGREP_VERSIONS,
+   },
+   ugrep: {
+     ...RUNTIME_TOOL_RUNTIME.ugrep,
+-    versions: {
+-      linux: "v7.8.4-1",
+-    },
++    versions: REMOTE_UGREP_VERSIONS,
+   },
+ } as const satisfies Record<RuntimeToolId, RemoteRuntimeToolDescriptor>;
+ 
 diff --git a/packages/shared/src/runtimeEnv.ts b/packages/shared/src/runtimeEnv.ts
 index c7a919f..6dce089 100644
 --- a/packages/shared/src/runtimeEnv.ts
@@ -11888,7 +11930,7 @@ index 7d89774..bcc0ef5 100644
          field: z.enum(["beforeContent", "afterContent"]),
          refId: z.string(),
 diff --git a/packages/shared/src/validationAppSettings.ts b/packages/shared/src/validationAppSettings.ts
-index 3cb58a1..a19474b 100644
+index 3cb58a1..4390074 100644
 --- a/packages/shared/src/validationAppSettings.ts
 +++ b/packages/shared/src/validationAppSettings.ts
 @@ -1,4 +1,5 @@
@@ -12074,7 +12116,7 @@ index 3cb58a1..a19474b 100644
    // SSH 部署固定使用完整 active 资源集；旧 setting.json 里的 resourcePackages 是历史裁剪，
    // 在配置入口清掉，避免后续重连或 tab 恢复继续读取。
    return nextTarget;
-@@ -279,137 +282,135 @@ function migrateLegacyWorkspaceSession(value: unknown): unknown {
+@@ -279,137 +282,141 @@ function migrateLegacyWorkspaceSession(value: unknown): unknown {
      return value;
    }
  
@@ -12086,13 +12128,16 @@ index 3cb58a1..a19474b 100644
 -  const migrated = { ...raw } as Record<string, unknown>;
 -  const lastWorkspaceSession = Array.isArray(raw.lastWorkspaceSession)
 -    ? raw.lastWorkspaceSession
--    : [];
 +  const raw = value as Record<string, unknown>;
 +  // scriptc 不支持在索引签名记录上做对象展开；omitKey 复制整份记录并去掉迁移结束
 +  // 必然删除的两个旧字段，结果与原来的 `{ ...raw }` + delete 一致。
 +  const migrated = omitKey(omitKey(raw, "lastOpenTabs"), "remoteWorkspaceHistory");
 +  const rawLastWorkspaceSession = raw.lastWorkspaceSession;
-+  const lastWorkspaceSession = isArray(rawLastWorkspaceSession) ? rawLastWorkspaceSession : [];
++  // scriptc 不会在条件表达式里用自定义类型谓词收窄 unknown（SC1100）；
++  // 改用内置 Array.isArray，对 JSON 解析出的设置值行为一致。
++  const lastWorkspaceSession = Array.isArray(rawLastWorkspaceSession)
++    ? rawLastWorkspaceSession
+     : [];
  
    const hasLegacyRemoteEntries = lastWorkspaceSession.some((entry) => {
 -    if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
@@ -12105,7 +12150,10 @@ index 3cb58a1..a19474b 100644
  
 -  const legacyRemoteHistory = Array.isArray(raw.remoteWorkspaceHistory)
 -    ? raw.remoteWorkspaceHistory
--    : [];
++  const rawRemoteWorkspaceHistory = raw.remoteWorkspaceHistory;
++  const legacyRemoteHistory = Array.isArray(rawRemoteWorkspaceHistory)
++    ? rawRemoteWorkspaceHistory
+     : [];
 -  const legacyRemoteHistoryById = new Map(
 -    legacyRemoteHistory.flatMap((entry) => {
 -      const sanitizedEntry =
@@ -12123,8 +12171,6 @@ index 3cb58a1..a19474b 100644
 -      return parsed.success ? [[parsed.data.id, parsed.data] as const] : [];
 -    }),
 -  );
-+  const rawRemoteWorkspaceHistory = raw.remoteWorkspaceHistory;
-+  const legacyRemoteHistory = isArray(rawRemoteWorkspaceHistory) ? rawRemoteWorkspaceHistory : [];
 +  // Map 的 new/get 在 scriptc 里都没有 lowering，这里换成数组 + find 做同样的按 id 查找。
 +  const legacyRemoteHistoryEntries: LegacyRemoteWorkspaceHistoryEntry[] = [];
 +  for (const entry of legacyRemoteHistory) {
@@ -12325,7 +12371,7 @@ index 3cb58a1..a19474b 100644
      migrated.lastWorkspaceSession = nextWorkspaceSession;
    }
    delete migrated.lastOpenTabs;
-@@ -527,8 +528,7 @@ export const appSettingsPatchSchema = z.object({
+@@ -527,8 +534,7 @@ export const appSettingsPatchSchema = z.object({
    providerFamilyDomainUpdatedAt: z.number().int().nonnegative().optional(),
    providerFamilyDomainMigrated: z.boolean().optional(),
    nativeSearchEnhancementsEnabled: z.boolean().optional(),
@@ -12335,7 +12381,7 @@ index 3cb58a1..a19474b 100644
        "office",
        "developer",
        "independent",
-@@ -554,8 +554,7 @@ export const appSettingsPatchSchema = z.object({
+@@ -554,8 +560,7 @@ export const appSettingsPatchSchema = z.object({
    pendingPostUpdateReleaseNotes: postUpdateReleaseNotesPayloadSchema.optional(),
    receivePreviewUpdates: z.boolean().optional(),
    autoDownloadAndInstallUpdates: z.boolean().optional(),
@@ -17502,11 +17548,50 @@ index 5b3de01..e33af19 100644
    .strict();
  export * from "../localTtft.js";
  
+diff --git a/packages/shared/src/zcode-slash-command-help.ts b/packages/shared/src/zcode-slash-command-help.ts
+index 93f5258..8e5506e 100644
+--- a/packages/shared/src/zcode-slash-command-help.ts
++++ b/packages/shared/src/zcode-slash-command-help.ts
+@@ -6,6 +6,8 @@ export type BuiltinZCodeSlashCommandHelpEntry = {
+   usage: string;
+ };
+ 
++// scriptc 无法把 `as const` 推断出的 details 元组 lift 进注解里的 readonly string[]；
++// 去掉 const 断言后字面量按注解上下文定型，导出类型（显式注解）与取值都不变。
+ export const BUILTIN_ZCODE_SLASH_COMMAND_HELP_ENTRIES: readonly BuiltinZCodeSlashCommandHelpEntry[] =
+   [
+     {
+@@ -197,4 +199,4 @@ export const BUILTIN_ZCODE_SLASH_COMMAND_HELP_ENTRIES: readonly BuiltinZCodeSlas
+       summary: "Design and launch a dynamic workflow for a task.",
+       usage: "/workflow [what the workflow should accomplish]",
+     },
+-  ] as const;
++  ];
 diff --git a/packages/shared/src/zcodeEndpoint.ts b/packages/shared/src/zcodeEndpoint.ts
-index 8369d0a..ca26dc4 100644
+index 8369d0a..fb52603 100644
 --- a/packages/shared/src/zcodeEndpoint.ts
 +++ b/packages/shared/src/zcodeEndpoint.ts
-@@ -289,8 +289,5 @@ export function rewriteZCodeEndpointUrl(input: string | URL, endpointOrigin: str
+@@ -25,10 +25,15 @@ export function pickProductEndpointEnv(
+   );
+ }
+ export function readProductEndpointEnv(): Record<string, string | undefined> {
+-  return {
+-    ...(typeof __ZCODE_ENDPOINT_ENV__ === "undefined" ? {} : __ZCODE_ENDPOINT_ENV__),
+-    ...pickProductEndpointEnv(typeof process === "undefined" ? {} : process.env),
+-  };
++  const productEnv: Record<string, string | undefined> = pickProductEndpointEnv(
++    typeof process === "undefined" ? {} : process.env,
++  );
++  if (typeof __ZCODE_ENDPOINT_ENV__ === "undefined") {
++    return productEnv;
++  }
++  // scriptc 不支持条件展开（`...(c ? A : B)`）；注入值存在时改为合并两份记录，
++  // 保持 productEnv 覆盖注入值的原语义。
++  return { ...__ZCODE_ENDPOINT_ENV__, ...productEnv };
+ }
+ 
+ export interface ZCodeEndpointUrls {
+@@ -289,8 +294,5 @@ export function rewriteZCodeEndpointUrl(input: string | URL, endpointOrigin: str
    }
  
    const target = new URL(targetOrigin);

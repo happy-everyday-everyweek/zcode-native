@@ -76,14 +76,14 @@ export type ZodNullable<T extends ZodType = ZodType> = ZodType<T["_output"] | nu
 export type ZodDefault<T extends ZodType = ZodType> = ZodType<T["_output"]>;
 export type ZodCatch<T extends ZodType = ZodType> = ZodType<T["_output"]>;
 export type ZodEffects<T extends ZodType = ZodType, O = T["_output"], I = unknown> = ZodType<O>;
-export type ZodTransform = ZodType<unknown>;
+export type ZodTransform = ZodType<any>;
 export type ZodPipe<A extends ZodType = ZodType, B extends ZodType = ZodType> = ZodType<B["_output"]>;
 export type ZodNonOptional<T extends ZodType = ZodType> = ZodType<T["_output"]>;
 export type ZodObject<T extends ZodRawShape = ZodRawShape> = ZodType<any>;
 export type ZodArray<T extends ZodType = ZodType> = ZodType<T["_output"][]>;
 export type ZodRecord<V extends ZodType = ZodType> = ZodType<Record<string, V["_output"]>>;
 export type ZodUnion<T extends readonly ZodType[] = readonly ZodType[]> = ZodType<T[number]["_output"]>;
-export type ZodDiscriminatedUnion = ZodType<unknown>;
+export type ZodDiscriminatedUnion = ZodType<any>;
 export type ZodEnum<T extends readonly string[] = readonly string[]> = ZodType<T[number]>;
 export type ZodLiteral<T extends string | number | boolean = string> = ZodType<T>;
 export type ZodParsedType = string;
@@ -600,7 +600,7 @@ class ZBase {
   }
 }
 
-export class ZodType<O = unknown> extends ZBase {
+export class ZodType<O = any> extends ZBase {
   get _output(): O {
     throw new Error("phantom");
   }

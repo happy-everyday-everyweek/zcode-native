@@ -294,6 +294,25 @@ index 7a6211c..c9150f4 100644
  }
  
  function validateOptions(specs: ModelOptionSpecs, options: ModelOptions): Required<ModelOptions> {
+diff --git a/apps/zcode-cli/packages/adapters/src/model/runner-debug-redaction.ts b/apps/zcode-cli/packages/adapters/src/model/runner-debug-redaction.ts
+index 4882b82..dfe5742 100644
+--- a/apps/zcode-cli/packages/adapters/src/model/runner-debug-redaction.ts
++++ b/apps/zcode-cli/packages/adapters/src/model/runner-debug-redaction.ts
+@@ -1,4 +1,5 @@
+ import { sanitizeModelNetworkHeaders } from "./runner-network-headers.js";
++import { hasOwnKey, sameValue } from "@zcode/native-checks";
+ 
+ export function sanitizeModelIODebugRecord(
+   record: Record<string, unknown>,
+@@ -15,7 +16,7 @@ export function sanitizeModelIODebugRecord(
+ function sanitizeModelIOSectionHeaders(
+   section: Record<string, unknown> | undefined,
+ ): Record<string, unknown> | undefined {
+-  if (!section || !Object.hasOwn(section, "headers")) {
++  if (!section || !hasOwnKey(section, "headers")) {
+     return section;
+   }
+   return {
 diff --git a/apps/zcode-cli/packages/adapters/src/network/proxy-fetch.ts b/apps/zcode-cli/packages/adapters/src/network/proxy-fetch.ts
 index 47a442d..81ce153 100644
 --- a/apps/zcode-cli/packages/adapters/src/network/proxy-fetch.ts
@@ -315,6 +334,27 @@ index 623616f..ffb1de5 100644
 +import * as semver from "semver";
  
  export type PluginUpdateStatus = "none" | "update-available" | "version-changed";
+ 
+diff --git a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/messages.ts b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/messages.ts
+index 2defa6d..5a89c55 100644
+--- a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/messages.ts
++++ b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/messages.ts
+@@ -12,6 +12,7 @@ import { decodeMessageRow, decodePartRow, partCreatedAt } from "../codecs.js";
+ import { encodeJson } from "../json.js";
+ import type { MessageRow, PartRow } from "../rows.js";
+ import { touchSession } from "./sessions.js";
++import { hasOwnKey, sameValue } from "@zcode/native-checks";
+ 
+ // 只补回旧版快照字段，不合并整个 JSON：递归 merge 会让已清空的 metadata/options 残留。
+ function preserveLegacyMembers(table: "message" | "part", keys: readonly string[]): string {
+@@ -199,7 +200,7 @@ function copyLegacyMembers(
+     table === "message"
+       ? ["model", "providerID", "modelID", "variant"]
+       : ["fromModel", "toModel", "model"];
+-  for (const key of keys) if (Object.hasOwn(original, key)) result[key] = original[key];
++  for (const key of keys) if (hasOwnKey(original, key)) result[key] = original[key];
+   return result;
+ }
  
 diff --git a/apps/zcode-cli/packages/bootstrap/src/app/legacy-cli-model-config.ts b/apps/zcode-cli/packages/bootstrap/src/app/legacy-cli-model-config.ts
 index 19acf60..d5174ee 100644
@@ -524,6 +564,27 @@ index 3d81295..4124fc2 100644
 +  }
 +  return cachedNativeHandlers;
 +}
+diff --git a/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/product-projection.ts b/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/product-projection.ts
+index b965640..d0f4716 100644
+--- a/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/product-projection.ts
++++ b/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/product-projection.ts
+@@ -148,6 +148,7 @@ import {
+   SESSION_ALLOW_PERMISSION_OPTION_KIND,
+ } from "../permission-options.js";
+ import { shouldHideInvalidToolCallFromProduct } from "../tool-call-product-visibility.js";
++import { hasOwnKey, sameValue } from "@zcode/native-checks";
+ 
+ type HookInvocationRowContent = Omit<
+   HookInvocationRow,
+@@ -561,7 +562,7 @@ export class ProductProjection {
+     }
+     if (!this.configModelTouchedByEvent) {
+       if (
+-        Object.hasOwn(seed, "modelSelection") &&
++        hasOwnKey(seed, "modelSelection") &&
+         !sameSparseModelSelection(config.modelSelection, seed.modelSelection)
+       ) {
+         // 恢复的空选择也有明确语义，不能因为 falsy 而保留历史事件里的旧选型。
 diff --git a/apps/zcode-cli/packages/bootstrap/src/zcode-protocol/model-execution.ts b/apps/zcode-cli/packages/bootstrap/src/zcode-protocol/model-execution.ts
 index 03f16a0..8e924d9 100644
 --- a/apps/zcode-cli/packages/bootstrap/src/zcode-protocol/model-execution.ts
@@ -540,6 +601,19 @@ index 03f16a0..8e924d9 100644
 +    ...(input.headers ? { headers: ({ ...input.headers }) } : {}),
 +  };
  }
+diff --git a/apps/zcode-cli/packages/cli/src/dwf-child-command.ts b/apps/zcode-cli/packages/cli/src/dwf-child-command.ts
+index 203f83a..3485d89 100644
+--- a/apps/zcode-cli/packages/cli/src/dwf-child-command.ts
++++ b/apps/zcode-cli/packages/cli/src/dwf-child-command.ts
+@@ -17,7 +17,7 @@
+ import { resolve } from "node:path";
+ import { createInterface } from "node:readline";
+ import { pathToFileURL } from "node:url";
+-import { createContext, runInContext } from "node:vm";
++import { createContext, runInContext } from "@zcode/node-vm";
+ import { ZCODE_DWF_CHILD_COMMAND } from "@zcode/contracts";
+ import type { RunContext } from "@zcode/shared-types";
+ 
 diff --git a/apps/zcode-cli/packages/contracts/src/compact/index.ts b/apps/zcode-cli/packages/contracts/src/compact/index.ts
 index f125336..bef8d0b 100644
 --- a/apps/zcode-cli/packages/contracts/src/compact/index.ts
@@ -4200,6 +4274,16 @@ index d7d7346..09ea4bc 100644
  
  import { WORKFLOW_DRAFTS_DIR } from "@zcode/contracts";
  
+diff --git a/apps/zcode-cli/packages/core/src/repl/executors.ts b/apps/zcode-cli/packages/core/src/repl/executors.ts
+index 74ae0fc..d417e41 100644
+--- a/apps/zcode-cli/packages/core/src/repl/executors.ts
++++ b/apps/zcode-cli/packages/core/src/repl/executors.ts
+@@ -1,4 +1,4 @@
+-import { runInContext, type Context } from "node:vm";
++import { runInContext, type Context } from "@zcode/node-vm";
+ import {
+   instrumentForContextPersistence,
+   parseReplCode,
 diff --git a/apps/zcode-cli/packages/core/src/repl/node-repl-runtime-helpers.ts b/apps/zcode-cli/packages/core/src/repl/node-repl-runtime-helpers.ts
 index 2a52842..3b7c1c8 100644
 --- a/apps/zcode-cli/packages/core/src/repl/node-repl-runtime-helpers.ts
@@ -4236,6 +4320,16 @@ index 2a52842..3b7c1c8 100644
  }
  
  export function createReplRequire(
+diff --git a/apps/zcode-cli/packages/core/src/repl/node-repl-session.ts b/apps/zcode-cli/packages/core/src/repl/node-repl-session.ts
+index e4a3e26..a28d5e9 100644
+--- a/apps/zcode-cli/packages/core/src/repl/node-repl-session.ts
++++ b/apps/zcode-cli/packages/core/src/repl/node-repl-session.ts
+@@ -1,4 +1,4 @@
+-import { createContext, runInContext, type Context } from "node:vm";
++import { createContext, runInContext, type Context } from "@zcode/node-vm";
+ import { createRequire } from "node:module";
+ import { homedir, tmpdir } from "node:os";
+ import { IifeContextExecutor, type ReplExecutor } from "./executors.js";
 diff --git a/apps/zcode-cli/packages/core/src/runtime/agent-runtime.ts b/apps/zcode-cli/packages/core/src/runtime/agent-runtime.ts
 index 520b025..ffec081 100644
 --- a/apps/zcode-cli/packages/core/src/runtime/agent-runtime.ts
@@ -4451,6 +4545,27 @@ index 8260996..fca470c 100644
        const notes = [
          spec.type,
          spec.required === true ? "required" : undefined,
+diff --git a/apps/zcode-cli/packages/core/src/tool/handlers/tool-perf.ts b/apps/zcode-cli/packages/core/src/tool/handlers/tool-perf.ts
+index 56e7020..fd90694 100644
+--- a/apps/zcode-cli/packages/core/src/tool/handlers/tool-perf.ts
++++ b/apps/zcode-cli/packages/core/src/tool/handlers/tool-perf.ts
+@@ -3,6 +3,7 @@ import type { CommandExecutionTelemetry, ToolExecutionTelemetry } from "@zcode/c
+ import type { ToolExecutionContext } from "../types.js";
+ import { analyzeBashCommand } from "./bash-command-parser.js";
+ import { BASH_COMMAND_REGISTRY } from "./generated/bash-command-registry.js";
++import { hasOwnKey, sameValue } from "@zcode/native-checks";
+ 
+ const COMMAND_HASH_LENGTH = 16;
+ const COMMAND_HASH_EDGE_CHARS = 4096;
+@@ -75,7 +76,7 @@ export function classifySafeCommandIdentity(
+     count: commandCount,
+     // 隐私边界：只允许公开命令表中的静态可执行文件名进入远端 Trace；
+     // 自定义脚本名和无法判定的动态表达式统一降级，绝不上传原始 token。
+-    name: Object.hasOwn(BASH_COMMAND_REGISTRY, executable) ? executable : "other",
++    name: hasOwnKey(BASH_COMMAND_REGISTRY, executable) ? executable : "other",
+   };
+ }
+ 
 diff --git a/apps/zcode-cli/packages/core/src/tool/handlers/webfetch-egress-guard.ts b/apps/zcode-cli/packages/core/src/tool/handlers/webfetch-egress-guard.ts
 index f200b6b..e2da8f3 100644
 --- a/apps/zcode-cli/packages/core/src/tool/handlers/webfetch-egress-guard.ts
@@ -4500,6 +4615,35 @@ index d501d78..6cd1671 100644
  
  /**
   * 把脚本文件的绝对路径写成模型面该看到的样子：在会话工作目录之下就给工作区相对路径，
+diff --git a/apps/zcode-cli/packages/core/src/tool/json-schema.ts b/apps/zcode-cli/packages/core/src/tool/json-schema.ts
+index 27cc915..13bdc53 100644
+--- a/apps/zcode-cli/packages/core/src/tool/json-schema.ts
++++ b/apps/zcode-cli/packages/core/src/tool/json-schema.ts
+@@ -18,6 +18,7 @@ export type {
+   ToolInputValidationIssue,
+   ToolInputValidationPath,
+ } from "./tool-input-validation-issues.js";
++import { hasOwnKey, sameValue } from "@zcode/native-checks";
+ 
+ interface JsonSchemaValidationResult {
+   valid: boolean;
+@@ -83,14 +84,14 @@ function validateNode(
+   }
+ 
+   let valueConstraintFailed = false;
+-  if ("const" in schema && !Object.is(value, schema.const)) {
++  if ("const" in schema && !sameValue(value, schema.const)) {
+     collector.errors.push(`${displayPath} must be ${JSON.stringify(schema.const)}`);
+     collector.issues.push(createInvalidValueIssue([schema.const], issuePath));
+     valueConstraintFailed = true;
+   }
+ 
+   const enumValues = Array.isArray(schema.enum) ? schema.enum : undefined;
+-  if (enumValues && !enumValues.some((item) => Object.is(item, value))) {
++  if (enumValues && !enumValues.some((item) => sameValue(item, value))) {
+     collector.errors.push(
+       `${displayPath} must be one of ${enumValues.map((item) => JSON.stringify(item)).join(", ")}`,
+     );
 diff --git a/apps/zcode-cli/packages/core/src/tool/path-normalization.ts b/apps/zcode-cli/packages/core/src/tool/path-normalization.ts
 index edbf234..a924749 100644
 --- a/apps/zcode-cli/packages/core/src/tool/path-normalization.ts
@@ -4586,7 +4730,7 @@ index 0fb8dac..c817819 100644
      );
      const resumeRepair = reconcileWorkflowSnapshotForResume(options.snapshot, {
 diff --git a/apps/zcode-cli/packages/dynamic-workflow-runtime/src/child-source.ts b/apps/zcode-cli/packages/dynamic-workflow-runtime/src/child-source.ts
-index 4492d49..ec1f43c 100644
+index 4492d49..3d4417c 100644
 --- a/apps/zcode-cli/packages/dynamic-workflow-runtime/src/child-source.ts
 +++ b/apps/zcode-cli/packages/dynamic-workflow-runtime/src/child-source.ts
 @@ -158,7 +158,7 @@ function __report(siteId, item, artifactId) {
@@ -4598,6 +4742,15 @@ index 4492d49..ec1f43c 100644
  
  globalThis.__host = {
    args: __args,
+@@ -342,7 +342,7 @@ import { realpathSync } from "node:fs";
+ import { createInterface } from "node:readline";
+ import { fileURLToPath } from "node:url";
+ import { setFlagsFromString } from "node:v8";
+-import vm from "node:vm";
++import vm from "@zcode/node-vm";
+ 
+ export const payload = ${JSON.stringify(payload)};
+ 
 diff --git a/apps/zcode-cli/packages/node-repl-host/src/server.ts b/apps/zcode-cli/packages/node-repl-host/src/server.ts
 index e50333e..026d8b1 100644
 --- a/apps/zcode-cli/packages/node-repl-host/src/server.ts
@@ -4634,6 +4787,27 @@ index d3e7c4b..4fc7527 100644
    try {
      return await Promise.race([
        promise,
+diff --git a/apps/zcode-cli/tools/prompt-trajectory/src/openai-provider-proxy.ts b/apps/zcode-cli/tools/prompt-trajectory/src/openai-provider-proxy.ts
+index d98946c..71d04ff 100644
+--- a/apps/zcode-cli/tools/prompt-trajectory/src/openai-provider-proxy.ts
++++ b/apps/zcode-cli/tools/prompt-trajectory/src/openai-provider-proxy.ts
+@@ -8,6 +8,7 @@ import {
+ } from "./openai-response-assembler.js";
+ import type { MessageLedger } from "./message-ledger.js";
+ import type { JsonObject } from "./types.js";
++import { hasOwnKey, sameValue } from "@zcode/native-checks";
+ 
+ interface OpenAiProviderProxy {
+   baseURL: string;
+@@ -160,7 +161,7 @@ function createMockResponseResolver(
+ }
+ 
+ function asMockResponseRule(value: unknown): MockResponseRule | undefined {
+-  if (!isRecord(value) || !Object.hasOwn(value, "response")) return undefined;
++  if (!isRecord(value) || !hasOwnKey(value, "response")) return undefined;
+   const match = isRecord(value.match) ? readMockResponseMatch(value.match) : undefined;
+   return {
+     ...(match ? { match } : {}),
 diff --git a/packages/desktop/src/host/storagePreparationProcesses.ts b/packages/desktop/src/host/storagePreparationProcesses.ts
 index be9bd93..45bf940 100644
 --- a/packages/desktop/src/host/storagePreparationProcesses.ts
@@ -4672,6 +4846,19 @@ index dd8d70c..6200cac 100644
    .strict()
    .parse(workerData);
  try {
+diff --git a/packages/desktop/src/main/browserView/playwrightInjectedScriptSource.ts b/packages/desktop/src/main/browserView/playwrightInjectedScriptSource.ts
+index b8f8225..26a3e46 100644
+--- a/packages/desktop/src/main/browserView/playwrightInjectedScriptSource.ts
++++ b/packages/desktop/src/main/browserView/playwrightInjectedScriptSource.ts
+@@ -1,7 +1,7 @@
+ import { readFileSync } from "node:fs";
+ import { createRequire } from "node:module";
+ import { dirname, join } from "node:path";
+-import { runInNewContext } from "node:vm";
++import { runInNewContext } from "@zcode/node-vm";
+ 
+ const runtimeRequire = createRequire(import.meta.url);
+ const GENERATED_SOURCE_ASSIGNMENT = /const source\s*=\s*/;
 diff --git a/packages/model-option-map/src/compiler.ts b/packages/model-option-map/src/compiler.ts
 index 3303783..c285e64 100644
 --- a/packages/model-option-map/src/compiler.ts
@@ -4708,18 +4895,142 @@ index 3303783..c285e64 100644
    return program;
  }
 diff --git a/packages/model-option-map/src/evaluator.ts b/packages/model-option-map/src/evaluator.ts
-index 6914196..1781c78 100644
+index 6914196..23e1329 100644
 --- a/packages/model-option-map/src/evaluator.ts
 +++ b/packages/model-option-map/src/evaluator.ts
-@@ -206,7 +206,7 @@ function freezeJson<T extends JsonValue>(value: T): T {
-   } else {
-     return value;
+@@ -5,6 +5,7 @@ import {
+   type JsonValue,
+   type RestrictedCelValue,
+ } from "./types.js";
++import { hasOwnKey, isArray, sameValue } from "@zcode/native-checks";
+ 
+ export function evaluateRestrictedCel(
+   expression: RestrictedCelExpression,
+@@ -23,14 +24,9 @@ function evaluate(expression: RestrictedCelExpression, input: RestrictedCelValue
+     case "array":
+       return expression.elements.map((element) => evaluate(element, input));
+     case "object": {
+-      const result: Record<string, JsonValue> = Object.create(null) as Record<string, JsonValue>;
++      const result: Record<string, JsonValue> = {};
+       for (const entry of expression.entries) {
+-        Object.defineProperty(result, entry.key, {
+-          configurable: true,
+-          enumerable: true,
+-          value: evaluate(entry.value, input),
+-          writable: true,
+-        });
++        result[entry.key] = evaluate(entry.value, input);
+       }
+       return result;
+     }
+@@ -126,6 +122,8 @@ function compare(left: JsonValue, right: JsonValue, operator: string, offset: nu
+       offset,
+     );
+   }
++  const cmpLeft: any = left;
++  const cmpRight: any = right;
+   const comparison =
+     typeof left === "number" && typeof right === "number"
+       ? left < right
+@@ -133,9 +131,9 @@ function compare(left: JsonValue, right: JsonValue, operator: string, offset: nu
+         : left > right
+           ? 1
+           : 0
+-      : String(left) < String(right)
++      : String(cmpLeft) < String(cmpRight)
+         ? -1
+-        : String(left) > String(right)
++        : String(cmpRight) < String(cmpLeft) ? 0 : 1
+           ? 1
+           : 0;
+   if (operator === "<") return comparison < 0;
+@@ -177,14 +175,14 @@ function assertRestrictedCelValue(
+   throw new RestrictedCelError("input value must be a string or number", offset);
+ }
+ 
+-function jsonEquals(left: JsonValue, right: JsonValue): boolean {
+-  if (Object.is(left, right)) return true;
+-  if (Array.isArray(left) || Array.isArray(right)) {
++function jsonEquals(left: any, right: any): boolean {
++  if (sameValue(left, right)) return true;
++  if (isArray(left) || isArray(right)) {
+     return (
+-      Array.isArray(left) &&
+-      Array.isArray(right) &&
++      isArray(left) &&
++      isArray(right) &&
+       left.length === right.length &&
+-      left.every((entry, index) => jsonEquals(entry, right[index]!))
++      left.every((entry: any, index: number) => jsonEquals(entry, right[index]))
+     );
+   }
+   if (isJsonObject(left) && isJsonObject(right)) {
+@@ -192,23 +190,21 @@ function jsonEquals(left: JsonValue, right: JsonValue): boolean {
+     const rightKeys = Object.keys(right);
+     return (
+       leftKeys.length === rightKeys.length &&
+-      leftKeys.every((key) => Object.hasOwn(right, key) && jsonEquals(left[key]!, right[key]!))
++      leftKeys.every((key) => hasOwnKey(right, key) && jsonEquals(left[key], right[key]))
+     );
+   }
+   return false;
+ }
+ 
+-function freezeJson<T extends JsonValue>(value: T): T {
+-  if (Array.isArray(value)) {
++function freezeJson(value: JsonValue): JsonValue {
++  if (isArray(value)) {
+     for (const entry of value) freezeJson(entry);
+   } else if (isJsonObject(value)) {
+     for (const entry of Object.values(value)) freezeJson(entry);
+-  } else {
+-    return value;
    }
 -  return Object.freeze(value);
 +  return value;
  }
  
- function isJsonObject(value: JsonValue): value is JsonObject {
+-function isJsonObject(value: JsonValue): value is JsonObject {
+-  return value !== null && typeof value === "object" && !Array.isArray(value);
++function isJsonObject(value: any): boolean {
++  return value !== null && typeof value === "object" && !isArray(value);
+ }
+diff --git a/packages/model-option-map/src/merge-patch.ts b/packages/model-option-map/src/merge-patch.ts
+index dba4133..5da4d9d 100644
+--- a/packages/model-option-map/src/merge-patch.ts
++++ b/packages/model-option-map/src/merge-patch.ts
+@@ -1,4 +1,5 @@
+ import { ModelOptionMapError, type JsonObject, type JsonValue } from "./types.js";
++import { isArray } from "@zcode/native-checks";
+ 
+ export interface NamedJsonMergePatch {
+   readonly option: string;
+@@ -78,20 +79,15 @@ function mergeObject(target: JsonObject, patch: JsonObject): JsonObject {
+ }
+ 
+ function cloneJson(value: JsonValue): JsonValue {
+-  if (Array.isArray(value)) return value.map(cloneJson);
++  if (isArray(value)) return value.map(cloneJson);
+   if (!isJsonObject(value)) return value;
+-  const result: Record<string, JsonValue> = Object.create(null) as Record<string, JsonValue>;
++  const result: Record<string, JsonValue> = {};
+   for (const [key, entry] of Object.entries(value)) {
+-    Object.defineProperty(result, key, {
+-      configurable: true,
+-      enumerable: true,
+-      value: cloneJson(entry),
+-      writable: true,
+-    });
++    result[key] = cloneJson(entry);
+   }
+   return result;
+ }
+ 
+-function isJsonObject(value: JsonValue | undefined): value is JsonObject {
+-  return value !== null && typeof value === "object" && !Array.isArray(value);
++function isJsonObject(value: any): boolean {
++  return value !== null && typeof value === "object" && !isArray(value);
+ }
 diff --git a/packages/model-option-map/src/option-maps.ts b/packages/model-option-map/src/option-maps.ts
 index 1a8eac2..f4bc4f1 100644
 --- a/packages/model-option-map/src/option-maps.ts
@@ -6386,11 +6697,49 @@ index efe794d..4f8e95f 100644
      this.channels.clear();
      this._onDidAddConnection.dispose();
      this._onDidRemoveConnection.dispose();
+diff --git a/packages/services/src/bots/storageMigration.ts b/packages/services/src/bots/storageMigration.ts
+index e36da37..d5c40d6 100644
+--- a/packages/services/src/bots/storageMigration.ts
++++ b/packages/services/src/bots/storageMigration.ts
+@@ -7,6 +7,7 @@ import {
+   type ModelSelection,
+ } from "@zcode/shared";
+ import { normalizeBotCurrentOptions, normalizeBotDraftOptions } from "./config.js";
++import { hasOwnKey, sameValue } from "@zcode/native-checks";
+ 
+ function isRecord(value: unknown): value is Record<string, unknown> {
+   return typeof value === "object" && value !== null && !Array.isArray(value);
+@@ -14,7 +15,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
+ 
+ /** 只在 v3 文件不存在时调用；不是当前 Bot Options 的兼容读取器。 */
+ function migrateSelection(options: Record<string, unknown>): ModelSelection | undefined {
+-  if (Object.hasOwn(options, "modelSelection")) {
++  if (hasOwnKey(options, "modelSelection")) {
+     // Bug 根因：旧 thoughtLevel 曾覆盖已保存的新档位；新字段存在时禁止回读旧字段。
+     const parsed = modelSelectionSchema.safeParse(options.modelSelection);
+     if (!parsed.success) return undefined;
 diff --git a/packages/services/src/coding-plan-subscription/bigmodelCodingPlanSubscriptionProvider.ts b/packages/services/src/coding-plan-subscription/bigmodelCodingPlanSubscriptionProvider.ts
-index d3a75a5..a213190 100644
+index d3a75a5..89b7f55 100644
 --- a/packages/services/src/coding-plan-subscription/bigmodelCodingPlanSubscriptionProvider.ts
 +++ b/packages/services/src/coding-plan-subscription/bigmodelCodingPlanSubscriptionProvider.ts
-@@ -1346,7 +1346,7 @@ export function resolveOffPeakClientConfig(
+@@ -78,6 +78,7 @@ import {
+   type BigModelTeamPlanApiKeyEnsureResult,
+   type BigModelTeamPlanBizContext,
+ } from "#src/bigmodel/teamPlanApiKey.js";
++import { hasOwnKey, sameValue } from "@zcode/native-checks";
+ 
+ const BIGMODEL_CODING_PLAN_API_PREFIX = "/api/biz";
+ const ZAI_CODING_PLAN_PAY_API_PREFIX = "/api/pay";
+@@ -1109,7 +1110,7 @@ function normalizeStaticProductProviderIds<T>(
+     ["builtin:zai-coding-plan", BUILTIN_MODEL_PROVIDER_IDS.zaiIndividualCodingPlan],
+   ] as const) {
+     // 显式空数组表示关闭该目录；只有旧键不存在时才使用新键，不能用长度判断回退。
+-    if (Object.hasOwn(raw, legacyId)) normalized[currentId] = raw[legacyId];
++    if (hasOwnKey(raw, legacyId)) normalized[currentId] = raw[legacyId];
+     delete (normalized as Record<string, T[]>)[legacyId];
+   }
+   return normalized;
+@@ -1346,7 +1347,7 @@ export function resolveOffPeakClientConfig(
    };
  }
  
@@ -6675,6 +7024,40 @@ index 264f849..01839c2 100644
        .passthrough()
        .nullish(),
    })
+diff --git a/packages/services/src/setting/legacyAccountConnectionSettings.ts b/packages/services/src/setting/legacyAccountConnectionSettings.ts
+index 6a167ea..dc63235 100644
+--- a/packages/services/src/setting/legacyAccountConnectionSettings.ts
++++ b/packages/services/src/setting/legacyAccountConnectionSettings.ts
+@@ -3,6 +3,7 @@ import type {
+   ProviderFamilyDomain,
+ } from "@zcode/shared";
+ import { readFile } from "node:fs/promises";
++import { hasOwnKey, sameValue } from "@zcode/native-checks";
+ 
+ function record(value: unknown): Record<string, unknown> {
+   return value && typeof value === "object" && !Array.isArray(value)
+@@ -54,9 +55,9 @@ export async function readLegacyAccountConnectionSettingsFile(
+ export function needsLegacyAccountConnectionMigration(value: unknown): boolean {
+   const raw = record(value);
+   return (
+-    !Object.hasOwn(raw, "providerFamilyConnectionSelections") &&
+-    (Object.hasOwn(raw, "modelProviderFamilySelectedKeys") ||
+-      Object.hasOwn(raw, "modelProviderFamilyModes"))
++    !hasOwnKey(raw, "providerFamilyConnectionSelections") &&
++    (hasOwnKey(raw, "modelProviderFamilySelectedKeys") ||
++      hasOwnKey(raw, "modelProviderFamilyModes"))
+   );
+ }
+ 
+@@ -100,7 +101,7 @@ export function retainLegacyAccountConnectionFields(value: unknown): Record<stri
+   const raw = record(value);
+   return Object.fromEntries(
+     ["modelProviderFamilyModes", "modelProviderFamilySelectedKeys"]
+-      .filter((key) => Object.hasOwn(raw, key))
++      .filter((key) => hasOwnKey(raw, key))
+       .map((key) => [key, raw[key]]),
+   );
+ }
 diff --git a/packages/services/src/setting/observableSettingService.ts b/packages/services/src/setting/observableSettingService.ts
 index 0c48b09..6505f80 100644
 --- a/packages/services/src/setting/observableSettingService.ts
@@ -6691,6 +7074,36 @@ index 0c48b09..6505f80 100644
        for (const listener of listeners) listener(event);
      },
    };
+diff --git a/packages/services/src/setting/settingService.ts b/packages/services/src/setting/settingService.ts
+index afa9f5d..8cd3a23 100644
+--- a/packages/services/src/setting/settingService.ts
++++ b/packages/services/src/setting/settingService.ts
+@@ -27,6 +27,7 @@ import {
+   retainLegacyAccountConnectionFields,
+   type LegacyTeamConnection,
+ } from "#src/setting/legacyAccountConnectionSettings.js";
++import { hasOwnKey, sameValue } from "@zcode/native-checks";
+ const MAX_RECENT_PROJECTS = 10;
+ const DEFAULT_PROJECT_NAME = "ZCodeProject";
+ const SETTINGS_PARSE_RETRY_DELAY_MS = 300;
+@@ -329,7 +330,7 @@ export function createSettingServiceWithMigrations(): {
+           shouldCommit,
+           runSettingsCommit,
+           enterCommitPhase,
+-          Object.hasOwn(patch, "providerFamilyConnectionSelections"),
++          hasOwnKey(patch, "providerFamilyConnectionSelections"),
+         );
+       };
+ 
+@@ -400,7 +401,7 @@ export function createSettingServiceWithMigrations(): {
+           const latest = await readLegacyAccountConnectionSettingsFile(getSettingsFile());
+           // 只核对迁移输入，不因普通语言/窗口设置变化丢失合法结果，也不覆盖用户新账号意图。
+           if (
+-            Object.hasOwn(latest, "providerFamilyConnectionSelections") ||
++            hasOwnKey(latest, "providerFamilyConnectionSelections") ||
+             latest.providerFamilyDomain !== original.providerFamilyDomain ||
+             JSON.stringify(retainLegacyAccountConnectionFields(latest)) !==
+               JSON.stringify(retainLegacyAccountConnectionFields(original))
 diff --git a/packages/services/src/settings-sync/settingsSyncService.ts b/packages/services/src/settings-sync/settingsSyncService.ts
 index 492984b..f11a334 100644
 --- a/packages/services/src/settings-sync/settingsSyncService.ts
@@ -8437,6 +8850,36 @@ index 86aa6c8..b3983af 100644
          create_source: z.enum(["group", "project", "session"]),
          client_kind: z.literal("mobile"),
          workspace_kind: z.enum(["local", "remote"]),
+diff --git a/packages/shared/src/subagent-state-migration.ts b/packages/shared/src/subagent-state-migration.ts
+index 5d035c5..723a6c3 100644
+--- a/packages/shared/src/subagent-state-migration.ts
++++ b/packages/shared/src/subagent-state-migration.ts
+@@ -9,6 +9,7 @@ import {
+   type BuiltInSubagentModelSelectionOverrides,
+   type PluginSubagentModelSelectionOverrides,
+ } from "./subagents-types.js";
++import { hasOwnKey, sameValue } from "@zcode/native-checks";
+ 
+ function record(value: unknown): Record<string, unknown> {
+   return value && typeof value === "object" && !Array.isArray(value)
+@@ -24,7 +25,7 @@ export function importSubagentStateSelections(input: Record<string, unknown>): R
+   builtInModelSelectionOverrides: BuiltInSubagentModelSelectionOverrides;
+   pluginAgentModelSelectionOverrides: PluginSubagentModelSelectionOverrides;
+ } {
+-  const current = Object.hasOwn(input, "builtInModelSelectionOverrides");
++  const current = hasOwnKey(input, "builtInModelSelectionOverrides");
+   const selections: BuiltInSubagentModelSelectionOverrides = {};
+   for (const name of ["Explore", "general-purpose"] as const) {
+     const selection = current
+@@ -51,7 +52,7 @@ export function importSubagentStateSelections(input: Record<string, unknown>): R
+   }
+   // 插件双 map 与内置覆盖一样只在存储导入时解释；
+   // 正式 map 存在即为权威，空值/损坏值也不能复活旧 model 或档位。
+-  const pluginSelections = Object.hasOwn(input, "pluginAgentModelSelectionOverrides")
++  const pluginSelections = hasOwnKey(input, "pluginAgentModelSelectionOverrides")
+     ? parsePluginSubagentModelSelectionOverrides(input.pluginAgentModelSelectionOverrides)
+     : Object.fromEntries(
+         Object.entries(record(input.pluginAgentModelOverrides)).flatMap(([id, model]) => {
 diff --git a/packages/shared/src/task-realtime-core.ts b/packages/shared/src/task-realtime-core.ts
 index d025348..e039965 100644
 --- a/packages/shared/src/task-realtime-core.ts
@@ -14266,6 +14709,27 @@ index 8369d0a..ca26dc4 100644
 -  return target.toString();
 +  return `${target.protocol}//${target.host}${parsed.pathname}${parsed.search}${parsed.hash}`;
  }
+diff --git a/packages/ui/src/chat-input-toolbar/thoughtLevelOptions.ts b/packages/ui/src/chat-input-toolbar/thoughtLevelOptions.ts
+index 716934d..ad235d8 100644
+--- a/packages/ui/src/chat-input-toolbar/thoughtLevelOptions.ts
++++ b/packages/ui/src/chat-input-toolbar/thoughtLevelOptions.ts
+@@ -1,6 +1,7 @@
+ import type { ZCodeConfigOption, ZCodeProvider } from "@zcode/shared";
+ import type { useZCodeIntl } from "@/i18n/IntlProvider.js";
+ import { getConfigOptionEntryLabel } from "@/chat-input-toolbar/display.js";
++import { hasOwnKey, sameValue } from "@zcode/native-checks";
+ 
+ type ThoughtLevelEntry = NonNullable<ZCodeConfigOption["options"]>[number];
+ 
+@@ -78,7 +79,7 @@ export function getThoughtLevelLabel(
+   entry: ThoughtLevelEntry,
+ ): string {
+   const value = normalizeThoughtLevelText(entry.value);
+-  const labelId = Object.hasOwn(THOUGHT_LEVEL_LABEL_IDS, value)
++  const labelId = hasOwnKey(THOUGHT_LEVEL_LABEL_IDS, value)
+     ? THOUGHT_LEVEL_LABEL_IDS[value]
+     : undefined;
+   if (labelId) {
 diff --git a/packages/ui/src/feedback/feedbackSubmissionJob.ts b/packages/ui/src/feedback/feedbackSubmissionJob.ts
 index c119d29..7609197 100644
 --- a/packages/ui/src/feedback/feedbackSubmissionJob.ts
@@ -14289,10 +14753,12 @@ index c119d29..7609197 100644
  
  function getFeedbackSubmissionErrorMessage(
 diff --git a/packages/ui/src/lib/providerTelemetryIdentity.ts b/packages/ui/src/lib/providerTelemetryIdentity.ts
-index 523b204..484b86f 100644
+index 523b204..a585393 100644
 --- a/packages/ui/src/lib/providerTelemetryIdentity.ts
 +++ b/packages/ui/src/lib/providerTelemetryIdentity.ts
-@@ -2,7 +2,7 @@ import { decodeCustomModelValue, encodeCustomModelValue } from "@zcode/shared";
+@@ -1,8 +1,9 @@
+ import { decodeCustomModelValue, encodeCustomModelValue } from "@zcode/shared";
++import { hasOwnKey, sameValue } from "@zcode/native-checks";
  
  // Provider 重构拆分了执行身份，但旧报表仍按原桶统计；只在事件构造处使用，禁止回流业务配置。
  // 旧 staging 790884b1ce 的 Team 连接也使用 builtin:* 原 Coding Plan 身份。
@@ -14301,7 +14767,7 @@ index 523b204..484b86f 100644
    "zai-api": "builtin:zai",
    "bigmodel-api": "builtin:bigmodel",
    "account:zai-individual-coding-plan": "builtin:zai-coding-plan",
-@@ -13,7 +13,7 @@ const legacyProviderIds: Readonly<Record<string, string>> = Object.freeze({
+@@ -13,10 +14,10 @@ const legacyProviderIds: Readonly<Record<string, string>> = Object.freeze({
    "account:bigmodel-start-plan": "builtin:bigmodel-start-plan",
    "account:zai-offpeak-idle-plan": "offpeak-idle-plan",
    "account:bigmodel-offpeak-idle-plan": "offpeak-idle-plan",
@@ -14309,7 +14775,32 @@ index 523b204..484b86f 100644
 +};
  
  export function legacyTelemetryProviderId(providerId: string): string {
-   return Object.hasOwn(legacyProviderIds, providerId) ? legacyProviderIds[providerId]! : providerId;
+-  return Object.hasOwn(legacyProviderIds, providerId) ? legacyProviderIds[providerId]! : providerId;
++  return hasOwnKey(legacyProviderIds, providerId) ? legacyProviderIds[providerId]! : providerId;
+ }
+ 
+ /** 只替换已知 Provider 前缀；纯模型 ID、未知身份及模型内部编码保持原样。 */
+diff --git a/packages/ui/src/lib/workspaceSidePane.ts b/packages/ui/src/lib/workspaceSidePane.ts
+index 86e6dd2..6c22ba9 100644
+--- a/packages/ui/src/lib/workspaceSidePane.ts
++++ b/packages/ui/src/lib/workspaceSidePane.ts
+@@ -2,6 +2,7 @@
+ import { createUuid, type BrowserTabResidencyState } from "@zcode/shared";
+ import { inferMediaPreview, isPptxPreviewPath, type CodeViewerSource } from "@/lib/codeViewer.js";
+ import { normalizeCodeViewerSource } from "@/lib/codeViewerSource.js";
++import { hasOwnKey, sameValue } from "@zcode/native-checks";
+ 
+ export interface BrowserSidePaneTab {
+   id: string;
+@@ -1455,7 +1456,7 @@ export function applyBrowserTabResidencyEvent(
+   if (event.workspaceKey !== undefined && target.workspaceKey !== event.workspaceKey)
+     return current;
+   if (
+-    Object.hasOwn(event, "remoteSessionId") &&
++    hasOwnKey(event, "remoteSessionId") &&
+     (target.remoteSessionId ?? "") !== (event.remoteSessionId ?? "")
+   ) {
+     return current;
 diff --git a/packages/ui/src/store/conversationShareSelectionStore.ts b/packages/ui/src/store/conversationShareSelectionStore.ts
 index 56177c7..5d8d267 100644
 --- a/packages/ui/src/store/conversationShareSelectionStore.ts

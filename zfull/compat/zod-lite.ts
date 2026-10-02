@@ -44,7 +44,7 @@ export class z {
 }
 
 export namespace z {
-  export type ZodType<O = unknown> = ZodTypeT<O>;
+  export type ZodType<O = any> = ZodTypeT<O>;
   export type ZodTypeAny = ZodTypeT<any>;
   export type ZodString = ZodTypeT<string>;
   export type ZodNumber = ZodTypeT<number>;

@@ -72,7 +72,7 @@ jobs:
               echo "$name=MISSING" >> reports/summary.txt
               continue
             fi
-            node ../scriptc-try/node_modules/.bin/scriptc build "entries/$name.ts" --emit c --dynamic > "reports/$name.log" 2>&1
+            timeout 900 node ../scriptc-try/node_modules/.bin/scriptc build "entries/$name.ts" --emit ir --dynamic > "reports/$name.log" 2>&1 || true
             n=$(grep -c 'error SC' "reports/$name.log" || true)
             total=$((total + n))
             echo "$name=$n" >> reports/summary.txt

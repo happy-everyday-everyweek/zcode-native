@@ -4992,7 +4992,7 @@ index 461d678..4934bd4 100644
    if (!readFileState) return undefined;
  
 diff --git a/apps/zcode-cli/packages/core/src/workflow/lifecycle.ts b/apps/zcode-cli/packages/core/src/workflow/lifecycle.ts
-index f326ae8..8066130 100644
+index f326ae8..82a3f4e 100644
 --- a/apps/zcode-cli/packages/core/src/workflow/lifecycle.ts
 +++ b/apps/zcode-cli/packages/core/src/workflow/lifecycle.ts
 @@ -86,7 +86,7 @@ const CANCELLABLE_STATUSES = new Set<WorkflowNodeStatus>(["active", "pending"]);
@@ -5009,7 +5009,7 @@ index f326ae8..8066130 100644
    const resetPhaseIdsFromNodes = new Set<string>();
  
 -  const nodes = snapshot.graph.nodes.map((node) => {
-+  const nodes = snapshot.graph.nodes.map(((node: any) => {
++  const nodes = snapshot.graph.nodes.map((node: any) => {
      if (node.status !== "active" || !isInScope(node.id, nodeScope)) {
        return node;
      }
@@ -5018,7 +5018,7 @@ index f326ae8..8066130 100644
  
    const phaseIds: string[] = [];
 -  const phases = snapshot.phases.map((phase) => {
-+  const phases = snapshot.phases.map(((phase: any) => {
++  const phases = snapshot.phases.map((phase: any) => {
      if (
        !resetPhases ||
        phase.status !== "active" ||
@@ -5027,7 +5027,7 @@ index f326ae8..8066130 100644
  
    const activityIds: string[] = [];
 -  const activities = snapshot.activities.map((activity) => {
-+  const activities = snapshot.activities.map(((activity: any) => {
++  const activities = snapshot.activities.map((activity: any) => {
      if (
        !resetActivities ||
        activity.status !== "active" ||
@@ -5043,7 +5043,7 @@ index f326ae8..8066130 100644
    const nodeChanges: WorkflowGraphNodeChange[] = [];
  
 -  const nodes = snapshot.graph.nodes.map((node) => {
-+  const nodes = snapshot.graph.nodes.map(((node: any) => {
++  const nodes = snapshot.graph.nodes.map((node: any) => {
      if (!CANCELLABLE_STATUSES.has(node.status)) {
        return node;
      }
@@ -5052,7 +5052,7 @@ index f326ae8..8066130 100644
  
    const phaseIds: string[] = [];
 -  const phases = snapshot.phases.map((phase) => {
-+  const phases = snapshot.phases.map(((phase: any) => {
++  const phases = snapshot.phases.map((phase: any) => {
      if (!CANCELLABLE_STATUSES.has(phase.status)) {
        return phase;
      }
@@ -5061,7 +5061,7 @@ index f326ae8..8066130 100644
  
    const activityIds: string[] = [];
 -  const activities = snapshot.activities.map((activity) => {
-+  const activities = snapshot.activities.map(((activity: any) => {
++  const activities = snapshot.activities.map((activity: any) => {
      if (!CANCELLABLE_STATUSES.has(activity.status)) {
        return activity;
      }
@@ -5074,7 +5074,7 @@ index f326ae8..8066130 100644
    options: ReopenWorkflowGraphNodeOptions,
  ): ReopenWorkflowGraphNodeResult<TSnapshot> {
 -  const node = snapshot.graph.nodes.find((item) => item.id === options.nodeId);
-+  const node = snapshot.graph.nodes.find(((item: any) => item.id === options.nodeId);
++  const node = snapshot.graph.nodes.find((item: any) => item.id === options.nodeId);
    if (!node) {
      throw new Error(`Workflow graph node not found: ${options.nodeId}`);
    }
@@ -5083,7 +5083,7 @@ index f326ae8..8066130 100644
    const nextAttempts = reopenAttempts + 1;
    const reason = options.reason ?? DEFAULT_REOPEN_REASON;
 -  const nodes = snapshot.graph.nodes.map((item) =>
-+  const nodes = snapshot.graph.nodes.map(((item: any) =>
++  const nodes = snapshot.graph.nodes.map((item: any) =>
      item.id === options.nodeId
        ? {
            ...item,
@@ -5098,7 +5098,7 @@ index f326ae8..8066130 100644
  ): ApplyWorkflowGraphSeedResult<TSnapshot> {
    const parsedSeed = WorkflowGraphSeedSchema.parse(seed);
 -  const existingNodeIds = new Set(snapshot.graph.nodes.map((node) => node.id));
-+  const existingNodeIds = new Set(snapshot.graph.nodes.map(((node: any) => node.id));
++  const existingNodeIds = new Set(snapshot.graph.nodes.map((node: any) => node.id));
    const addedNodes: WorkflowGraphNode[] = [];
    const pendingNodeIds = new Set<string>();
  
@@ -5108,12 +5108,12 @@ index f326ae8..8066130 100644
    const knownNodeIds = new Set([
 -    ...snapshot.graph.nodes.map((node) => node.id),
 -    ...addedNodes.map((node) => node.id),
-+    ...snapshot.graph.nodes.map(((node: any) => node.id),
-+    ...addedNodes.map(((node: any) => node.id),
++    ...snapshot.graph.nodes.map((node: any) => node.id),
++    ...addedNodes.map((node: any) => node.id),
    ]);
    const existingCollectionIds = new Set(
 -    (snapshot.graph.collections ?? []).map((collection) => collection.collectionId),
-+    (snapshot.graph.collections ?? []).map(((collection: any) => collection.collectionId),
++    (snapshot.graph.collections ?? []).map((collection: any) => collection.collectionId),
    );
    const addedCollections: WorkflowGraphCollection[] = [];
    const pendingCollectionIds = new Set<string>();
@@ -5123,8 +5123,8 @@ index f326ae8..8066130 100644
      const implicitNodeIds = addedNodes
 -      .filter((node) => node.collectionId === collection.collectionId)
 -      .map((node) => node.id);
-+      .filter(((node: any) => node.collectionId === collection.collectionId)
-+      .map(((node: any) => node.id);
++      .filter((node: any) => node.collectionId === collection.collectionId)
++      .map((node: any) => node.id);
      const nodeIds = uniqueStrings([...(collection.nodeIds ?? []), ...implicitNodeIds]);
      for (const nodeId of nodeIds) {
        if (!knownNodeIds.has(nodeId)) {
@@ -5142,7 +5142,7 @@ index f326ae8..8066130 100644
    }
  
 -  const nodeIds = new Set(snapshot.graph.nodes.map((node) => node.id));
-+  const nodeIds = new Set(snapshot.graph.nodes.map(((node: any) => node.id));
++  const nodeIds = new Set(snapshot.graph.nodes.map((node: any) => node.id));
    for (const nodeId of updatesByNodeId.keys()) {
      if (!nodeIds.has(nodeId)) {
        throw new Error(`Workflow node prompt update references unknown node: ${nodeId}`);
@@ -5151,7 +5151,7 @@ index f326ae8..8066130 100644
  
    const updatedNodes: WorkflowGraphNode[] = [];
 -  const nodes = snapshot.graph.nodes.map((node) => {
-+  const nodes = snapshot.graph.nodes.map(((node: any) => {
++  const nodes = snapshot.graph.nodes.map((node: any) => {
      const update = updatesByNodeId.get(node.id);
      if (!update) return node;
      if (node.phase !== undefined && node.phase !== options.phase) {
@@ -5160,7 +5160,7 @@ index f326ae8..8066130 100644
    seedEdges: readonly WorkflowGraphEdge[],
  ): WorkflowGraphEdge[] {
 -  const edges = seedEdges.map((edge) => ({ from: edge.from, to: edge.to }));
-+  const edges = seedEdges.map(((edge: any) => ({ from: edge.from, to: edge.to }));
++  const edges = seedEdges.map((edge: any) => ({ from: edge.from, to: edge.to }));
    const knownEdgeIds = new Set([...existingEdges, ...edges].map(edgeId));
    for (const node of addedNodes) {
      for (const dependencyId of node.dependsOn) {
@@ -5169,7 +5169,7 @@ index f326ae8..8066130 100644
    addedEdges: readonly WorkflowGraphEdge[],
  ): void {
 -  const nodeIds = new Set([...existingNodes, ...addedNodes].map((node) => node.id));
-+  const nodeIds = new Set([...existingNodes, ...addedNodes].map(((node: any) => node.id));
++  const nodeIds = new Set([...existingNodes, ...addedNodes].map((node: any) => node.id));
    const seenEdgeIds = new Set(existingEdges.map(edgeId));
    const pendingEdges = [...existingEdges];
    for (const edge of addedEdges) {
@@ -5178,7 +5178,7 @@ index f326ae8..8066130 100644
  
  function uniqueStrings(values: readonly string[]): string[] {
 -  return [...new Set(values.filter((value) => value.length > 0))];
-+  return [...new Set(values.filter(((value: any) => value.length > 0))];
++  return [...new Set(values.filter((value: any) => value.length > 0))];
  }
 diff --git a/apps/zcode-cli/packages/core/src/workflow/scheduler.ts b/apps/zcode-cli/packages/core/src/workflow/scheduler.ts
 index 0fb8dac..c817819 100644

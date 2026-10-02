@@ -5625,16 +5625,17 @@ index 3da3f3a..02bf21d 100644
      "declarationMap": true,
 diff --git a/native-shims/native-checks.d.ts b/native-shims/native-checks.d.ts
 new file mode 100644
-index 0000000..10d399b
+index 0000000..df1e1db
 --- /dev/null
 +++ b/native-shims/native-checks.d.ts
-@@ -0,0 +1,6 @@
+@@ -0,0 +1,7 @@
 +// 仅类型垫片：ZCode 自己的 tsc 用它解析说明符；scriptc 侧由 zfull/tsconfig.json
 +// 的 paths 指到真正的运行时兼容模块 zfull/compat/native-checks.ts。
 +export declare function isArray(v: any): v is any[];
 +export declare function hasOwnKey(o: any, k: string): boolean;
 +export declare function sameValue(a: any, b: any): boolean;
 +export declare function identityOf(v: any): any;
++export declare function omitKey<T>(rec: Record<string, T>, key: string): Record<string, T>;
 diff --git a/native-shims/node-sqlite.d.ts b/native-shims/node-sqlite.d.ts
 new file mode 100644
 index 0000000..f20ad00
@@ -8979,7 +8980,7 @@ index 00553a5..5bc122d 100644
      })
      .nullish(),
 diff --git a/packages/shared/src/config-schema.ts b/packages/shared/src/config-schema.ts
-index 2d75ead..2fbce3d 100644
+index 2d75ead..ed5cacd 100644
 --- a/packages/shared/src/config-schema.ts
 +++ b/packages/shared/src/config-schema.ts
 @@ -1,8 +1,8 @@
@@ -8987,11 +8988,11 @@ index 2d75ead..2fbce3d 100644
  
  /** 每个字段保持原 schema，只派生覆盖所需的缺省/null；嵌套结构由调用方显式派生。 */
 -export function sparseShape<T extends Record<string, z.ZodType>>(shape: T) {
-+export function sparseShape(shape: Record<string, any>): Record<string, any> {
++export function sparseShape(shape: Record<string, any>): Record<string, z.ZodTypeAny> {
    return Object.fromEntries(
      Object.entries(shape).map(([key, schema]) => [key, schema.nullable().optional()]),
 -  ) as { [K in keyof T]: z.ZodOptional<z.ZodNullable<T[K]>> };
-+  ) as Record<string, any>;
++  ) as Record<string, z.ZodTypeAny>;
  }
 diff --git a/packages/shared/src/conversation-share.ts b/packages/shared/src/conversation-share.ts
 index 6c210a6..3e6e5f3 100644

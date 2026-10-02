@@ -313,205 +313,6 @@ index 623616f..ffb1de5 100644
  
  export type PluginUpdateStatus = "none" | "update-available" | "version-changed";
  
-diff --git a/apps/zcode-cli/packages/adapters/src/storage/session-store/migration-runner.ts b/apps/zcode-cli/packages/adapters/src/storage/session-store/migration-runner.ts
-index 7e21283..2383cb6 100644
---- a/apps/zcode-cli/packages/adapters/src/storage/session-store/migration-runner.ts
-+++ b/apps/zcode-cli/packages/adapters/src/storage/session-store/migration-runner.ts
-@@ -5,7 +5,7 @@ import {
-   type DatabaseMigrationFacts,
- } from "@zcode/shared";
- import { createHash } from "node:crypto";
--import type { DatabaseSync } from "node:sqlite";
-+import type { DatabaseSync } from "@zcode/node-sqlite";
- import { SqliteSessionMigrationError } from "./errors.js";
- import { SQLITE_MIGRATIONS } from "./migrations.js";
- import type { SchemaMigrationRow } from "./rows.js";
-diff --git a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/debug.ts b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/debug.ts
-index 213fc18..38f0186 100644
---- a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/debug.ts
-+++ b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/debug.ts
-@@ -1,4 +1,4 @@
--import type { DatabaseSync, SQLInputValue } from "node:sqlite";
-+import type { DatabaseSync, SQLInputValue } from "@zcode/node-sqlite";
- import type { SessionId } from "@zcode/contracts";
- import type { SessionStoreDebugCounts } from "../options.js";
- 
-diff --git a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/dwf-journal-artifacts.ts b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/dwf-journal-artifacts.ts
-index 553d20f..bb4155d 100644
---- a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/dwf-journal-artifacts.ts
-+++ b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/dwf-journal-artifacts.ts
-@@ -15,7 +15,7 @@
-  * 与 dwf-journal-codecs.ts 同一种分法。
-  */
- 
--import type { DatabaseSync } from "node:sqlite";
-+import type { DatabaseSync } from "@zcode/node-sqlite";
- import type { NodeRecord } from "@zcode/dynamic-workflow";
- import { decodeNode, type DwfEventRow, type DwfNodeRow } from "./dwf-journal-codecs.js";
- 
-diff --git a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/dwf-journal-introspection.ts b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/dwf-journal-introspection.ts
-index f21eab2..82a3a47 100644
---- a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/dwf-journal-introspection.ts
-+++ b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/dwf-journal-introspection.ts
-@@ -8,7 +8,7 @@
-  * 引擎的 `JournalStorePort` 写面不在这里——这里没有任何写入者。
-  */
- 
--import type { DatabaseSync } from "node:sqlite";
-+import type { DatabaseSync } from "@zcode/node-sqlite";
- import type { NodeRecord, NodeRecordStatus, RunStatus, StoredEvent } from "@zcode/dynamic-workflow";
- import type { DwfArtifactItem, DwfArtifactItemsQuery } from "./dwf-journal-artifacts.js";
- import {
-diff --git a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/dwf-journal.ts b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/dwf-journal.ts
-index a011dc8..8f75fa0 100644
---- a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/dwf-journal.ts
-+++ b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/dwf-journal.ts
-@@ -10,7 +10,7 @@
-  * 事务性不在端口面上：需要与 session 写入同原子的场景由 driver 用 `begin immediate` 组合。
-  */
- 
--import type { DatabaseSync } from "node:sqlite";
-+import type { DatabaseSync } from "@zcode/node-sqlite";
- import type {
-   ActorRecord,
-   Caps,
-diff --git a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/input-history.ts b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/input-history.ts
-index 485f1ea..541e813 100644
---- a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/input-history.ts
-+++ b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/input-history.ts
-@@ -1,4 +1,4 @@
--import type { DatabaseSync } from "node:sqlite";
-+import type { DatabaseSync } from "@zcode/node-sqlite";
- import type {
-   InputHistoryAttachment,
-   InputHistoryEntry,
-diff --git a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/local-settings.ts b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/local-settings.ts
-index 4d4c465..bd7a50b 100644
---- a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/local-settings.ts
-+++ b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/local-settings.ts
-@@ -1,4 +1,4 @@
--import type { DatabaseSync } from "node:sqlite";
-+import type { DatabaseSync } from "@zcode/node-sqlite";
- import type { CollaborationMode, PermissionRuleset, ProjectId } from "@zcode/contracts";
- import { isCollaborationMode } from "../codecs.js";
- import { decodeJson } from "../json.js";
-diff --git a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/messages.ts b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/messages.ts
-index 2defa6d..47bd955 100644
---- a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/messages.ts
-+++ b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/messages.ts
-@@ -1,4 +1,4 @@
--import type { DatabaseSync } from "node:sqlite";
-+import type { DatabaseSync } from "@zcode/node-sqlite";
- import type {
-   MessageId,
-   MessageInfo,
-diff --git a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/permission-full-access.ts b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/permission-full-access.ts
-index 7e607a2..c7f10a0 100644
---- a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/permission-full-access.ts
-+++ b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/permission-full-access.ts
-@@ -1,4 +1,4 @@
--import type { DatabaseSync } from "node:sqlite";
-+import type { DatabaseSync } from "@zcode/node-sqlite";
- import type { SessionStorePort } from "@zcode/contracts";
- import { saveSessionEntry } from "./session-entries.js";
- 
-diff --git a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/script-workflow-activities.ts b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/script-workflow-activities.ts
-index a2a13f2..d9b2ce3 100644
---- a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/script-workflow-activities.ts
-+++ b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/script-workflow-activities.ts
-@@ -1,4 +1,4 @@
--import type { DatabaseSync } from "node:sqlite";
-+import type { DatabaseSync } from "@zcode/node-sqlite";
- import type {
-   CreateScriptWorkflowActivityInput,
-   CreateSessionTaskLinkInput,
-diff --git a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/script-workflow-runs.ts b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/script-workflow-runs.ts
-index 659346f..95d329f 100644
---- a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/script-workflow-runs.ts
-+++ b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/script-workflow-runs.ts
-@@ -1,4 +1,4 @@
--import type { DatabaseSync, SQLInputValue } from "node:sqlite";
-+import type { DatabaseSync, SQLInputValue } from "@zcode/node-sqlite";
- import type {
-   CreateScriptWorkflowRunInput,
-   ScriptWorkflowDefinitionRecord,
-diff --git a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/session-entries.ts b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/session-entries.ts
-index 7507fa9..875a571 100644
---- a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/session-entries.ts
-+++ b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/session-entries.ts
-@@ -1,4 +1,4 @@
--import type { DatabaseSync } from "node:sqlite";
-+import type { DatabaseSync } from "@zcode/node-sqlite";
- import {
-   SESSION_ENTRY_MODEL_SELECTION,
-   type SessionEntryInfo,
-diff --git a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/session-inputs.ts b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/session-inputs.ts
-index 7d816b1..24f7493 100644
---- a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/session-inputs.ts
-+++ b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/session-inputs.ts
-@@ -2,7 +2,7 @@
- // 语义：admitted（已接受）→ promoted（与 user message/parts 同事务落 transcript）
- // / cancelled / discarded / failed。promotion 的原子性是硬要求：杜绝
- // 「queue 已消费但 transcript 无 user message」的孤儿窗口（旧 drain 跨 store 无事务）。
--import type { DatabaseSync } from "node:sqlite";
-+import type { DatabaseSync } from "@zcode/node-sqlite";
- import type {
-   MessageInfo,
-   MessagePart,
-diff --git a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/sessions.ts b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/sessions.ts
-index bf63dd7..33bc2eb 100644
---- a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/sessions.ts
-+++ b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/sessions.ts
-@@ -1,4 +1,4 @@
--import type { DatabaseSync, SQLInputValue } from "node:sqlite";
-+import type { DatabaseSync, SQLInputValue } from "@zcode/node-sqlite";
- import {
-   SESSION_TASK_TYPES,
-   type ClaimLegacySessionWorkspaceInput,
-diff --git a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/todos.ts b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/todos.ts
-index e410c7e..78fbd5a 100644
---- a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/todos.ts
-+++ b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/todos.ts
-@@ -1,4 +1,4 @@
--import type { DatabaseSync } from "node:sqlite";
-+import type { DatabaseSync } from "@zcode/node-sqlite";
- import type { SessionId, TodoItem } from "@zcode/contracts";
- import { decodeTodoRow } from "../codecs.js";
- import type { TodoRow } from "../rows.js";
-diff --git a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/usage.ts b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/usage.ts
-index 8dbc3a2..50d4863 100644
---- a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/usage.ts
-+++ b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/usage.ts
-@@ -1,4 +1,4 @@
--import type { DatabaseSync, SQLInputValue } from "node:sqlite";
-+import type { DatabaseSync, SQLInputValue } from "@zcode/node-sqlite";
- import type {
-   AppUsageDayModelRow,
-   AppUsageDayRow,
-diff --git a/apps/zcode-cli/packages/adapters/src/storage/session-store/sqlite-session-store.ts b/apps/zcode-cli/packages/adapters/src/storage/session-store/sqlite-session-store.ts
-index 1f413ad..c743129 100644
---- a/apps/zcode-cli/packages/adapters/src/storage/session-store/sqlite-session-store.ts
-+++ b/apps/zcode-cli/packages/adapters/src/storage/session-store/sqlite-session-store.ts
-@@ -1,5 +1,5 @@
- import * as permissionFullAccessRepository from "./repositories/permission-full-access.js";
--import { DatabaseSync } from "node:sqlite";
-+import { DatabaseSync } from "@zcode/node-sqlite";
- import type {
-   CollaborationMode,
-   ClaimLegacySessionWorkspaceInput,
-diff --git a/apps/zcode-cli/packages/adapters/src/storage/session-target.ts b/apps/zcode-cli/packages/adapters/src/storage/session-target.ts
-index f39234b..ffafbd9 100644
---- a/apps/zcode-cli/packages/adapters/src/storage/session-target.ts
-+++ b/apps/zcode-cli/packages/adapters/src/storage/session-target.ts
-@@ -3,7 +3,7 @@
- // ============================================================
- 
- import { randomUUID } from "node:crypto";
--import type { DatabaseSync } from "node:sqlite";
-+import type { DatabaseSync } from "@zcode/node-sqlite";
- import type { SessionId, SessionGoal, GoalStatus } from "@zcode/contracts";
- 
- interface TargetRow {
 diff --git a/apps/zcode-cli/packages/bootstrap/src/app/legacy-cli-model-config.ts b/apps/zcode-cli/packages/bootstrap/src/app/legacy-cli-model-config.ts
 index 19acf60..d5174ee 100644
 --- a/apps/zcode-cli/packages/bootstrap/src/app/legacy-cli-model-config.ts
@@ -4395,16 +4196,6 @@ index d7d7346..09ea4bc 100644
  
  import { WORKFLOW_DRAFTS_DIR } from "@zcode/contracts";
  
-diff --git a/apps/zcode-cli/packages/core/src/repl/executors.ts b/apps/zcode-cli/packages/core/src/repl/executors.ts
-index 74ae0fc..d417e41 100644
---- a/apps/zcode-cli/packages/core/src/repl/executors.ts
-+++ b/apps/zcode-cli/packages/core/src/repl/executors.ts
-@@ -1,4 +1,4 @@
--import { runInContext, type Context } from "node:vm";
-+import { runInContext, type Context } from "@zcode/node-vm";
- import {
-   instrumentForContextPersistence,
-   parseReplCode,
 diff --git a/apps/zcode-cli/packages/core/src/repl/node-repl-runtime-helpers.ts b/apps/zcode-cli/packages/core/src/repl/node-repl-runtime-helpers.ts
 index 2a52842..1c8c5aa 100644
 --- a/apps/zcode-cli/packages/core/src/repl/node-repl-runtime-helpers.ts
@@ -4427,16 +4218,6 @@ index 2a52842..1c8c5aa 100644
  }
  
  export function createReplRequire(
-diff --git a/apps/zcode-cli/packages/core/src/repl/node-repl-session.ts b/apps/zcode-cli/packages/core/src/repl/node-repl-session.ts
-index e4a3e26..a28d5e9 100644
---- a/apps/zcode-cli/packages/core/src/repl/node-repl-session.ts
-+++ b/apps/zcode-cli/packages/core/src/repl/node-repl-session.ts
-@@ -1,4 +1,4 @@
--import { createContext, runInContext, type Context } from "node:vm";
-+import { createContext, runInContext, type Context } from "@zcode/node-vm";
- import { createRequire } from "node:module";
- import { homedir, tmpdir } from "node:os";
- import { IifeContextExecutor, type ReplExecutor } from "./executors.js";
 diff --git a/apps/zcode-cli/packages/core/src/runtime/agent-runtime.ts b/apps/zcode-cli/packages/core/src/runtime/agent-runtime.ts
 index 520b025..ffec081 100644
 --- a/apps/zcode-cli/packages/core/src/runtime/agent-runtime.ts
@@ -4463,7 +4244,7 @@ index 520b025..ffec081 100644
 +  }
 +}
 diff --git a/apps/zcode-cli/packages/core/src/runtime/command-queue.ts b/apps/zcode-cli/packages/core/src/runtime/command-queue.ts
-index 8d2697f..62b2e29 100644
+index 8d2697f..421ebf2 100644
 --- a/apps/zcode-cli/packages/core/src/runtime/command-queue.ts
 +++ b/apps/zcode-cli/packages/core/src/runtime/command-queue.ts
 @@ -183,11 +183,11 @@ export function createRuntimeCommandQueue(): RuntimeCommandQueue {
@@ -4489,13 +4270,13 @@ index 8d2697f..62b2e29 100644
      },
  
      enqueue(command: RuntimeCommand): void {
-@@ -208,11 +208,11 @@ export function createRuntimeCommandQueue(): RuntimeCommandQueue {
+@@ -208,11 +208,10 @@ export function createRuntimeCommandQueue(): RuntimeCommandQueue {
  
      getByMaxPriority(maxPriority: RuntimeCommandPriority): readonly RuntimeCommand[] {
        const maxPriorityRank = RUNTIME_COMMAND_PRIORITY_ORDER[maxPriority];
 -      return Object.freeze(
-+      return 
-         commands.filter(
+-        commands.filter(
++      return commands.filter(
            (command) => RUNTIME_COMMAND_PRIORITY_ORDER[command.priority] <= maxPriorityRank,
 -        ),
 -      );
@@ -4504,7 +4285,7 @@ index 8d2697f..62b2e29 100644
      },
  
      hasPending(): boolean {
-@@ -235,7 +235,7 @@ export function createRuntimeCommandQueue(): RuntimeCommandQueue {
+@@ -235,7 +234,7 @@ export function createRuntimeCommandQueue(): RuntimeCommandQueue {
      },
  
      snapshot(): readonly RuntimeCommand[] {
@@ -4774,91 +4555,6 @@ index 461d678..4934bd4 100644
  ): ReadFileStateEntry | undefined {
    if (!readFileState) return undefined;
  
-diff --git a/apps/zcode-cli/packages/core/src/workflow/lifecycle.ts b/apps/zcode-cli/packages/core/src/workflow/lifecycle.ts
-index f326ae8..71056a9 100644
---- a/apps/zcode-cli/packages/core/src/workflow/lifecycle.ts
-+++ b/apps/zcode-cli/packages/core/src/workflow/lifecycle.ts
-@@ -19,7 +19,7 @@ export interface WorkflowGraphNodeChange {
-   status: WorkflowNodeStatus;
- }
- 
--export interface WorkflowSnapshotLifecycleResult<TSnapshot extends WorkflowRunSnapshot> {
-+export interface WorkflowSnapshotLifecycleResult<TSnapshot extends Record<string, any>> {
-   activityIds: string[];
-   changed: boolean;
-   nodeChanges: WorkflowGraphNodeChange[];
-@@ -47,7 +47,7 @@ export interface ReopenWorkflowGraphNodeOptions {
-   timestamp: string;
- }
- 
--export interface ReopenWorkflowGraphNodeResult<TSnapshot extends WorkflowRunSnapshot> {
-+export interface ReopenWorkflowGraphNodeResult<TSnapshot extends Record<string, any>> {
-   changed: boolean;
-   nodeChange: WorkflowGraphNodeChange;
-   reopenAttempts: number;
-@@ -59,7 +59,7 @@ export interface ApplyWorkflowGraphSeedOptions {
-   timestamp: string;
- }
- 
--export interface ApplyWorkflowGraphSeedResult<TSnapshot extends WorkflowRunSnapshot> {
-+export interface ApplyWorkflowGraphSeedResult<TSnapshot extends Record<string, any>> {
-   addedCollections: WorkflowGraphCollection[];
-   addedEdges: WorkflowGraphEdge[];
-   addedNodes: WorkflowGraphNode[];
-@@ -72,7 +72,7 @@ export interface ApplyWorkflowNodePromptUpdatesOptions {
-   timestamp: string;
- }
- 
--export interface ApplyWorkflowNodePromptUpdatesResult<TSnapshot extends WorkflowRunSnapshot> {
-+export interface ApplyWorkflowNodePromptUpdatesResult<TSnapshot extends Record<string, any>> {
-   changed: boolean;
-   snapshot: TSnapshot;
-   updatedNodes: WorkflowGraphNode[];
-@@ -85,7 +85,7 @@ const DEFAULT_REOPEN_REASON = "Reopened by workflow critic.";
- const CANCELLABLE_STATUSES = new Set<WorkflowNodeStatus>(["active", "pending"]);
- const REOPENABLE_STATUSES = new Set<WorkflowNodeStatus>(["completed", "failed", "skipped"]);
- 
--export function reconcileWorkflowSnapshotForResume<TSnapshot extends WorkflowRunSnapshot>(
-+export function reconcileWorkflowSnapshotForResume<TSnapshot extends Record<string, any>>(
-   snapshot: TSnapshot,
-   options: ReconcileWorkflowSnapshotForResumeOptions,
- ): WorkflowSnapshotLifecycleResult<TSnapshot> {
-@@ -160,7 +160,7 @@ export function reconcileWorkflowSnapshotForResume<TSnapshot extends WorkflowRun
-   };
- }
- 
--export function cancelWorkflowSnapshot<TSnapshot extends WorkflowRunSnapshot>(
-+export function cancelWorkflowSnapshot<TSnapshot extends Record<string, any>>(
-   snapshot: TSnapshot,
-   options: CancelWorkflowSnapshotOptions,
- ): WorkflowSnapshotLifecycleResult<TSnapshot> {
-@@ -228,7 +228,7 @@ export function cancelWorkflowSnapshot<TSnapshot extends WorkflowRunSnapshot>(
-   };
- }
- 
--export function reopenWorkflowGraphNode<TSnapshot extends WorkflowRunSnapshot>(
-+export function reopenWorkflowGraphNode<TSnapshot extends Record<string, any>>(
-   snapshot: TSnapshot,
-   options: ReopenWorkflowGraphNodeOptions,
- ): ReopenWorkflowGraphNodeResult<TSnapshot> {
-@@ -279,7 +279,7 @@ export function reopenWorkflowGraphNode<TSnapshot extends WorkflowRunSnapshot>(
-   };
- }
- 
--export function applyWorkflowGraphSeed<TSnapshot extends WorkflowRunSnapshot>(
-+export function applyWorkflowGraphSeed<TSnapshot extends Record<string, any>>(
-   snapshot: TSnapshot,
-   seed: WorkflowGraphSeed,
-   options: ApplyWorkflowGraphSeedOptions,
-@@ -372,7 +372,7 @@ export function applyWorkflowGraphSeed<TSnapshot extends WorkflowRunSnapshot>(
-   };
- }
- 
--export function applyWorkflowNodePromptUpdates<TSnapshot extends WorkflowRunSnapshot>(
-+export function applyWorkflowNodePromptUpdates<TSnapshot extends Record<string, any>>(
-   snapshot: TSnapshot,
-   updates: readonly WorkflowNodePromptUpdate[],
-   options: ApplyWorkflowNodePromptUpdatesOptions,
 diff --git a/apps/zcode-cli/packages/core/src/workflow/scheduler.ts b/apps/zcode-cli/packages/core/src/workflow/scheduler.ts
 index 0fb8dac..c817819 100644
 --- a/apps/zcode-cli/packages/core/src/workflow/scheduler.ts
@@ -4872,19 +4568,6 @@ index 0fb8dac..c817819 100644
        options.executableNodeIds ?? options.snapshot.graph.nodes.map((node) => node.id),
      );
      const resumeRepair = reconcileWorkflowSnapshotForResume(options.snapshot, {
-diff --git a/apps/zcode-cli/packages/debug/server/sources.ts b/apps/zcode-cli/packages/debug/server/sources.ts
-index e935755..8af8688 100644
---- a/apps/zcode-cli/packages/debug/server/sources.ts
-+++ b/apps/zcode-cli/packages/debug/server/sources.ts
-@@ -2,7 +2,7 @@ import { existsSync } from "node:fs";
- import { readdir, readFile, stat } from "node:fs/promises";
- import { homedir } from "node:os";
- import { basename, join, resolve } from "node:path";
--import { DatabaseSync } from "node:sqlite";
-+import { DatabaseSync } from "@zcode/node-sqlite";
- import type {
-   DbMessageRecord,
-   DbObservation,
 diff --git a/apps/zcode-cli/packages/dynamic-workflow-runtime/src/child-source.ts b/apps/zcode-cli/packages/dynamic-workflow-runtime/src/child-source.ts
 index 4492d49..ec1f43c 100644
 --- a/apps/zcode-cli/packages/dynamic-workflow-runtime/src/child-source.ts
@@ -5527,7 +5210,7 @@ index beb7e9a..447f619 100644
  
    static empty(): ModelConfigRules {
 diff --git a/packages/provider/src/config/provider-config.ts b/packages/provider/src/config/provider-config.ts
-index a566b13..d052f21 100644
+index a566b13..ca22d1a 100644
 --- a/packages/provider/src/config/provider-config.ts
 +++ b/packages/provider/src/config/provider-config.ts
 @@ -31,7 +31,7 @@ export type ApiKeyAccessConfigInput = Omit<ApiKeyAccessConfigObject, "type"> & {
@@ -5654,7 +5337,7 @@ index a566b13..d052f21 100644
    }
  
    static empty(): ProviderTemplateMap {
-@@ -359,20 +359,20 @@ export class ProviderTemplateMap extends ConfigOverlay<ProviderTemplateMap> {
+@@ -359,20 +359,19 @@ export class ProviderTemplateMap extends ConfigOverlay<ProviderTemplateMap> {
  function freezeProviderLogo(
    logo: ProviderLogoRef | null | undefined,
  ): ProviderLogoRef | null | undefined {
@@ -5667,8 +5350,8 @@ index a566b13..d052f21 100644
  ): readonly ModelId[] | null | undefined {
    if (!modelIds) return modelIds;
 -  return Object.freeze(
-+  return 
-     modelIds.map((modelId) => {
+-    modelIds.map((modelId) => {
++  return modelIds.map((modelId) => {
        const normalized = modelId.trim();
        if (!normalized) throw new Error("Model ID 不能为空");
        return normalized;
@@ -5679,7 +5362,7 @@ index a566b13..d052f21 100644
  }
  
  export type ProviderConfigRule = Readonly<
-@@ -389,10 +389,10 @@ export class ProviderConfigMap extends ConfigOverlay<ProviderConfigMap> {
+@@ -389,10 +388,10 @@ export class ProviderConfigMap extends ConfigOverlay<ProviderConfigMap> {
      for (const entry of entries) {
        const rule = "providerId" in entry ? entry : { providerId: entry[0], config: entry[1] };
        if (values.has(rule.providerId)) throw new Error(`重复 Provider key: ${rule.providerId}`);
@@ -6897,38 +6580,6 @@ index 264f849..01839c2 100644
        .passthrough()
        .nullish(),
    })
-diff --git a/packages/services/src/session/tasksDatabase/migrations.ts b/packages/services/src/session/tasksDatabase/migrations.ts
-index 0def79c..3ff56c7 100644
---- a/packages/services/src/session/tasksDatabase/migrations.ts
-+++ b/packages/services/src/session/tasksDatabase/migrations.ts
-@@ -1,6 +1,6 @@
- import { databaseMigrationIdSchema, type DatabaseMigrationFacts } from "@zcode/shared";
- import { createHash } from "node:crypto";
--import type { DatabaseSync } from "node:sqlite";
-+import type { DatabaseSync } from "@zcode/node-sqlite";
- import {
-   AUTOMATION_SCHEMA,
-   OFF_PEAK_SCHEMA,
-diff --git a/packages/services/src/session/tasksDatabase/prepared.ts b/packages/services/src/session/tasksDatabase/prepared.ts
-index b78f22b..4c7f854 100644
---- a/packages/services/src/session/tasksDatabase/prepared.ts
-+++ b/packages/services/src/session/tasksDatabase/prepared.ts
-@@ -1,4 +1,4 @@
--import type { DatabaseSync } from "node:sqlite";
-+import type { DatabaseSync } from "@zcode/node-sqlite";
- import { areTasksDatabaseMigrationsApplied } from "#src/session/tasksDatabase/migrations.js";
- // 仅当前进程的启动交接凭据；不落盘、不代替 SQLite 账本，不影响不同路径的新库。
- const migrated = new Set<string>();
-diff --git a/packages/services/src/session/tasksDatabase/provider-selection-v2.ts b/packages/services/src/session/tasksDatabase/provider-selection-v2.ts
-index 52f1de1..6cd0302 100644
---- a/packages/services/src/session/tasksDatabase/provider-selection-v2.ts
-+++ b/packages/services/src/session/tasksDatabase/provider-selection-v2.ts
-@@ -1,4 +1,4 @@
--import type { DatabaseSync } from "node:sqlite";
-+import type { DatabaseSync } from "@zcode/node-sqlite";
- import type { ModelSelection } from "@zcode/shared";
- 
- // 冻结 0002 的发布前已裁决编码；不能调用将来可能修改的运行时 parser/身份表。
 diff --git a/packages/services/src/setting/observableSettingService.ts b/packages/services/src/setting/observableSettingService.ts
 index 0c48b09..6505f80 100644
 --- a/packages/services/src/setting/observableSettingService.ts
@@ -6958,19 +6609,6 @@ index 492984b..f11a334 100644
    for (const entry of entries) {
      if (!entry.isDirectory() && !entry.isSymbolicLink()) {
        continue;
-diff --git a/packages/services/test/nonCliAcpRetirement.test.ts b/packages/services/test/nonCliAcpRetirement.test.ts
-index d69fe69..151151b 100644
---- a/packages/services/test/nonCliAcpRetirement.test.ts
-+++ b/packages/services/test/nonCliAcpRetirement.test.ts
-@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
- import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
- import { tmpdir } from "node:os";
- import { dirname, join } from "node:path";
--import { DatabaseSync } from "node:sqlite";
-+import { DatabaseSync } from "@zcode/node-sqlite";
- import test from "node:test";
- import { fileURLToPath } from "node:url";
- import {
 diff --git a/packages/shared/src/app-runtime-preferences.ts b/packages/shared/src/app-runtime-preferences.ts
 index 5785630..8842d25 100644
 --- a/packages/shared/src/app-runtime-preferences.ts

@@ -1,5 +1,5 @@
 diff --git a/apps/zcode-cli/packages/adapters/src/config/schema.ts b/apps/zcode-cli/packages/adapters/src/config/schema.ts
-index 4bc74cc..22d7656 100644
+index 4bc74cc..9f5f71a 100644
 --- a/apps/zcode-cli/packages/adapters/src/config/schema.ts
 +++ b/apps/zcode-cli/packages/adapters/src/config/schema.ts
 @@ -51,8 +51,7 @@ const mcpServerBaseSchema = {
@@ -185,20 +185,6 @@ index 4bc74cc..22d7656 100644
      $schema: z.string().optional(),
      modelStream: modelStreamSchema.optional(),
      permission: permissionSchema.optional(),
-@@ -434,8 +414,11 @@ function normalizePluginConfig(
-     }
-     delete enabledPlugins[LEGACY_CUA_PLUGIN_ID];
-   }
--  const suppressedBuiltins = plugins.suppressedBuiltins
--    ? plugins.suppressedBuiltins.reduce<string[]>((ids, id) => {
-+  // scriptc: suppressedBuiltins 来自 compat schema，接收者类型退化为 any，untyped 调用
-+  // 不接受泛型实参（SC0001）；先绑定为具体类型再 reduce。
-+  const suppressedBuiltinsInput = plugins.suppressedBuiltins as string[] | undefined;
-+  const suppressedBuiltins = suppressedBuiltinsInput
-+    ? suppressedBuiltinsInput.reduce<string[]>((ids, id) => {
-         const canonicalId = id === LEGACY_CUA_PLUGIN_ID ? CANONICAL_CUA_PLUGIN_ID : id;
-         if (canonicalId === CANONICAL_CUA_PLUGIN_ID && ids.includes(CANONICAL_CUA_PLUGIN_ID)) {
-           return ids;
 diff --git a/apps/zcode-cli/packages/adapters/src/exec/outputEncoding.ts b/apps/zcode-cli/packages/adapters/src/exec/outputEncoding.ts
 index 19d7e10..0c5b4ea 100644
 --- a/apps/zcode-cli/packages/adapters/src/exec/outputEncoding.ts
@@ -5341,74 +5327,6 @@ index b17fb37..5c6e26a 100644
  
  interface TodoReminderTurnCounts {
    turnsSinceLastTodoWrite: number;
-diff --git a/apps/zcode-cli/packages/core/src/runtime/methods/events.ts b/apps/zcode-cli/packages/core/src/runtime/methods/events.ts
-index ab8752a..e35f9da 100644
---- a/apps/zcode-cli/packages/core/src/runtime/methods/events.ts
-+++ b/apps/zcode-cli/packages/core/src/runtime/methods/events.ts
-@@ -61,10 +61,23 @@ interface SessionEventAppendAggregate {
-   payloadKinds: Record<string, number>;
- }
- 
--const sessionEventAppendAggregates = new WeakMap<
--  AgentRuntimeInternal,
--  Map<string, SessionEventAppendAggregate>
-->();
-+// 修复依据：scriptc 没有 WeakMap lowering（run73 SC2020）；改用数组按对象引用查找。
-+// runtime 实例数极少，线性查找与 WeakMap 的按实例隔离语义一致。
-+interface SessionEventAppendAggregateCache {
-+  runtime: AgentRuntimeInternal;
-+  aggregates: Map<string, SessionEventAppendAggregate>;
-+}
-+
-+const sessionEventAppendAggregateCaches: SessionEventAppendAggregateCache[] = [];
-+
-+function findSessionEventAppendAggregateCache(
-+  runtime: AgentRuntimeInternal,
-+): SessionEventAppendAggregateCache | undefined {
-+  for (const cache of sessionEventAppendAggregateCaches) {
-+    if (cache.runtime === runtime) return cache;
-+  }
-+  return undefined;
-+}
- 
- export function createEvent(
-   this: AgentRuntimeInternal,
-@@ -195,7 +208,7 @@ function flushSessionEventAppendAggregates(
-   traceContext: TraceContext,
-   reason: "count_threshold" | "low_frequency_event",
- ): void {
--  const aggregateMap = sessionEventAppendAggregates.get(this);
-+  const aggregateMap = findSessionEventAppendAggregateCache(this)?.aggregates;
-   if (!aggregateMap || aggregateMap.size === 0) {
-     return;
-   }
-@@ -211,7 +224,7 @@ function flushSessionEventAppendAggregate(
-   traceContext: TraceContext,
-   reason: "count_threshold" | "low_frequency_event",
- ): void {
--  const aggregateMap = sessionEventAppendAggregates.get(this);
-+  const aggregateMap = findSessionEventAppendAggregateCache(this)?.aggregates;
-   aggregateMap?.delete(aggregateKey);
-   // 日志治理原因：model streaming / progress 类事件与 token 流同频，
-   // 逐条写默认日志会把 eventStore 索引复制成巨量 daily log；这里保留 seq 范围和 kind 分布用于定位。
-@@ -234,12 +247,12 @@ function flushSessionEventAppendAggregate(
- function getSessionEventAppendAggregateMap(
-   runtime: AgentRuntimeInternal,
- ): Map<string, SessionEventAppendAggregate> {
--  let aggregateMap = sessionEventAppendAggregates.get(runtime);
--  if (!aggregateMap) {
--    aggregateMap = new Map();
--    sessionEventAppendAggregates.set(runtime, aggregateMap);
-+  let cache = findSessionEventAppendAggregateCache(runtime);
-+  if (!cache) {
-+    cache = { runtime, aggregates: new Map<string, SessionEventAppendAggregate>() };
-+    sessionEventAppendAggregateCaches.push(cache);
-   }
--  return aggregateMap;
-+  return cache.aggregates;
- }
- 
- function getPayloadKind(payload: unknown): string {
 diff --git a/apps/zcode-cli/packages/core/src/runtime/methods/microcompact.ts b/apps/zcode-cli/packages/core/src/runtime/methods/microcompact.ts
 index fe09b11..6215b5c 100644
 --- a/apps/zcode-cli/packages/core/src/runtime/methods/microcompact.ts
@@ -5455,117 +5373,6 @@ index 39ddb0b..9ac8f5d 100644
 -  return Object.freeze(wrapped);
 +  return wrapped;
  }
-diff --git a/apps/zcode-cli/packages/core/src/runtime/permission-full-access.ts b/apps/zcode-cli/packages/core/src/runtime/permission-full-access.ts
-index 58d99cf..fb4296c 100644
---- a/apps/zcode-cli/packages/core/src/runtime/permission-full-access.ts
-+++ b/apps/zcode-cli/packages/core/src/runtime/permission-full-access.ts
-@@ -12,7 +12,25 @@ import {
-   recoverPendingPermissionGrant,
- } from "./permission-grant-recovery.js";
- 
--const appliedGrants = new WeakMap<AgentRuntimeInternal, Set<string>>();
-+// 修复依据：scriptc 没有 WeakMap lowering（run73 SC2020）；数组按对象引用查找，语义同 WeakMap。
-+const appliedPermissionGrants: { granted: Set<string>; runtime: AgentRuntimeInternal }[] = [];
-+
-+function findAppliedPermissionGrants(runtime: AgentRuntimeInternal): Set<string> | undefined {
-+  for (const entry of appliedPermissionGrants) {
-+    if (entry.runtime === runtime) return entry.granted;
-+  }
-+  return undefined;
-+}
-+
-+function setAppliedPermissionGrants(runtime: AgentRuntimeInternal, granted: Set<string>): void {
-+  for (const entry of appliedPermissionGrants) {
-+    if (entry.runtime === runtime) {
-+      entry.granted = granted;
-+      return;
-+    }
-+  }
-+  appliedPermissionGrants.push({ granted, runtime });
-+}
- 
- /** 完全访问只改当前任务；receipt 固定目标集合，发布失败后不能重新抓取后来队列。 */
- export async function grantPermissionFullAccess(
-@@ -86,7 +104,7 @@ export async function grantPermissionFullAccess(
-     });
-     const ids = new Set(payload.permissionGrant!.queueItemIds);
-     // 事务已提交：之后即使传输取消也必须完成内存和投影发布，不能制造半个授权。
--    const applied = appliedGrants.get(this) ?? new Set<string>();
-+    const applied = findAppliedPermissionGrants(this) ?? new Set<string>();
-     if (!applied.has(interactionId)) {
-       this.lastPermissionGrantId = interactionId;
-       this.config.mode = payload.mode;
-@@ -95,7 +113,7 @@ export async function grantPermissionFullAccess(
-         if (ids.has(item.id) && item.intent) item.intent = { ...item.intent, mode: "yolo" };
-       }
-       applied.add(interactionId);
--      appliedGrants.set(this, applied);
-+      setAppliedPermissionGrants(this, applied);
-     }
-     const existing = (await this.eventStore.getEvents(this.sessionId)).find(
-       (item) => item.id === event.id,
-diff --git a/apps/zcode-cli/packages/core/src/runtime/permission-grant-recovery.ts b/apps/zcode-cli/packages/core/src/runtime/permission-grant-recovery.ts
-index 33247a1..1acf76d 100644
---- a/apps/zcode-cli/packages/core/src/runtime/permission-grant-recovery.ts
-+++ b/apps/zcode-cli/packages/core/src/runtime/permission-grant-recovery.ts
-@@ -1,13 +1,51 @@
- import type { AgentRuntimeInternal } from "./internal.js";
- 
- // 不保存第二份权限/队列，只记录事务已提交但事件尚未发布的恢复动作。
--export const unpublishedPermissionGrants = new WeakMap<
--  AgentRuntimeInternal,
--  {
--    interactionId: string;
--    recover: () => Promise<string>;
-+export interface UnpublishedPermissionGrant {
-+  interactionId: string;
-+  recover: () => Promise<string>;
-+}
-+
-+// 修复依据：scriptc 没有 WeakMap lowering（run73 SC2020）。runtime 实例数极少，改用数组按
-+// 对象引用查找，并保留原 WeakMap 的 get/set/has/delete 调用面，调用点无需改动。
-+const unpublishedPermissionGrantEntries: {
-+  grant: UnpublishedPermissionGrant;
-+  runtime: AgentRuntimeInternal;
-+}[] = [];
-+
-+function findUnpublishedPermissionGrantEntry(
-+  runtime: AgentRuntimeInternal,
-+): { grant: UnpublishedPermissionGrant; runtime: AgentRuntimeInternal } | undefined {
-+  for (const entry of unpublishedPermissionGrantEntries) {
-+    if (entry.runtime === runtime) return entry;
-   }
-->();
-+  return undefined;
-+}
-+
-+export const unpublishedPermissionGrants = {
-+  delete(runtime: AgentRuntimeInternal): void {
-+    for (let index = 0; index < unpublishedPermissionGrantEntries.length; index += 1) {
-+      if (unpublishedPermissionGrantEntries[index].runtime === runtime) {
-+        unpublishedPermissionGrantEntries.splice(index, 1);
-+        return;
-+      }
-+    }
-+  },
-+  get(runtime: AgentRuntimeInternal): UnpublishedPermissionGrant | undefined {
-+    return findUnpublishedPermissionGrantEntry(runtime)?.grant;
-+  },
-+  has(runtime: AgentRuntimeInternal): boolean {
-+    return findUnpublishedPermissionGrantEntry(runtime) !== undefined;
-+  },
-+  set(runtime: AgentRuntimeInternal, grant: UnpublishedPermissionGrant): void {
-+    const entry = findUnpublishedPermissionGrantEntry(runtime);
-+    if (entry) {
-+      entry.grant = grant;
-+      return;
-+    }
-+    unpublishedPermissionGrantEntries.push({ grant, runtime });
-+  },
-+};
- 
- export async function recoverPendingPermissionGrant(runtime: AgentRuntimeInternal): Promise<void> {
-   await unpublishedPermissionGrants.get(runtime)?.recover();
 diff --git a/apps/zcode-cli/packages/core/src/system-reminder/incoming-message.ts b/apps/zcode-cli/packages/core/src/system-reminder/incoming-message.ts
 index b286f4d..1c470f5 100644
 --- a/apps/zcode-cli/packages/core/src/system-reminder/incoming-message.ts
@@ -5597,112 +5404,6 @@ index 74de0d6..11de3bc 100644
  
  const MID_CONVERSATION_SYSTEM_SOURCES = new Set<SystemReminderSource>(
    SYSTEM_REMINDER_SOURCES.filter((source) => !NON_MID_CONVERSATION_SYSTEM_SOURCES.has(source)),
-diff --git a/apps/zcode-cli/packages/core/src/telemetry/runtime-telemetry.ts b/apps/zcode-cli/packages/core/src/telemetry/runtime-telemetry.ts
-index 09ff060..fe86e69 100644
---- a/apps/zcode-cli/packages/core/src/telemetry/runtime-telemetry.ts
-+++ b/apps/zcode-cli/packages/core/src/telemetry/runtime-telemetry.ts
-@@ -5,18 +5,14 @@ import type {
-   AgentTelemetryCausation,
-   AgentTelemetryLaunchSurface,
-   AgentTurnSpanWriter,
--  CommandExecutionSpanWriter,
-   CompactionTraceStart,
-   ContextCompactionSpanWriter,
-   DetachedOperationSpanWriter,
-   DetachedOperationTraceStart,
-   MessageId,
--  ModelAttemptSpanWriter,
--  ModelCallSpanWriter,
-   SessionId,
-   SessionTaskType,
-   SyntheticUserMessageSource,
--  ToolExecutionSpanWriter,
-   TraceContext,
- } from "@zcode/contracts";
- 
-@@ -117,7 +113,10 @@ const NOOP_SCOPE = {
-   run: <T>(execute: () => T): T => execute(),
- };
- 
--const NOOP_COMMAND: CommandExecutionSpanWriter = {
-+// 修复依据：契约的 span writer / port 记录含 scriptc 编不出来的成员（finishFailed 的
-+// 可选 unknown 形参），标注这些类型会让常量值被判成不可编译。这里改为按字面量推断类型，
-+// 注入处仍是契约类型，运行语义不变。
-+const NOOP_COMMAND = {
-   ...NOOP_SCOPE,
-   finishBackgrounded() {},
-   finishCancelled() {},
-@@ -131,7 +130,7 @@ const NOOP_COMMAND: CommandExecutionSpanWriter = {
-   setTimedOut() {},
- };
- 
--const NOOP_TOOL: ToolExecutionSpanWriter = {
-+const NOOP_TOOL = {
-   ...NOOP_SCOPE,
-   finishCancelled() {},
-   finishCompleted() {},
-@@ -144,7 +143,7 @@ const NOOP_TOOL: ToolExecutionSpanWriter = {
-   startCommand: () => NOOP_COMMAND,
- };
- 
--const NOOP_STEP: AgentStepSpanWriter = {
-+const NOOP_STEP = {
-   ...NOOP_SCOPE,
-   finishCancelled() {},
-   finishCompleted() {},
-@@ -152,14 +151,14 @@ const NOOP_STEP: AgentStepSpanWriter = {
-   finishFailed() {},
- };
- 
--const NOOP_TURN: AgentTurnSpanWriter = {
-+const NOOP_TURN = {
-   ...NOOP_SCOPE,
-   finishCancelled() {},
-   finishCompleted() {},
-   finishFailed() {},
- };
- 
--const NOOP_COMPACTION: ContextCompactionSpanWriter = {
-+const NOOP_COMPACTION = {
-   ...NOOP_SCOPE,
-   finishCancelled() {},
-   finishCompleted() {},
-@@ -170,7 +169,7 @@ const NOOP_COMPACTION: ContextCompactionSpanWriter = {
-   setOutputTokens() {},
- };
- 
--const NOOP_DETACHED: DetachedOperationSpanWriter = {
-+const NOOP_DETACHED = {
-   ...NOOP_SCOPE,
-   finishCancelled() {},
-   finishCompleted() {},
-@@ -178,7 +177,7 @@ const NOOP_DETACHED: DetachedOperationSpanWriter = {
-   setResultType() {},
- };
- 
--const NOOP_ATTEMPT: ModelAttemptSpanWriter = {
-+const NOOP_ATTEMPT = {
-   ...NOOP_SCOPE,
-   finishAbandoned() {},
-   finishCancelled() {},
-@@ -207,7 +206,7 @@ const NOOP_ATTEMPT: ModelAttemptSpanWriter = {
-   setStreamOutputCommitted() {},
- };
- 
--const NOOP_CALL: ModelCallSpanWriter = {
-+const NOOP_CALL = {
-   ...NOOP_SCOPE,
-   finishAbandoned() {},
-   finishCancelled() {},
-@@ -217,7 +216,7 @@ const NOOP_CALL: ModelCallSpanWriter = {
-   startAttempt: () => NOOP_ATTEMPT,
- };
- 
--const NOOP_AGENT_EXECUTION_TELEMETRY: AgentExecutionTelemetryPort = {
-+const NOOP_AGENT_EXECUTION_TELEMETRY = {
-   abandonSession() {},
-   captureCausation() {
-     return undefined;
 diff --git a/apps/zcode-cli/packages/core/src/tool/handlers/bash-cwd-policy.ts b/apps/zcode-cli/packages/core/src/tool/handlers/bash-cwd-policy.ts
 index 62c5204..21ffab6 100644
 --- a/apps/zcode-cli/packages/core/src/tool/handlers/bash-cwd-policy.ts
@@ -5722,553 +5423,6 @@ index 62c5204..21ffab6 100644
    const pathApi = getToolPathApi(platform);
    const isWindows = platform === "win32";
    const resolvedCwd = normalizeCwdBoundary(input.resolvedCwd ?? "", isWindows);
-diff --git a/apps/zcode-cli/packages/core/src/tool/handlers/bash-readonly-policy-flags-file.ts b/apps/zcode-cli/packages/core/src/tool/handlers/bash-readonly-policy-flags-file.ts
-index 7827b4c..d2c6699 100644
---- a/apps/zcode-cli/packages/core/src/tool/handlers/bash-readonly-policy-flags-file.ts
-+++ b/apps/zcode-cli/packages/core/src/tool/handlers/bash-readonly-policy-flags-file.ts
-@@ -1,4 +1,5 @@
--import type { SafeFlagValue } from "./bash-readonly-policy-types.js";
-+// scriptc 不支持对索引签名记录（Readonly<Record<...>>）做 satisfies 校验（run73 SC2002），
-+// 这里只保留 as const；取值合法性由使用处赋给 BashReadonlyCommandPolicy.safeFlags 时校验。
- 
- export const FD_SAFE_FLAGS = {
-   "-0": "none",
-@@ -66,7 +67,7 @@ export const FD_SAFE_FLAGS = {
-   "--threads": "number",
-   "--type": "string",
-   "--version": "none",
--} as const satisfies Readonly<Record<string, SafeFlagValue>>;
-+} as const;
- 
- export const SORT_SAFE_FLAGS = {
-   "-C": "none",
-@@ -114,7 +115,7 @@ export const SORT_SAFE_FLAGS = {
-   "--version": "none",
-   "--version-sort": "none",
-   "--zero-terminated": "none",
--} as const satisfies Readonly<Record<string, SafeFlagValue>>;
-+} as const;
- 
- export const BASE64_SAFE_FLAGS = {
-   "-D": "none",
-@@ -130,7 +131,7 @@ export const BASE64_SAFE_FLAGS = {
-   "--input": "string",
-   "--version": "none",
-   "--wrap": "number",
--} as const satisfies Readonly<Record<string, SafeFlagValue>>;
-+} as const;
- 
- export const SHA_SUM_SAFE_FLAGS = {
-   "-b": "none",
-@@ -150,7 +151,7 @@ export const SHA_SUM_SAFE_FLAGS = {
-   "--version": "none",
-   "--warn": "none",
-   "--zero": "none",
--} as const satisfies Readonly<Record<string, SafeFlagValue>>;
-+} as const;
- 
- export const DATE_SAFE_FLAGS = {
-   "-I": "none",
-@@ -168,7 +169,7 @@ export const DATE_SAFE_FLAGS = {
-   "--universal": "none",
-   "--utc": "none",
-   "--version": "none",
--} as const satisfies Readonly<Record<string, SafeFlagValue>>;
-+} as const;
- 
- export const HOSTNAME_SAFE_FLAGS = {
-   "-A": "none",
-@@ -192,4 +193,4 @@ export const HOSTNAME_SAFE_FLAGS = {
-   "--short": "none",
-   "--verbose": "none",
-   "--version": "none",
--} as const satisfies Readonly<Record<string, SafeFlagValue>>;
-+} as const;
-diff --git a/apps/zcode-cli/packages/core/src/tool/handlers/bash-readonly-policy-flags-git.ts b/apps/zcode-cli/packages/core/src/tool/handlers/bash-readonly-policy-flags-git.ts
-index 6f094df..cac3476 100644
---- a/apps/zcode-cli/packages/core/src/tool/handlers/bash-readonly-policy-flags-git.ts
-+++ b/apps/zcode-cli/packages/core/src/tool/handlers/bash-readonly-policy-flags-git.ts
-@@ -1,18 +1,19 @@
--import type { SafeFlagValue } from "./bash-readonly-policy-types.js";
-+// scriptc 不支持对索引签名记录（Readonly<Record<...>>）做 satisfies 校验（run73 SC2002），
-+// 这里只保留 as const；取值合法性由使用处赋给 BashReadonlyCommandPolicy.safeFlags 时校验。
- 
- export const COMMON_GIT_REF_FLAGS = {
-   "--all": "none",
-   "--branches": "none",
-   "--remotes": "none",
-   "--tags": "none",
--} as const satisfies Readonly<Record<string, SafeFlagValue>>;
-+} as const;
- 
- export const COMMON_GIT_DATE_FLAGS = {
-   "--after": "string",
-   "--before": "string",
-   "--since": "string",
-   "--until": "string",
--} as const satisfies Readonly<Record<string, SafeFlagValue>>;
-+} as const;
- 
- export const COMMON_GIT_LOG_STYLE_FLAGS = {
-   "--date": "string",
-@@ -21,12 +22,12 @@ export const COMMON_GIT_LOG_STYLE_FLAGS = {
-   "--no-decorate": "none",
-   "--oneline": "none",
-   "--relative-date": "none",
--} as const satisfies Readonly<Record<string, SafeFlagValue>>;
-+} as const;
- 
- export const COMMON_GIT_COUNT_FLAGS = {
-   "-n": "number",
-   "--max-count": "number",
--} as const satisfies Readonly<Record<string, SafeFlagValue>>;
-+} as const;
- 
- export const COMMON_GIT_STAT_FLAGS = {
-   "--name-only": "none",
-@@ -34,12 +35,12 @@ export const COMMON_GIT_STAT_FLAGS = {
-   "--numstat": "none",
-   "--shortstat": "none",
-   "--stat": "none",
--} as const satisfies Readonly<Record<string, SafeFlagValue>>;
-+} as const;
- 
- export const COMMON_GIT_COLOR_FLAGS = {
-   "--color": "none",
-   "--no-color": "none",
--} as const satisfies Readonly<Record<string, SafeFlagValue>>;
-+} as const;
- 
- export const COMMON_GIT_PATCH_FLAGS = {
-   "-p": "none",
-@@ -47,7 +48,7 @@ export const COMMON_GIT_PATCH_FLAGS = {
-   "--no-ext-diff": "none",
-   "--no-patch": "none",
-   "--patch": "none",
--} as const satisfies Readonly<Record<string, SafeFlagValue>>;
-+} as const;
- 
- export const GIT_STATUS_SAFE_FLAGS = {
-   "-b": "none",
-@@ -70,7 +71,7 @@ export const GIT_STATUS_SAFE_FLAGS = {
-   "--untracked-files": "string",
-   "--verbose": "none",
-   "-v": "none",
--} as const satisfies Readonly<Record<string, SafeFlagValue>>;
-+} as const;
- 
- export const GIT_DIFF_SAFE_FLAGS = {
-   "-B": "none",
-@@ -126,7 +127,7 @@ export const GIT_DIFF_SAFE_FLAGS = {
-   "--word-diff": "none",
-   "--word-diff-regex": "string",
-   "--ws-error-highlight": "string",
--} as const satisfies Readonly<Record<string, SafeFlagValue>>;
-+} as const;
- 
- export const GIT_LOG_SAFE_FLAGS = {
-   ...COMMON_GIT_LOG_STYLE_FLAGS,
-@@ -171,7 +172,7 @@ export const GIT_LOG_SAFE_FLAGS = {
-   "--sparse": "none",
-   "--topo-order": "none",
-   "--walk-reflogs": "none",
--} as const satisfies Readonly<Record<string, SafeFlagValue>>;
-+} as const;
- 
- export const GIT_SHOW_SAFE_FLAGS = {
-   ...COMMON_GIT_LOG_STYLE_FLAGS,
-@@ -189,7 +190,7 @@ export const GIT_SHOW_SAFE_FLAGS = {
-   "--raw": "none",
-   "--word-diff": "none",
-   "--word-diff-regex": "string",
--} as const satisfies Readonly<Record<string, SafeFlagValue>>;
-+} as const;
- 
- export const GIT_GREP_SAFE_FLAGS = {
-   "-A": "number",
-@@ -240,4 +241,4 @@ export const GIT_GREP_SAFE_FLAGS = {
-   "--threads": "number",
-   "--untracked": "none",
-   "--word-regexp": "none",
--} as const satisfies Readonly<Record<string, SafeFlagValue>>;
-+} as const;
-diff --git a/apps/zcode-cli/packages/core/src/tool/handlers/bash-readonly-policy-flags-process.ts b/apps/zcode-cli/packages/core/src/tool/handlers/bash-readonly-policy-flags-process.ts
-index 87d22dc..b5aab9e 100644
---- a/apps/zcode-cli/packages/core/src/tool/handlers/bash-readonly-policy-flags-process.ts
-+++ b/apps/zcode-cli/packages/core/src/tool/handlers/bash-readonly-policy-flags-process.ts
-@@ -1,4 +1,5 @@
--import type { SafeFlagValue } from "./bash-readonly-policy-types.js";
-+// scriptc 不支持对索引签名记录（Readonly<Record<...>>）做 satisfies 校验（run73 SC2002），
-+// 这里只保留 as const；取值合法性由使用处赋给 BashReadonlyCommandPolicy.safeFlags 时校验。
- 
- export const PS_SAFE_FLAGS = {
-   "-A": "none",
-@@ -43,7 +44,7 @@ export const PS_SAFE_FLAGS = {
-   "--user": "string",
-   "--version": "none",
-   "--width": "number",
--} as const satisfies Readonly<Record<string, SafeFlagValue>>;
-+} as const;
- 
- export const PYRIGHT_SAFE_FLAGS = {
-   "--dependencies": "none",
-@@ -55,7 +56,7 @@ export const PYRIGHT_SAFE_FLAGS = {
-   "--verbose": "none",
-   "--version": "none",
-   "--warnings": "none",
--} as const satisfies Readonly<Record<string, SafeFlagValue>>;
-+} as const;
- 
- export const MAN_SAFE_FLAGS = {
-   "-S": "string",
-@@ -69,7 +70,7 @@ export const MAN_SAFE_FLAGS = {
-   "--all": "none",
-   "--apropos": "none",
-   "--whatis": "none",
--} as const satisfies Readonly<Record<string, SafeFlagValue>>;
-+} as const;
- 
- export const NETSTAT_SAFE_FLAGS = {
-   "-I": "string",
-@@ -84,7 +85,7 @@ export const NETSTAT_SAFE_FLAGS = {
-   "-r": "none",
-   "-s": "none",
-   "-v": "none",
--} as const satisfies Readonly<Record<string, SafeFlagValue>>;
-+} as const;
- 
- export const LSOF_SAFE_FLAGS = {
-   "-?": "none",
-@@ -124,7 +125,7 @@ export const LSOF_SAFE_FLAGS = {
-   "-u": "string",
-   "-v": "none",
-   "-x": "none",
--} as const satisfies Readonly<Record<string, SafeFlagValue>>;
-+} as const;
- 
- export const PGREP_SAFE_FLAGS = {
-   "-F": "string",
-@@ -176,13 +177,13 @@ export const PGREP_SAFE_FLAGS = {
-   "--terminal": "string",
-   "--uid": "string",
-   "--version": "none",
--} as const satisfies Readonly<Record<string, SafeFlagValue>>;
-+} as const;
- 
- export const TPUT_SAFE_FLAGS = {
-   "-T": "string",
-   "-V": "none",
-   "-x": "none",
--} as const satisfies Readonly<Record<string, SafeFlagValue>>;
-+} as const;
- 
- export const SS_SAFE_FLAGS = {
-   "-0": "none",
-@@ -250,7 +251,7 @@ export const SS_SAFE_FLAGS = {
-   "--unix": "none",
-   "--version": "none",
-   "--vsock": "none",
--} as const satisfies Readonly<Record<string, SafeFlagValue>>;
-+} as const;
- 
- export const TEST_SAFE_FLAGS = {
-   "-b": "string",
-@@ -284,7 +285,7 @@ export const TEST_SAFE_FLAGS = {
-   "-w": "string",
-   "-x": "string",
-   "-z": "string",
--} as const satisfies Readonly<Record<string, SafeFlagValue>>;
-+} as const;
- 
- export const DOCKER_LOGS_SAFE_FLAGS = {
-   "-f": "none",
-@@ -296,7 +297,7 @@ export const DOCKER_LOGS_SAFE_FLAGS = {
-   "--tail": "string",
-   "--timestamps": "none",
-   "--until": "string",
--} as const satisfies Readonly<Record<string, SafeFlagValue>>;
-+} as const;
- 
- export const DOCKER_INSPECT_SAFE_FLAGS = {
-   "-f": "string",
-@@ -304,20 +305,20 @@ export const DOCKER_INSPECT_SAFE_FLAGS = {
-   "--format": "string",
-   "--size": "none",
-   "--type": "string",
--} as const satisfies Readonly<Record<string, SafeFlagValue>>;
-+} as const;
- 
- export const GH_REPO_FLAGS = {
-   "-R": "string",
-   "--repo": "string",
--} as const satisfies Readonly<Record<string, SafeFlagValue>>;
-+} as const;
- 
- export const GH_JSON_REPO_FLAGS = {
-   ...GH_REPO_FLAGS,
-   "--json": "string",
--} as const satisfies Readonly<Record<string, SafeFlagValue>>;
-+} as const;
- 
- export const GH_LIMIT_REPO_FLAGS = {
-   ...GH_JSON_REPO_FLAGS,
-   "-L": "number",
-   "--limit": "number",
--} as const satisfies Readonly<Record<string, SafeFlagValue>>;
-+} as const;
-diff --git a/apps/zcode-cli/packages/core/src/tool/handlers/bash-readonly-policy-flags-text.ts b/apps/zcode-cli/packages/core/src/tool/handlers/bash-readonly-policy-flags-text.ts
-index 9969622..8bd8890 100644
---- a/apps/zcode-cli/packages/core/src/tool/handlers/bash-readonly-policy-flags-text.ts
-+++ b/apps/zcode-cli/packages/core/src/tool/handlers/bash-readonly-policy-flags-text.ts
-@@ -1,4 +1,5 @@
--import type { SafeFlagValue } from "./bash-readonly-policy-types.js";
-+// scriptc 不支持对索引签名记录（Readonly<Record<...>>）做 satisfies 校验（run73 SC2002），
-+// 这里只保留 as const；取值合法性由使用处赋给 BashReadonlyCommandPolicy.safeFlags 时校验。
- 
- export const OPTION_PATTERN = /^-[a-zA-Z0-9_-]/;
- 
-@@ -65,7 +66,7 @@ export const TREE_SAFE_FLAGS = {
-   "--sort": "string",
-   "--timefmt": "string",
-   "--version": "none",
--} as const satisfies Readonly<Record<string, SafeFlagValue>>;
-+} as const;
- 
- export const CAT_SAFE_FLAGS = {
-   "-A": "none",
-@@ -85,7 +86,7 @@ export const CAT_SAFE_FLAGS = {
-   "--show-nonprinting": "none",
-   "--show-tabs": "none",
-   "--squeeze-blank": "none",
--} as const satisfies Readonly<Record<string, SafeFlagValue>>;
-+} as const;
- 
- export const HEAD_TAIL_SAFE_FLAGS = {
-   "-c": "number",
-@@ -97,7 +98,7 @@ export const HEAD_TAIL_SAFE_FLAGS = {
-   "--quiet": "none",
-   "--silent": "none",
-   "--verbose": "none",
--} as const satisfies Readonly<Record<string, SafeFlagValue>>;
-+} as const;
- 
- export const WC_SAFE_FLAGS = {
-   "-L": "none",
-@@ -110,7 +111,7 @@ export const WC_SAFE_FLAGS = {
-   "--lines": "none",
-   "--max-line-length": "none",
-   "--words": "none",
--} as const satisfies Readonly<Record<string, SafeFlagValue>>;
-+} as const;
- 
- export const RG_SAFE_FLAGS = {
-   "-A": "number",
-@@ -173,7 +174,7 @@ export const RG_SAFE_FLAGS = {
-   "--unrestricted": "none",
-   "--with-filename": "none",
-   "--word-regexp": "none",
--} as const satisfies Readonly<Record<string, SafeFlagValue>>;
-+} as const;
- 
- export const GREP_SAFE_FLAGS = {
-   "-A": "number",
-@@ -261,7 +262,7 @@ export const GREP_SAFE_FLAGS = {
-   "--version": "none",
-   "--with-filename": "none",
-   "--word-regexp": "none",
--} as const satisfies Readonly<Record<string, SafeFlagValue>>;
-+} as const;
- 
- export const SED_SAFE_FLAGS = {
-   "-E": "none",
-@@ -284,7 +285,7 @@ export const SED_SAFE_FLAGS = {
-   "--unbuffered": "none",
-   "--version": "none",
-   "--zero-terminated": "none",
--} as const satisfies Readonly<Record<string, SafeFlagValue>>;
-+} as const;
- 
- export const XARGS_SAFE_FLAGS = {
-   "-0": "none",
-@@ -298,7 +299,7 @@ export const XARGS_SAFE_FLAGS = {
-   "-s": "number",
-   "-t": "none",
-   "-x": "none",
--} as const satisfies Readonly<Record<string, SafeFlagValue>>;
-+} as const;
- 
- export const FILE_SAFE_FLAGS = {
-   "-0": "none",
-@@ -338,7 +339,7 @@ export const FILE_SAFE_FLAGS = {
-   "--separator": "string",
-   "--special-files": "none",
-   "--version": "none",
--} as const satisfies Readonly<Record<string, SafeFlagValue>>;
-+} as const;
- 
- export const JQ_SAFE_FLAGS = {
-   "-C": "none",
-@@ -359,4 +360,4 @@ export const JQ_SAFE_FLAGS = {
-   "--slurp": "none",
-   "--sort-keys": "none",
-   "--tab": "none",
--} as const satisfies Readonly<Record<string, SafeFlagValue>>;
-+} as const;
-diff --git a/apps/zcode-cli/packages/core/src/tool/handlers/bash-readonly-policy-git-subcommands-core.ts b/apps/zcode-cli/packages/core/src/tool/handlers/bash-readonly-policy-git-subcommands-core.ts
-index ae3e317..f24c11a 100644
---- a/apps/zcode-cli/packages/core/src/tool/handlers/bash-readonly-policy-git-subcommands-core.ts
-+++ b/apps/zcode-cli/packages/core/src/tool/handlers/bash-readonly-policy-git-subcommands-core.ts
-@@ -1,3 +1,7 @@
-+// 修复依据：scriptc 对 `as const satisfies readonly (readonly [string, Policy])[]` 形式的
-+// 元组数组会把各元素的具体记录形状与聚合目标统一，报 SC2002（safeFlags 索引签名 ↔ 具体形状
-+// 互不 lift）；改成显式注解（与 bash-readonly-policy-simple-commands.ts 里能编译的写法一致），
-+// 每个元素直接按 BashReadonlyCommandPolicy 校验。
- import type { BashReadonlyCommandPolicy } from "./bash-readonly-policy-types.js";
- import {
-   gitBranchCommandIsDangerous,
-@@ -10,7 +14,7 @@ import {
-   GIT_LOG_SAFE_FLAGS,
- } from "./bash-readonly-policy-flags.js";
- 
--export const GIT_READONLY_SUBCOMMAND_POLICY_ENTRIES_CORE = [
-+export const GIT_READONLY_SUBCOMMAND_POLICY_ENTRIES_CORE: readonly (readonly [string, BashReadonlyCommandPolicy])[] = [
-   [
-     "git blame",
-     {
-@@ -199,4 +203,4 @@ export const GIT_READONLY_SUBCOMMAND_POLICY_ENTRIES_CORE = [
-       },
-     },
-   ],
--] as const satisfies readonly (readonly [string, BashReadonlyCommandPolicy])[];
-+];
-diff --git a/apps/zcode-cli/packages/core/src/tool/handlers/bash-readonly-policy-git-subcommands-history.ts b/apps/zcode-cli/packages/core/src/tool/handlers/bash-readonly-policy-git-subcommands-history.ts
-index fbe12b9..bdd178a 100644
---- a/apps/zcode-cli/packages/core/src/tool/handlers/bash-readonly-policy-git-subcommands-history.ts
-+++ b/apps/zcode-cli/packages/core/src/tool/handlers/bash-readonly-policy-git-subcommands-history.ts
-@@ -1,3 +1,7 @@
-+// 修复依据：scriptc 对 `as const satisfies readonly (readonly [string, Policy])[]` 形式的
-+// 元组数组会把各元素的具体记录形状与聚合目标统一，报 SC2002（safeFlags 索引签名 ↔ 具体形状
-+// 互不 lift）；改成显式注解（与 bash-readonly-policy-simple-commands.ts 里能编译的写法一致），
-+// 每个元素直接按 BashReadonlyCommandPolicy 校验。
- import type { BashReadonlyCommandPolicy } from "./bash-readonly-policy-types.js";
- import {
-   gitLsRemoteCommandIsDangerous,
-@@ -18,7 +22,7 @@ import {
-   GIT_STATUS_SAFE_FLAGS,
- } from "./bash-readonly-policy-flags.js";
- 
--export const GIT_READONLY_SUBCOMMAND_POLICY_ENTRIES_HISTORY = [
-+export const GIT_READONLY_SUBCOMMAND_POLICY_ENTRIES_HISTORY: readonly (readonly [string, BashReadonlyCommandPolicy])[] = [
-   [
-     "git ls-remote",
-     {
-@@ -224,4 +228,4 @@ export const GIT_READONLY_SUBCOMMAND_POLICY_ENTRIES_HISTORY = [
-       safeFlags: { "-v": "none", "--expire": "string", "--porcelain": "none", "--verbose": "none" },
-     },
-   ],
--] as const satisfies readonly (readonly [string, BashReadonlyCommandPolicy])[];
-+];
-diff --git a/apps/zcode-cli/packages/core/src/tool/handlers/bash-readonly-policy-multiword-core.ts b/apps/zcode-cli/packages/core/src/tool/handlers/bash-readonly-policy-multiword-core.ts
-index 09d95d3..cbfd194 100644
---- a/apps/zcode-cli/packages/core/src/tool/handlers/bash-readonly-policy-multiword-core.ts
-+++ b/apps/zcode-cli/packages/core/src/tool/handlers/bash-readonly-policy-multiword-core.ts
-@@ -1,3 +1,7 @@
-+// 修复依据：scriptc 对 `as const satisfies readonly (readonly [string, Policy])[]` 形式的
-+// 元组数组会把各元素的具体记录形状与聚合目标统一，报 SC2002（safeFlags 索引签名 ↔ 具体形状
-+// 互不 lift）；改成显式注解（与 bash-readonly-policy-simple-commands.ts 里能编译的写法一致），
-+// 每个元素直接按 BashReadonlyCommandPolicy 校验。
- import type { BashReadonlyCommandPolicy } from "./bash-readonly-policy-types.js";
- import {
-   dockerCommandIsDangerous,
-@@ -5,7 +9,7 @@ import {
- } from "./bash-readonly-policy-callbacks.js";
- import { DOCKER_INSPECT_SAFE_FLAGS, DOCKER_LOGS_SAFE_FLAGS } from "./bash-readonly-policy-flags.js";
- 
--export const READONLY_MULTIWORD_POLICY_ENTRIES_CORE = [
-+export const READONLY_MULTIWORD_POLICY_ENTRIES_CORE: readonly (readonly [string, BashReadonlyCommandPolicy])[] = [
-   [
-     "docker inspect",
-     {
-@@ -33,4 +37,4 @@ export const READONLY_MULTIWORD_POLICY_ENTRIES_CORE = [
-       additionalCommandIsDangerousCallback: ghCommandIsDangerous,
-     },
-   ],
--] as const satisfies readonly (readonly [string, BashReadonlyCommandPolicy])[];
-+];
-diff --git a/apps/zcode-cli/packages/core/src/tool/handlers/bash-readonly-policy-multiword-gh.ts b/apps/zcode-cli/packages/core/src/tool/handlers/bash-readonly-policy-multiword-gh.ts
-index aafe710..9ae9cfe 100644
---- a/apps/zcode-cli/packages/core/src/tool/handlers/bash-readonly-policy-multiword-gh.ts
-+++ b/apps/zcode-cli/packages/core/src/tool/handlers/bash-readonly-policy-multiword-gh.ts
-@@ -1,3 +1,7 @@
-+// 修复依据：scriptc 对 `as const satisfies readonly (readonly [string, Policy])[]` 形式的
-+// 元组数组会把各元素的具体记录形状与聚合目标统一，报 SC2002（safeFlags 索引签名 ↔ 具体形状
-+// 互不 lift）；改成显式注解（与 bash-readonly-policy-simple-commands.ts 里能编译的写法一致），
-+// 每个元素直接按 BashReadonlyCommandPolicy 校验。
- import type { BashReadonlyCommandPolicy } from "./bash-readonly-policy-types.js";
- import { ghCommandIsDangerous } from "./bash-readonly-policy-callbacks.js";
- import {
-@@ -6,7 +10,7 @@ import {
-   GH_REPO_FLAGS,
- } from "./bash-readonly-policy-flags.js";
- 
--export const READONLY_MULTIWORD_POLICY_ENTRIES_GH = [
-+export const READONLY_MULTIWORD_POLICY_ENTRIES_GH: readonly (readonly [string, BashReadonlyCommandPolicy])[] = [
-   [
-     "gh issue list",
-     {
-@@ -342,4 +346,4 @@ export const READONLY_MULTIWORD_POLICY_ENTRIES_GH = [
-       additionalCommandIsDangerousCallback: ghCommandIsDangerous,
-     },
-   ],
--] as const satisfies readonly (readonly [string, BashReadonlyCommandPolicy])[];
-+];
-diff --git a/apps/zcode-cli/packages/core/src/tool/handlers/bash.ts b/apps/zcode-cli/packages/core/src/tool/handlers/bash.ts
-index 8315932..8e6f53f 100644
---- a/apps/zcode-cli/packages/core/src/tool/handlers/bash.ts
-+++ b/apps/zcode-cli/packages/core/src/tool/handlers/bash.ts
-@@ -14,7 +14,6 @@ import {
-   type BashInput,
-   type BashOutput,
-   type CommandCategory,
--  type CommandExecutionSpanWriter,
-   type CommandShellKind,
-   type ExecutionEvent,
-   type ExecutionRequest,
-@@ -38,6 +37,7 @@ import type {
-   ToolHandler,
-   ToolRuntimePermissionCapability,
-   ToolRuntimePermissionCapabilityContext,
-+  ToolCommandTelemetryWriter,
- } from "../types.js";
- import { supportsBashBackgroundLifecycle } from "./bash-background-lifecycle.js";
- import { isBashAutoBackgroundEligible } from "./bash-background-policy.js";
-@@ -267,7 +267,7 @@ function toBackgroundedBashOutput(
- function createExecutionRunOptions(
-   context: ToolExecutionContext,
-   progressTiming?: BashProgressTiming,
--  telemetry?: CommandExecutionSpanWriter,
-+  telemetry?: ToolCommandTelemetryWriter,
- ): ExecutionRunOptions {
-   return {
-     signal: context.abortSignal,
-@@ -289,7 +289,7 @@ function createExecutionRunOptions(
- function startBashCommandTelemetry(
-   input: BashInput,
-   context: ToolExecutionContext,
--): CommandExecutionSpanWriter | undefined {
-+): ToolCommandTelemetryWriter | undefined {
-   const identity = classifySafeCommandIdentity(input.command);
-   return context.telemetry?.startCommand({
-     category: commandCategory(input.command),
-@@ -301,7 +301,7 @@ function startBashCommandTelemetry(
- }
- 
- function finishBashCommandTelemetry(
--  telemetry: CommandExecutionSpanWriter | undefined,
-+  telemetry: ToolCommandTelemetryWriter | undefined,
-   result: ExecutionResult,
- ): void {
-   if (!telemetry) return;
 diff --git a/apps/zcode-cli/packages/core/src/tool/handlers/create-workflow-source.ts b/apps/zcode-cli/packages/core/src/tool/handlers/create-workflow-source.ts
 index ebac052..209dc47 100644
 --- a/apps/zcode-cli/packages/core/src/tool/handlers/create-workflow-source.ts
@@ -6296,40 +5450,6 @@ index 8260996..fca470c 100644
        const notes = [
          spec.type,
          spec.required === true ? "required" : undefined,
-diff --git a/apps/zcode-cli/packages/core/src/tool/handlers/read.ts b/apps/zcode-cli/packages/core/src/tool/handlers/read.ts
-index 397c1d6..930eec0 100644
---- a/apps/zcode-cli/packages/core/src/tool/handlers/read.ts
-+++ b/apps/zcode-cli/packages/core/src/tool/handlers/read.ts
-@@ -67,7 +67,15 @@ const READ_PROVIDER_DESCRIPTION = [
-   "- Do NOT re-read a file you just edited to verify — Edit/Write would have errored if the change failed, and the harness tracks file state for you.",
- ].join("\n");
- 
--const fallbackReadFileStates = new WeakMap<ToolExecutionContext, ReadFileStateMap>();
-+// 修复依据：scriptc 没有 WeakMap lowering（run73 SC2020）；数组按 context 对象引用查找。
-+const fallbackReadFileStateEntries: { context: ToolExecutionContext; state: ReadFileStateMap }[] = [];
-+
-+function findFallbackReadFileState(context: ToolExecutionContext): ReadFileStateMap | undefined {
-+  for (const entry of fallbackReadFileStateEntries) {
-+    if (entry.context === context) return entry.state;
-+  }
-+  return undefined;
-+}
- 
- function formatReadModelContent(output: unknown): ModelMessageContent {
-   const parsed = ReadOutputSchema.safeParse(output);
-@@ -321,10 +329,10 @@ function createReadTrace(context: ToolExecutionContext): TraceContext {
- 
- function getReadFileState(context: ToolExecutionContext): ReadFileStateMap {
-   if (context.readFileState) return context.readFileState;
--  const existing = fallbackReadFileStates.get(context);
-+  const existing = findFallbackReadFileState(context);
-   if (existing) return existing;
-   const state: ReadFileStateMap = new Map();
--  fallbackReadFileStates.set(context, state);
-+  fallbackReadFileStateEntries.push({ context, state });
-   return state;
- }
- 
 diff --git a/apps/zcode-cli/packages/core/src/tool/handlers/saved-workflows/args.ts b/apps/zcode-cli/packages/core/src/tool/handlers/saved-workflows/args.ts
 index 02108b8..623029d 100644
 --- a/apps/zcode-cli/packages/core/src/tool/handlers/saved-workflows/args.ts
@@ -6528,88 +5648,6 @@ index 461d678..4934bd4 100644
  ): ReadFileStateEntry | undefined {
    if (!readFileState) return undefined;
  
-diff --git a/apps/zcode-cli/packages/core/src/tool/types.ts b/apps/zcode-cli/packages/core/src/tool/types.ts
-index 051a9c5..b592fca 100644
---- a/apps/zcode-cli/packages/core/src/tool/types.ts
-+++ b/apps/zcode-cli/packages/core/src/tool/types.ts
-@@ -8,6 +8,8 @@ import type {
-   OffPeakPort,
-   EmbeddedSearchBackend,
-   ExecutionPort,
-+  BackgroundExecutionStartResult,
-+  ExecutionResult,
-   BrowserControlPort,
-   FileSystemPort,
-   HttpClientPort,
-@@ -52,8 +54,12 @@ import type {
-   ToolResultBudgetStrategy,
-   ToolResultDisplayPayload,
-   ToolTimeoutPolicy,
--  ToolExecutionSpanWriter,
-   ToolExecutionTelemetry,
-+  AgentTelemetryCancellationReason,
-+  AgentTelemetryErrorCategory,
-+  CommandFailureStage,
-+  CommandTraceStart,
-+  ExecutionFailure,
- } from "@zcode/contracts";
- import type {
-   PersistedReadFileStateMetadata,
-@@ -128,12 +134,53 @@ export interface BackgroundTaskControlPort {
-   ): Promise<BackgroundTaskControlStopResult>;
- }
- 
-+/**
-+ * Bash 命令级观测写入器的窄投影：只保留 handler 真正写事实用的方法。
-+ *
-+ * 修复依据：契约里的 ToolExecutionSpanWriter / CommandExecutionSpanWriter 记录含 scriptc
-+ * 编不出来的成员（finishFailed 的可选 unknown 形参），只要工具上下文引用契约写入器类型，
-+ * 所有 ToolHandler / ToolEntry 值都会被判成不可编译（run73 core.log 里 187 条 SC2009 的同一
-+ * 个根因）。这里按上下文实际读取的方法重述一份本包自有的写入器类型，参数类型与契约逐一
-+ * 对应，保证注入的契约写入器（含其 CommandExecutionSpanWriter 返回值）仍可赋值给本类型。
-+ */
-+/**
-+ * `ToolCommandTelemetryWriter.run` 的实参/返回值：Bash 前后台两条执行路径的观察结果。
-+ * 与 bash-background-lifecycle.ts 的 BashBackgroundLifecycleResult 同形，放在这里是为了让
-+ * 投影接口不必反向依赖 handlers 目录。
-+ */
-+export type ToolTelemetryRunResult =
-+  | { kind: "foreground"; result: ExecutionResult }
-+  | { kind: "backgrounded"; task: BackgroundExecutionStartResult };
-+
-+export interface ToolCommandTelemetryWriter {
-+  run(execute: () => Promise<ToolTelemetryRunResult>): Promise<ToolTelemetryRunResult>;
-+  markFirstOutput(): void;
-+  markTerminationRequested(reason: "cancelled" | "timeout" | "shutdown"): void;
-+  setExitCode(exitCode: number): void;
-+  setSignal(signal: string): void;
-+  setOutputBytes(bytes: number): void;
-+  setTimedOut(timedOut: boolean): void;
-+  finishCompleted(): void;
-+  finishFailed(
-+    stage: CommandFailureStage,
-+    category: AgentTelemetryErrorCategory,
-+    error?: ExecutionFailure,
-+  ): void;
-+  finishCancelled(reason: AgentTelemetryCancellationReason): void;
-+  finishBackgrounded(): void;
-+}
-+
-+/** ToolExecutionContext.telemetry 的窄投影。见 {@link ToolCommandTelemetryWriter}。 */
-+export interface ToolTelemetryWriter {
-+  startCommand(input: CommandTraceStart): ToolCommandTelemetryWriter;
-+}
-+
- export interface ToolExecutionContext {
-   toolCallId: string;
-   /**
-    * 当前 Tool 的实时观测写入器。Handler 只能通过窄接口写事实，不能接触原始 OTel Span。
-    */
--  telemetry?: ToolExecutionSpanWriter;
-+  telemetry?: ToolTelemetryWriter;
-   /** 当前工具调用是否属于 automation 派发轮；写工具 handler 用它做最终权限校验。 */
-   automationTurn?: boolean;
-   /** 当前工具调用是否属于闲时任务派发轮；OffPeakCreate handler 用它做最终拒绝。 */
 diff --git a/apps/zcode-cli/packages/core/src/workflow/expert/graph-artifacts.ts b/apps/zcode-cli/packages/core/src/workflow/expert/graph-artifacts.ts
 index abd7b0b..7ead897 100644
 --- a/apps/zcode-cli/packages/core/src/workflow/expert/graph-artifacts.ts
@@ -8180,31 +7218,6 @@ index 5ae36c6..67222ed 100644
    }
  
    deletePersonalProvider(providerId: ProviderId): Promise<ProviderConfigLayerSnapshot> {
-diff --git a/packages/provider/src/config/manual-model-config.ts b/packages/provider/src/config/manual-model-config.ts
-index b924248..a2ccaab 100644
---- a/packages/provider/src/config/manual-model-config.ts
-+++ b/packages/provider/src/config/manual-model-config.ts
-@@ -40,7 +40,10 @@ export function clearManualModelConfig(input: z.infer<typeof modelConfigDataSche
-   );
- }
- 
--function omitSchemaFields(schema: z.ZodObject, input: unknown): unknown {
-+// scriptc: compat 的 z.ZodObject 是工厂函数（非类值），instanceof 收窄后 child 退化为
-+// `{}`，无法赋给 z.ZodObject 形参（SC0001）；这两个函数只读 schema.shape 并按引用
-+// 递归，形参降到 any 即可，运行期行为不变。
-+function omitSchemaFields(schema: any, input: unknown): unknown {
-   if (!input || typeof input !== "object" || Array.isArray(input)) return input;
-   return Object.fromEntries(
-     Object.entries(input).flatMap(([key, value]) => {
-@@ -55,7 +58,7 @@ function omitSchemaFields(schema: z.ZodObject, input: unknown): unknown {
-   );
- }
- 
--function pickSchemaFields(schema: z.ZodObject, input: unknown): unknown {
-+function pickSchemaFields(schema: any, input: unknown): unknown {
-   if (!input || typeof input !== "object" || Array.isArray(input)) return input;
-   const source = input as Record<string, unknown>;
-   return Object.fromEntries(
 diff --git a/packages/provider/src/config/model-config.ts b/packages/provider/src/config/model-config.ts
 index beb7e9a..f191141 100644
 --- a/packages/provider/src/config/model-config.ts
@@ -11054,20 +10067,12 @@ index 00553a5..5bc122d 100644
      })
      .nullish(),
 diff --git a/packages/shared/src/config-schema.ts b/packages/shared/src/config-schema.ts
-index 2d75ead..877082a 100644
+index 2d75ead..a10f3c6 100644
 --- a/packages/shared/src/config-schema.ts
 +++ b/packages/shared/src/config-schema.ts
-@@ -1,8 +1,33 @@
+@@ -1,8 +1,25 @@
 -import type { z } from "zod";
 +import type { ZodRawShape } from "zod";
-+
-+/**
-+ * scriptc: `Object.keys` 在接收者值类型为 any 的记录上没有 lowering（SC2020）。经 unknown
-+ * 形参把值落到允许检查转型的 JSON 安全记录视图后再取键，键仍是运行期的真实键。
-+ */
-+function recordKeys(record: unknown): string[] {
-+  return Object.keys(record as Record<string, unknown>);
-+}
  
  /** 每个字段保持原 schema，只派生覆盖所需的缺省/null；嵌套结构由调用方显式派生。 */
 -export function sparseShape<T extends Record<string, z.ZodType>>(shape: T) {
@@ -11076,7 +10081,7 @@ index 2d75ead..877082a 100644
 -  ) as { [K in keyof T]: z.ZodOptional<z.ZodNullable<T[K]>> };
 +export function sparseShape(shape: Record<string, any>): ZodRawShape {
 +  const sparse: ZodRawShape = {};
-+  for (const key of recordKeys(shape)) {
++  for (const key of Object.keys(shape)) {
 +    const schema = shape[key];
 +    sparse[key] = schema.nullable().optional();
 +  }
@@ -11091,49 +10096,11 @@ index 2d75ead..877082a 100644
 + */
 +export function copyShape(shape: Record<string, any>): ZodRawShape {
 +  const copied: ZodRawShape = {};
-+  for (const key of recordKeys(shape)) {
++  for (const key of Object.keys(shape)) {
 +    copied[key] = shape[key];
 +  }
 +  return copied;
  }
-diff --git a/packages/shared/src/conversation-preview-artifacts.ts b/packages/shared/src/conversation-preview-artifacts.ts
-index 5a6be36..8cbadc2 100644
---- a/packages/shared/src/conversation-preview-artifacts.ts
-+++ b/packages/shared/src/conversation-preview-artifacts.ts
-@@ -47,7 +47,7 @@ interface PreviewFileTypeDefinition {
-   artifactType: ConversationPreviewArtifactType;
- }
- 
--const PREVIEW_FILE_TYPES: readonly PreviewFileTypeDefinition[] = [
-+const PREVIEW_FILE_TYPES: PreviewFileTypeDefinition[] = [
-   {
-     extensions: [".md"],
-     kind: "markdown",
-@@ -84,15 +84,16 @@ const PREVIEW_FILE_TYPES: readonly PreviewFileTypeDefinition[] = [
-     mimeType: "application/pdf",
-     artifactType: "pdf",
-   },
--  ...MEDIA_PREVIEW_FORMATS.map(
--    ({ extension, kind, mediaType }): PreviewFileTypeDefinition => ({
--      extensions: [extension],
--      kind,
--      mimeType: mediaType,
--      artifactType: kind,
--    }),
--  ),
- ];
-+// scriptc: 数组字面量里展开函数调用结果（SC1090）无 lowering；改按循环追加同语义的条目。
-+for (const format of MEDIA_PREVIEW_FORMATS) {
-+  PREVIEW_FILE_TYPES.push({
-+    extensions: [format.extension],
-+    kind: format.kind,
-+    mimeType: format.mediaType,
-+    artifactType: format.kind,
-+  });
-+}
- 
- export const CONVERSATION_PREVIEW_CARD_CANDIDATE_LIMIT = 15;
- export const CONVERSATION_PREVIEW_CARD_VISIBLE_LIMIT = 10;
 diff --git a/packages/shared/src/conversation-share.ts b/packages/shared/src/conversation-share.ts
 index 6c210a6..3e6e5f3 100644
 --- a/packages/shared/src/conversation-share.ts
@@ -11223,16 +10190,10 @@ index 6c210a6..3e6e5f3 100644
      client_request_id: z.string().trim().min(1),
    })
 diff --git a/packages/shared/src/database-startup.ts b/packages/shared/src/database-startup.ts
-index 9bbfb1f..6ac6710 100644
+index 9bbfb1f..ec2095b 100644
 --- a/packages/shared/src/database-startup.ts
 +++ b/packages/shared/src/database-startup.ts
-@@ -1,4 +1,5 @@
- import { z } from "zod";
-+import { copyShape } from "./config-schema.js";
- 
- export const databaseStartupErrorCodeSchema = z.enum([
-   "storage_full",
-@@ -75,8 +76,7 @@ export const databaseStartupErrorDetailsSchema = z.object({
+@@ -75,8 +75,7 @@ export const databaseStartupErrorDetailsSchema = z.object({
    migrationId: z.string().max(128).optional(),
  });
  
@@ -11242,7 +10203,7 @@ index 9bbfb1f..6ac6710 100644
      scopeId: z.string().max(128),
      observedAvailableDropPeakBytes: z.number().finite().nonnegative().nullable(),
      minAvailableBytes: z.number().finite().nonnegative().nullable(),
-@@ -96,8 +96,7 @@ export const databaseStartupPhaseSchema = z.enum([
+@@ -96,8 +95,7 @@ export const databaseStartupPhaseSchema = z.enum([
  export const databaseMigrationIdSchema = z.string().regex(/^[a-zA-Z_0-9-]{1,128}$/);
  
  /** 需求种类与真实执行/提交分开；预检发现需求不意味着当前执行者运行过 SQL。 */
@@ -11252,7 +10213,7 @@ index 9bbfb1f..6ac6710 100644
      kind: z.enum(["none", "initialize", "upgrade"]),
      executedCount: z.number().int().nonnegative(),
      committedCount: z.number().int().nonnegative(),
-@@ -114,8 +113,7 @@ export const databaseMigrationFactsSchema = z
+@@ -114,8 +112,7 @@ export const databaseMigrationFactsSchema = z
    });
  export type DatabaseMigrationFacts = z.infer<typeof databaseMigrationFactsSchema>;
  
@@ -11262,7 +10223,7 @@ index 9bbfb1f..6ac6710 100644
      schemaVersion: z.literal(1),
      startupId: z.string().min(1).max(128),
      attemptId: z.string().min(1).max(128),
-@@ -123,15 +121,12 @@ export const databaseStartupStateSchema = z
+@@ -123,15 +120,12 @@ export const databaseStartupStateSchema = z
      startedAt: z.number().finite().nonnegative(),
      updatedAt: z.number().finite().nonnegative(),
      phase: databaseStartupPhaseSchema,
@@ -11281,15 +10242,7 @@ index 9bbfb1f..6ac6710 100644
              databaseId: z.string().min(1).max(128),
              databaseKind: z.enum(["tasks-index", "session"]),
              lastAppliedMigrationId: databaseMigrationIdSchema.nullable().optional(),
-@@ -142,14 +137,14 @@ export const databaseStartupStateSchema = z
-     finalDatabase: z.boolean().optional(),
-     failedPhase: databaseStartupPhaseSchema.optional(),
-     errorCode: databaseStartupErrorCodeSchema.optional(),
--    ...databaseStartupErrorDetailsSchema.shape,
-+    // scriptc: 展开类型为 any 的 `.shape` 无 lowering（SC1090）；先复制成索引签名记录再展开。
-+    ...copyShape(databaseStartupErrorDetailsSchema.shape),
-     disk: z.array(startupDiskSummarySchema).max(8),
-   })
+@@ -148,8 +142,7 @@ export const databaseStartupStateSchema = z
    .strict();
  export type DatabaseStartupState = z.infer<typeof databaseStartupStateSchema>;
  /** 本地端口和启动快照必须来自同一 Host；此 ID 不承担工作区或任务身份。 */
@@ -11435,7 +10388,7 @@ index 0a07bcd..9b925b8 100644
  
  export function resolveIntranetMachineHost(env: IntranetEnv = readProcessEnv()) {
 diff --git a/packages/shared/src/localTtft.ts b/packages/shared/src/localTtft.ts
-index 27d7065..9c2f523 100644
+index 27d7065..282306e 100644
 --- a/packages/shared/src/localTtft.ts
 +++ b/packages/shared/src/localTtft.ts
 @@ -1,4 +1,5 @@
@@ -11444,34 +10397,26 @@ index 27d7065..9c2f523 100644
  
  export const LOCAL_TTFT_STAGES = [
    "renderer_prepare",
-@@ -22,10 +23,23 @@ export const LOCAL_TTFT_PREPARATION_STAGES = [
+@@ -22,10 +23,15 @@ export const LOCAL_TTFT_PREPARATION_STAGES = [
    "request_assembly",
  ] as const;
  const diagnosticTime = z.number().finite().nonnegative();
 -export const localTtftDetailSchema = z
 -  .object({
-+// scriptc: 定长元组展开进数组字面量无 lowering（SC1090），z.enum 又要静态字面量元组；这里把
-+// 「准备阶段 + 详情阶段」写成一个显式元组。新增准备阶段时需与 LOCAL_TTFT_PREPARATION_STAGES 同步。
-+const LOCAL_TTFT_DETAIL_STAGES = [
-+  "context",
-+  "hooks",
-+  "persistence",
-+  "compaction",
-+  "mcp",
-+  "tools",
-+  "request_assembly",
-+  "attempt",
-+  "retry_wait",
-+  "user_confirmation",
-+] as const;
 +export const localTtftDetailSchema = z.object({
      id: z.string().min(1).max(128),
 -    stage: z.enum([...LOCAL_TTFT_PREPARATION_STAGES, "attempt", "retry_wait", "user_confirmation"]),
-+    stage: z.enum(LOCAL_TTFT_DETAIL_STAGES),
++    // scriptc 不能把 readonly 元组展开进 string[] 字面量，按 readonly string[] 收窄后再展开。
++    stage: z.enum([
++      ...(LOCAL_TTFT_PREPARATION_STAGES as readonly string[]),
++      "attempt",
++      "retry_wait",
++      "user_confirmation",
++    ]),
      start: diagnosticTime,
      end: diagnosticTime.optional(),
      outcome: z.enum(["completed", "failed", "cancelled", "first_output"]).optional(),
-@@ -43,12 +57,10 @@ export const LOCAL_TTFT_CLOCK_MAX_ERROR_MS = 10;
+@@ -43,12 +49,10 @@ export const LOCAL_TTFT_CLOCK_MAX_ERROR_MS = 10;
  export const LOCAL_TTFT_CLOCK_TTL_MS = 60_000;
  const time = z.number().finite().nonnegative();
  const identifier = z.string().min(1).max(128);
@@ -11486,7 +10431,7 @@ index 27d7065..9c2f523 100644
    .strict();
  export type LocalTtftClock = z.infer<typeof localTtftClockSchema>;
  export interface LocalTtftCalibration {
-@@ -80,9 +92,8 @@ export function calibrateLocalTtftClock(
+@@ -80,9 +84,8 @@ export function calibrateLocalTtftClock(
  }
  export const localTtftOutputKindSchema = z.enum(["text", "reasoning", "tool"]);
  export type LocalTtftOutputKind = z.infer<typeof localTtftOutputKindSchema>;
@@ -11498,7 +10443,7 @@ index 27d7065..9c2f523 100644
      instanceId: identifier,
      commandId: identifier,
      sessionId: identifier.optional(),
-@@ -110,8 +121,7 @@ export const localTtftFactsSchema = z
+@@ -110,8 +113,7 @@ export const localTtftFactsSchema = z
    })
    .strict();
  export type LocalTtftFacts = z.infer<typeof localTtftFactsSchema>;
@@ -11508,7 +10453,7 @@ index 27d7065..9c2f523 100644
      stage: z.enum(LOCAL_TTFT_STAGES),
      start: time,
      end: time,
-@@ -119,8 +129,7 @@ export const localTtftIntervalSchema = z
+@@ -119,8 +121,7 @@ export const localTtftIntervalSchema = z
    })
    .strict()
    .refine((interval) => interval.end >= interval.start);
@@ -11518,7 +10463,7 @@ index 27d7065..9c2f523 100644
      version: z.literal(1),
      observationId: z.string().uuid(),
      commandId: identifier.optional(),
-@@ -163,8 +172,7 @@ export const localTtftRecordSchema = z
+@@ -163,8 +164,7 @@ export const localTtftRecordSchema = z
      truncated: z.boolean().optional(),
      sendMode: z.enum(["idle", "queued", "guided"]).optional(),
      visibility: z.enum(["foreground", "background", "background_returned"]).optional(),
@@ -11528,7 +10473,7 @@ index 27d7065..9c2f523 100644
        .max(32)
        .optional(),
      userWaitMs: time.optional(),
-@@ -177,8 +185,7 @@ export const localTtftRecordSchema = z
+@@ -177,8 +177,7 @@ export const localTtftRecordSchema = z
    .strict()
    .refine((record) => record.end >= record.start);
  export type LocalTtftRecord = z.infer<typeof localTtftRecordSchema>;
@@ -11538,7 +10483,7 @@ index 27d7065..9c2f523 100644
      version: z.literal(1),
      rendererInstanceId: identifier,
      sequence: z.number().int().nonnegative(),
-@@ -188,5 +195,5 @@ export const localTtftBatchSchema = z
+@@ -188,5 +187,5 @@ export const localTtftBatchSchema = z
    .strict();
  export type LocalTtftBatch = z.infer<typeof localTtftBatchSchema>;
  export function localTtftNow(): number {
@@ -11718,39 +10663,6 @@ index 33d41b7..1935d5c 100644
          foregroundModel: z.literal("submission"),
          background: z.literal("deny"),
        })
-diff --git a/packages/shared/src/model-provider-family.ts b/packages/shared/src/model-provider-family.ts
-index 52ab99c..62e1143 100644
---- a/packages/shared/src/model-provider-family.ts
-+++ b/packages/shared/src/model-provider-family.ts
-@@ -50,18 +50,19 @@ const MODEL_PROVIDER_FAMILY_SPEC_BY_ID = new Map<ModelProviderFamilyId, ModelPro
-   MODEL_PROVIDER_FAMILY_SPECS.map((spec) => [spec.id, spec]),
- );
- 
-+// scriptc: readonly 元组上没有 .flatMap 的 lowering（SC2020）；改成显式循环收集 [providerId, familyId]。
-+const MODEL_PROVIDER_FAMILY_ID_ENTRIES: Array<[BuiltinModelProviderId, ModelProviderFamilyId]> =
-+  [];
-+for (const spec of MODEL_PROVIDER_FAMILY_SPECS) {
-+  MODEL_PROVIDER_FAMILY_ID_ENTRIES.push([spec.startPlanProviderId, spec.id]);
-+  MODEL_PROVIDER_FAMILY_ID_ENTRIES.push([spec.individualCodingPlanProviderId, spec.id]);
-+  MODEL_PROVIDER_FAMILY_ID_ENTRIES.push([spec.teamCodingPlanProviderId, spec.id]);
-+}
-+
- const MODEL_PROVIDER_FAMILY_ID_BY_PROVIDER_ID = new Map<
-   BuiltinModelProviderId,
-   ModelProviderFamilyId
-->(
--  MODEL_PROVIDER_FAMILY_SPECS.flatMap((spec) =>
--    [
--      spec.startPlanProviderId,
--      spec.individualCodingPlanProviderId,
--      spec.teamCodingPlanProviderId,
--    ].map((providerId) => [providerId, spec.id] as const),
--  ),
--);
-+>(MODEL_PROVIDER_FAMILY_ID_ENTRIES);
- 
- export function getModelProviderFamilySpec(
-   familyId: ModelProviderFamilyId,
 diff --git a/packages/shared/src/model-selection.ts b/packages/shared/src/model-selection.ts
 index 5f46f4c..708c225 100644
 --- a/packages/shared/src/model-selection.ts
@@ -11784,28 +10696,6 @@ index b498b20..cfaf733 100644
    .transform((file) =>
      file.version === 1 ? { ...file, version: 2 as const, decisions: [] } : file,
    );
-diff --git a/packages/shared/src/pluginStoreOrder.ts b/packages/shared/src/pluginStoreOrder.ts
-index 388cdc2..7d8562c 100644
---- a/packages/shared/src/pluginStoreOrder.ts
-+++ b/packages/shared/src/pluginStoreOrder.ts
-@@ -1,6 +1,16 @@
- import { z } from "zod";
- 
--const orderList = z.array(z.string().trim().min(1)).transform((items) => [...new Set(items)]);
-+// scriptc: Set 展开进数组字面量无 lowering（SC1090）；用 Set<string> 判重并保持首次出现顺序。
-+const orderList = z.array(z.string().trim().min(1)).transform((items) => {
-+  const seen = new Set<string>();
-+  const deduplicated: string[] = [];
-+  for (const item of items) {
-+    if (seen.has(item)) continue;
-+    seen.add(item);
-+    deduplicated.push(item);
-+  }
-+  return deduplicated;
-+});
- const modeOrderSchema = z.object({
-   categoryOrder: orderList.optional(),
-   pluginOrder: z.record(z.string(), orderList).optional(),
 diff --git a/packages/shared/src/pluginStoreOrdering.ts b/packages/shared/src/pluginStoreOrdering.ts
 index 284634c..f83404c 100644
 --- a/packages/shared/src/pluginStoreOrdering.ts
@@ -11918,29 +10808,6 @@ index 433fadb..dc27324 100644
      syncId: nonEmptyString,
      status: z.enum(["applied", "already-applied", "unsupported", "failed", "rollback_failed"]),
      personalProviderCount: z.number().int().nonnegative(),
-diff --git a/packages/shared/src/remoteResourcePackages.ts b/packages/shared/src/remoteResourcePackages.ts
-index e0f3e95..db24dc1 100644
---- a/packages/shared/src/remoteResourcePackages.ts
-+++ b/packages/shared/src/remoteResourcePackages.ts
-@@ -10,7 +10,8 @@ export const REMOTE_RESOURCE_PACKAGE_IDS = [
- 
- export type RemoteResourcePackageId = (typeof REMOTE_RESOURCE_PACKAGE_IDS)[number];
- 
--export const ACTIVE_REMOTE_RESOURCE_PACKAGE_IDS = [
-+// scriptc: readonly 元组上没有 .filter 的 lowering（SC2020）；标成可变数组（元素仍是同一联合类型）。
-+export const ACTIVE_REMOTE_RESOURCE_PACKAGE_IDS: RemoteResourcePackageId[] = [
-   "server-bundle",
-   "node-runtime",
-   "node-pty",
-@@ -18,7 +19,7 @@ export const ACTIVE_REMOTE_RESOURCE_PACKAGE_IDS = [
-   "bfs",
-   "ripgrep",
-   "ugrep",
--] as const satisfies readonly RemoteResourcePackageId[];
-+];
- 
- export const REQUIRED_REMOTE_RESOURCE_PACKAGE_IDS = [
-   "server-bundle",
 diff --git a/packages/shared/src/rendererActionTrace.ts b/packages/shared/src/rendererActionTrace.ts
 index a6e3875..e312968 100644
 --- a/packages/shared/src/rendererActionTrace.ts
@@ -12026,51 +10893,6 @@ index a6e3875..e312968 100644
      version: z.literal(1),
      rendererInstanceId: boundedIdentifierSchema,
      sequence: z.number().int().nonnegative(),
-diff --git a/packages/shared/src/runtime-tool-runtime.ts b/packages/shared/src/runtime-tool-runtime.ts
-index 94bfc4d..e0b2346 100644
---- a/packages/shared/src/runtime-tool-runtime.ts
-+++ b/packages/shared/src/runtime-tool-runtime.ts
-@@ -38,27 +38,35 @@ export const RUNTIME_TOOL_RUNTIME: Record<RuntimeToolId, RuntimeToolRuntimeDescr
-   },
- };
- 
--export const REMOTE_RUNTIME_TOOL_RUNTIME = {
-+// scriptc: `as const satisfies` 会把初始化器推断成深只读字面量，与展开源的 versions 宽度不匹配
-+// （SC2002）；按预期类型逐字段构造，versions 保留具体键。
-+export const REMOTE_RUNTIME_TOOL_RUNTIME: Record<RuntimeToolId, RemoteRuntimeToolDescriptor> = {
-   bfs: {
--    ...RUNTIME_TOOL_RUNTIME.bfs,
-+    binaryEnvVar: RUNTIME_TOOL_RUNTIME.bfs.binaryEnvVar,
-+    bundledResourceDir: RUNTIME_TOOL_RUNTIME.bfs.bundledResourceDir,
-+    resolveEntrySegments: RUNTIME_TOOL_RUNTIME.bfs.resolveEntrySegments,
-     versions: {
-       linux: "v4.1.1-2",
-     },
-   },
-   ripgrep: {
--    ...RUNTIME_TOOL_RUNTIME.ripgrep,
-+    binaryEnvVar: RUNTIME_TOOL_RUNTIME.ripgrep.binaryEnvVar,
-+    bundledResourceDir: RUNTIME_TOOL_RUNTIME.ripgrep.bundledResourceDir,
-+    resolveEntrySegments: RUNTIME_TOOL_RUNTIME.ripgrep.resolveEntrySegments,
-     versions: {
-       darwin: "v13.0.0-10",
-       linux: "v14.1.1-1",
-     },
-   },
-   ugrep: {
--    ...RUNTIME_TOOL_RUNTIME.ugrep,
-+    binaryEnvVar: RUNTIME_TOOL_RUNTIME.ugrep.binaryEnvVar,
-+    bundledResourceDir: RUNTIME_TOOL_RUNTIME.ugrep.bundledResourceDir,
-+    resolveEntrySegments: RUNTIME_TOOL_RUNTIME.ugrep.resolveEntrySegments,
-     versions: {
-       linux: "v7.8.4-1",
-     },
-   },
--} as const satisfies Record<RuntimeToolId, RemoteRuntimeToolDescriptor>;
-+};
- 
- export function getRemoteRuntimeToolsForPlatform(platform: string): ResolvedRemoteRuntimeTool[] {
-   // Linux remote 已切到 native-search 三工具，但 Darwin 仍依赖 legacy rg13。
 diff --git a/packages/shared/src/runtimeEnv.ts b/packages/shared/src/runtimeEnv.ts
 index c7a919f..6dce089 100644
 --- a/packages/shared/src/runtimeEnv.ts
@@ -12154,7 +10976,7 @@ index e4d7535..6a80136 100644
          totalInputTokens: count,
          totalCacheReadTokens: count,
 diff --git a/packages/shared/src/sessionCreateTelemetry.ts b/packages/shared/src/sessionCreateTelemetry.ts
-index 86aa6c8..5acd64c 100644
+index 86aa6c8..b3983af 100644
 --- a/packages/shared/src/sessionCreateTelemetry.ts
 +++ b/packages/shared/src/sessionCreateTelemetry.ts
 @@ -4,22 +4,19 @@ export type SessionCreateSource = "group" | "project" | "session";
@@ -12183,28 +11005,6 @@ index 86aa6c8..5acd64c 100644
          create_source: z.enum(["group", "project", "session"]),
          client_kind: z.literal("mobile"),
          workspace_kind: z.enum(["local", "remote"]),
-@@ -32,11 +29,17 @@ export const sessionCreateTelemetrySchema = z
- export type MobileSessionCreateTelemetry = z.infer<typeof sessionCreateTelemetrySchema>;
- 
- /** 自动化由执行 Host 报告；手机不得冒充无人值守派发来源。 */
-+// scriptc: `.shape` 的静态类型是 any，在它上面调 .extend 属动态调用（SC1090）；改在具体
-+// schema 上 extend，只覆盖 eventExtraDetail 一个字段（与原来在内层 schema 上 extend 等价）。
- export const automationSessionCreateTelemetrySchema = sessionCreateTelemetrySchema.extend({
--  eventExtraDetail: sessionCreateTelemetrySchema.shape.eventExtraDetail.extend({
--    create_source: z.enum(["automation_idle", "automation_scheduled"]),
--    client_kind: z.literal("desktop"),
--  }),
-+  eventExtraDetail: z
-+    .object({
-+      create_source: z.enum(["automation_idle", "automation_scheduled"]),
-+      client_kind: z.literal("desktop"),
-+      workspace_kind: z.enum(["local", "remote"]),
-+      remote_kind: z.enum(["", "ssh", "wsl", "docker", "server"]),
-+    })
-+    .strict(),
- });
- export type AutomationSessionCreateTelemetry = z.infer<
-   typeof automationSessionCreateTelemetrySchema
 diff --git a/packages/shared/src/subagent-state-migration.ts b/packages/shared/src/subagent-state-migration.ts
 index 5d035c5..723a6c3 100644
 --- a/packages/shared/src/subagent-state-migration.ts
@@ -12998,7 +11798,7 @@ index 7d89774..bcc0ef5 100644
          field: z.enum(["beforeContent", "afterContent"]),
          refId: z.string(),
 diff --git a/packages/shared/src/validationAppSettings.ts b/packages/shared/src/validationAppSettings.ts
-index 3cb58a1..70e6b27 100644
+index 3cb58a1..a19474b 100644
 --- a/packages/shared/src/validationAppSettings.ts
 +++ b/packages/shared/src/validationAppSettings.ts
 @@ -1,4 +1,5 @@
@@ -13184,7 +11984,7 @@ index 3cb58a1..70e6b27 100644
    // SSH 部署固定使用完整 active 资源集；旧 setting.json 里的 resourcePackages 是历史裁剪，
    // 在配置入口清掉，避免后续重连或 tab 恢复继续读取。
    return nextTarget;
-@@ -279,137 +282,148 @@ function migrateLegacyWorkspaceSession(value: unknown): unknown {
+@@ -279,137 +282,135 @@ function migrateLegacyWorkspaceSession(value: unknown): unknown {
      return value;
    }
  
@@ -13202,11 +12002,7 @@ index 3cb58a1..70e6b27 100644
 +  // 必然删除的两个旧字段，结果与原来的 `{ ...raw }` + delete 一致。
 +  const migrated = omitKey(omitKey(raw, "lastOpenTabs"), "remoteWorkspaceHistory");
 +  const rawLastWorkspaceSession = raw.lastWorkspaceSession;
-+  // scriptc: isArray 的类型谓词不参与收窄，unknown 进不了它的 any[] 槽位（SC1100）；
-+  // 用允许的检查转型先落到 unknown[]，元素仍按 unknown 逐个校验。
-+  const lastWorkspaceSession = (
-+    isArray(rawLastWorkspaceSession) ? rawLastWorkspaceSession : []
-+  ) as unknown[];
++  const lastWorkspaceSession = isArray(rawLastWorkspaceSession) ? rawLastWorkspaceSession : [];
  
    const hasLegacyRemoteEntries = lastWorkspaceSession.some((entry) => {
 -    if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
@@ -13238,9 +12034,7 @@ index 3cb58a1..70e6b27 100644
 -    }),
 -  );
 +  const rawRemoteWorkspaceHistory = raw.remoteWorkspaceHistory;
-+  const legacyRemoteHistory = (
-+    isArray(rawRemoteWorkspaceHistory) ? rawRemoteWorkspaceHistory : []
-+  ) as unknown[];
++  const legacyRemoteHistory = isArray(rawRemoteWorkspaceHistory) ? rawRemoteWorkspaceHistory : [];
 +  // Map 的 new/get 在 scriptc 里都没有 lowering，这里换成数组 + find 做同样的按 id 查找。
 +  const legacyRemoteHistoryEntries: LegacyRemoteWorkspaceHistoryEntry[] = [];
 +  for (const entry of legacyRemoteHistory) {
@@ -13295,17 +12089,13 @@ index 3cb58a1..70e6b27 100644
 +
 +        if (typeof rawEntry.historyId === "string") {
 +          const historyId = rawEntry.historyId;
-+          // scriptc: z.infer 在 compat 下退化为 any，any[] 上的 .find 属动态执行（SC2011）；
-+          // 改成普通循环，元素先落到 JSON 安全的记录视图再按 id 比较。
-+          let legacyRemoteEntry: Record<string, unknown> | undefined = undefined;
-+          for (const candidate of legacyRemoteHistoryEntries) {
-+            const candidateRecord = candidate as Record<string, unknown>;
-+            if (candidateRecord.id === historyId) {
-+              legacyRemoteEntry = candidateRecord;
-+              break;
-+            }
++          const legacyRemoteEntry = legacyRemoteHistoryEntries.find(
++            (candidate) => candidate.id === historyId,
++          );
++          if (!legacyRemoteEntry) {
++            continue;
            }
--
+ 
 -          const rawEntry = entry as Record<string, unknown>;
 -          if (rawEntry.kind === "local" && typeof rawEntry.workspacePath === "string") {
 -            return [
@@ -13316,10 +12106,18 @@ index 3cb58a1..70e6b27 100644
 -                  rawEntry.workspacePurpose === "conversation" ? "conversation" : "project",
 -              },
 -            ];
-+          if (!legacyRemoteEntry) {
-+            continue;
++          const merged: Record<string, unknown> = {
++            kind: "remote",
++            workspacePath: legacyRemoteEntry.workspacePath,
++            target: stripHistoricalRemoteResourcePackages(legacyRemoteEntry.target),
++            lastOpenedAt: legacyRemoteEntry.lastOpenedAt,
++            lastConnectionStatus: legacyRemoteEntry.lastConnectionStatus,
++          };
++          // 条件展开在 scriptc 里不支持，改为按字段写回。
++          if (legacyRemoteEntry.localWorkspacePath) {
++            merged.localWorkspacePath = legacyRemoteEntry.localWorkspacePath;
            }
- 
+-
 -          if (rawEntry.kind === "remote") {
 -            if (typeof rawEntry.workspacePath === "string" && rawEntry.target) {
 -              return [
@@ -13353,16 +12151,8 @@ index 3cb58a1..70e6b27 100644
 -                  ]
 -                : [];
 -            }
-+          const merged: Record<string, unknown> = {
-+            kind: "remote",
-+            workspacePath: legacyRemoteEntry.workspacePath,
-+            target: stripHistoricalRemoteResourcePackages(legacyRemoteEntry.target),
-+            lastOpenedAt: legacyRemoteEntry.lastOpenedAt,
-+            lastConnectionStatus: legacyRemoteEntry.lastConnectionStatus,
-+          };
-+          // 条件展开在 scriptc 里不支持，改为按字段写回。
-+          if (legacyRemoteEntry.localWorkspacePath) {
-+            merged.localWorkspacePath = legacyRemoteEntry.localWorkspacePath;
++          if (legacyRemoteEntry.workspaceIdentity) {
++            merged.workspaceIdentity = legacyRemoteEntry.workspaceIdentity;
            }
 -
 -          return [];
@@ -13394,9 +12184,6 @@ index 3cb58a1..70e6b27 100644
 -      (entry) => !existingLocalWorkspacePaths.has(entry.workspacePath),
 -    ),
 -  ];
-+          if (legacyRemoteEntry.workspaceIdentity) {
-+            merged.workspaceIdentity = legacyRemoteEntry.workspaceIdentity;
-+          }
 +          if (legacyRemoteEntry.lastConnectionError) {
 +            merged.lastConnectionError = legacyRemoteEntry.lastConnectionError;
 +          }
@@ -13448,7 +12235,7 @@ index 3cb58a1..70e6b27 100644
      migrated.lastWorkspaceSession = nextWorkspaceSession;
    }
    delete migrated.lastOpenTabs;
-@@ -527,8 +541,7 @@ export const appSettingsPatchSchema = z.object({
+@@ -527,8 +528,7 @@ export const appSettingsPatchSchema = z.object({
    providerFamilyDomainUpdatedAt: z.number().int().nonnegative().optional(),
    providerFamilyDomainMigrated: z.boolean().optional(),
    nativeSearchEnhancementsEnabled: z.boolean().optional(),
@@ -13458,7 +12245,7 @@ index 3cb58a1..70e6b27 100644
        "office",
        "developer",
        "independent",
-@@ -554,8 +567,7 @@ export const appSettingsPatchSchema = z.object({
+@@ -554,8 +554,7 @@ export const appSettingsPatchSchema = z.object({
    pendingPostUpdateReleaseNotes: postUpdateReleaseNotesPayloadSchema.optional(),
    receivePreviewUpdates: z.boolean().optional(),
    autoDownloadAndInstallUpdates: z.boolean().optional(),
@@ -13599,33 +12386,6 @@ index 879e136..61ca75c 100644
    .trim()
    .max(WSL_USER_MAX_LENGTH)
    .refine((value) => value.length === 0 || isValidWslUser(value), {
-diff --git a/packages/shared/src/zcode-agent-runtime.ts b/packages/shared/src/zcode-agent-runtime.ts
-index 374218a..b987163 100644
---- a/packages/shared/src/zcode-agent-runtime.ts
-+++ b/packages/shared/src/zcode-agent-runtime.ts
-@@ -23,6 +23,8 @@ export function resolvePlatformBinaryName(binaryName: string, platform: string):
-   return platform === "win32" ? `${binaryName}.exe` : binaryName;
- }
- 
-+const AGENT_NODE_BUNDLE_ENTRY_FILE = "zcode.cjs";
-+
- export const ZCODE_AGENT_RUNTIME: ZCodeAgentRuntimeDescriptor = {
-   binaryKind: "native-binary",
-   binaryEnvVar: "GLM_BINARY_PATH",
-@@ -34,10 +36,9 @@ export const ZCODE_AGENT_RUNTIME: ZCodeAgentRuntimeDescriptor = {
-   missingBinaryMessage:
-     "[ZCode Agent] glm binary 未找到，请设置 GLM_BINARY_PATH 或先准备 GLM 运行时资源",
-   resolveEntrySegments: (platform) => [resolvePlatformBinaryName("zcode-agent", platform)],
--  nodeBundleEntryFile: "zcode.cjs",
--  resolveNodeBundleSegments() {
--    return [this.nodeBundleEntryFile];
--  },
-+  nodeBundleEntryFile: AGENT_NODE_BUNDLE_ENTRY_FILE,
-+  // scriptc: 对象字面量方法里读 this 无 lowering（SC1090）；改成箭头函数读模块常量。
-+  resolveNodeBundleSegments: () => [AGENT_NODE_BUNDLE_ENTRY_FILE],
- };
- 
- export function getZCodeAgentRuntime(): ZCodeAgentRuntimeDescriptor {
 diff --git a/packages/shared/src/zcode-protocol-legacy-types.ts b/packages/shared/src/zcode-protocol-legacy-types.ts
 index dadd482..f518a5a 100644
 --- a/packages/shared/src/zcode-protocol-legacy-types.ts

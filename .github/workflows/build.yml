@@ -5,239 +5,197 @@ on:
     branches: [main]
   workflow_dispatch:
 
-jobs:
-  emit-c:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    strategy:
-      fail-fast: false
-      matrix:
-        pkg: [core, contracts, shared, shared-types, dynamic-workflow, dynamic-workflow-runtime, adapters, bootstrap, telemetry, i18n, cli, tui, services, provider, provider-node, rpc, client, server, zcode-server-cli, model-option-map, formal-proof, node-repl-host]
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+env:
+  ZCODE_TAG: v3.14.3
 
-      - name: Setup Node.js 24
-        uses: actions/setup-node@v4
+jobs:
+  sweep:
+    name: dynamic-lane error sweep
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
         with:
           node-version: '24'
 
-      - name: Clone ZCode v3.14.3 and apply adaptation patch
+      - name: Clone ZCode and apply adaptation patch
         run: |
-          git clone --depth 1 --branch v3.14.3 https://github.com/zai-org/ZCode.git ZCode
+          git clone --depth 1 --branch "$ZCODE_TAG" https://github.com/zai-org/ZCode.git ZCode
           cd ZCode
+          echo "clean tree at $(git rev-parse HEAD)"
           git apply ../patches/zcode-adaptations.patch
-          echo "ZCode ready at $(git rev-parse --short HEAD)."
+          echo "patch applied"
 
-      - name: Install scriptc (npm)
+      - name: Install scriptc
         run: |
           mkdir -p scriptc-try
           cd scriptc-try
           npm init -y >/dev/null 2>&1 || true
           npm install scriptc@0.1.7 --no-audit --no-fund
           cd ..
-      - name: Install and link minimal type deps (Node types + undici for shims)
-        run: |
-          mkdir -p zfull/node_modules/@types /tmp/nt
-          cd /tmp/nt
-          npm init -y >/dev/null 2>&1 || true
-          npm install --no-audit --no-fund @types/node@25.6.0
-          cd "$GITHUB_WORKSPACE"
-          ln -sfn /tmp/nt/node_modules/@types/node zfull/node_modules/@types/node
-          ln -sfn /tmp/nt/node_modules/undici-types zfull/node_modules/undici-types
-          ls -la zfull/node_modules/ zfull/node_modules/@types/
-      - name: Install ZCode workspace deps (pnpm)
+
+      - name: Install workspace deps (pnpm) + node types
         run: |
           npm i -g pnpm@10.33.2 >/dev/null 2>&1 || true
           cd ZCode
           pnpm install --ignore-scripts --no-frozen-lockfile
           cd ..
-      - name: Re-link @types/node + undici-types from ZCode node_modules
-        run: |
+          mkdir -p zfull/node_modules/@types
           ln -sfn "$PWD/ZCode/node_modules/@types/node" zfull/node_modules/@types/node
           ln -sfn "$PWD/ZCode/node_modules/undici-types" zfull/node_modules/undici-types
-          ls -la zfull/node_modules/
-      - name: Generate dynamic-workflow libs (gitignored generated file)
+
+      - name: Generate dynamic-workflow libs
         run: |
           cd ZCode/apps/zcode-cli/packages/dynamic-workflow
           node scripts/generate-libs.mjs
           cd -
-      - name: Build core dependency-chain dist (contracts, shared, core, ...)
+
+      - name: Build dists
         run: |
           cd ZCode
           pnpm --filter @zcode/core... build
           cd ..
 
+      - name: Sweep every entry on the dynamic lane
+        run: |
+          cd zfull
+          mkdir -p reports
+          : > reports/summary.txt
+          total=0
+          for name in core contracts shared shared-types dynamic-workflow dynamic-workflow-runtime adapters bootstrap telemetry i18n cli tui services provider provider-node rpc client server zcode-server-cli model-option-map formal-proof node-repl-host port-cli port-entry; do
+            if [ ! -f "entries/$name.ts" ]; then
+              echo "$name=MISSING" >> reports/summary.txt
+              continue
+            fi
+            node ../scriptc-try/node_modules/.bin/scriptc build "entries/$name.ts" --emit c --dynamic > "reports/$name.log" 2>&1
+            n=$(grep -c 'error SC' "reports/$name.log" || true)
+            total=$((total + n))
+            echo "$name=$n" >> reports/summary.txt
+          done
+          echo "TOTAL=$total" >> reports/summary.txt
+          cat reports/summary.txt
+          echo '=== top families ==='
+          cat reports/*.log | grep 'error SC' | sed 's/.*error SC[0-9]*: //' | sed "s/'[^']*'/X/g" | cut -c1-58 | sort | uniq -c | sort -rn | head -25
+          echo '=== top files ==='
+          cat reports/*.log | grep 'error SC' | cut -d: -f1 | sed 's|.*/ZCode/||' | sort | uniq -c | sort -rn | head -25
 
+      - name: Upload sweep reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sweep-reports
+          path: zfull/reports/
+          if-no-files-found: warn
 
+  apk:
+    name: aarch64 cross-build + APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
 
-      - name: Build ${{ matrix.pkg }} to C
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Clone ZCode and apply adaptation patch
+        run: |
+          git clone --depth 1 --branch "$ZCODE_TAG" https://github.com/zai-org/ZCode.git ZCode
+          cd ZCode
+          git apply ../patches/zcode-adaptations.patch
+          cd ..
+
+      - name: Install scriptc
+        run: |
+          mkdir -p scriptc-try
+          cd scriptc-try
+          npm init -y >/dev/null 2>&1 || true
+          npm install scriptc@0.1.7 --no-audit --no-fund
+          cd ..
+
+      - name: Install workspace deps (pnpm) + node types
+        run: |
+          npm i -g pnpm@10.33.2 >/dev/null 2>&1 || true
+          cd ZCode
+          pnpm install --ignore-scripts --no-frozen-lockfile
+          cd ..
+          mkdir -p zfull/node_modules/@types
+          ln -sfn "$PWD/ZCode/node_modules/@types/node" zfull/node_modules/@types/node
+          ln -sfn "$PWD/ZCode/node_modules/undici-types" zfull/node_modules/undici-types
+
+      - name: Generate dynamic-workflow libs
+        run: |
+          cd ZCode/apps/zcode-cli/packages/dynamic-workflow
+          node scripts/generate-libs.mjs
+          cd -
+
+      - name: Build dists
+        run: |
+          cd ZCode
+          pnpm --filter @zcode/core... build
+          cd ..
+
+      - name: Install zig
+        run: |
+          curl -fsSL -o /tmp/zig.tar.xz https://ziglang.org/download/0.16.0/zig-x86_64-linux-0.16.0.tar.xz
+          tar -xf /tmp/zig.tar.xz -C /tmp
+          ZIGDIR="$(ls -d /tmp/zig-* | head -n1)"
+          echo "$ZIGDIR" >> "$GITHUB_PATH"
+          "$ZIGDIR/zig" version
+
+      - name: Install Android NDK r27c
+        run: |
+          curl -fsSL -o /tmp/ndk.zip https://dl.google.com/android/repository/android-ndk-r27c-linux.zip
+          unzip -q /tmp/ndk.zip -d /tmp/ndk
+          echo "ANDROID_NDK_ROOT=/tmp/ndk/android-ndk-r27c" >> "$GITHUB_ENV"
+
+      - name: Build static slice (library mode, aarch64)
         run: |
           cd zfull
           mkdir -p out
-          node ../scriptc-try/node_modules/.bin/scriptc build entries/${{ matrix.pkg }}.ts --npm-static zod --emit c -o out/${{ matrix.pkg }}.c
+          SCRIPTC_CC=zigcc SCRIPTC_TARGET=aarch64-linux-android \
+            node ../scriptc-try/node_modules/.bin/scriptc build --lib --profile profiles/lib-port.profile.json
+          find . -name '*.lib.a' -print
+
+      - name: Build dynamic-tier program (aarch64)
+        run: |
+          cd zfull
+          SCRIPTC_CC=zigcc SCRIPTC_TARGET=aarch64-linux-android \
+            node ../scriptc-try/node_modules/.bin/scriptc build entries/port-cli.ts --emit=exe --dynamic -o out/zcodecore
           ls -la out/
 
-      - name: Upload C artifact
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: c-${{ matrix.pkg }}
-          path: zfull/out/
-          if-no-files-found: warn
-
-  lib-aarch64:
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-      - name: Setup Node.js 24
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-      - name: Clone ZCode v3.14.3 and apply adaptation patch
+      - name: Link libzcodecore.so
         run: |
-          git clone --depth 1 --branch v3.14.3 https://github.com/zai-org/ZCode.git ZCode
-          cd ZCode
-          git apply ../patches/zcode-adaptations.patch
-          cd ..
-      - name: Fix type-only imports (scriptc module linker bindings)
-        run: python3 ci/fix_type_only_imports.py ZCode
-      - name: Install scriptc (npm)
-        run: |
-          mkdir -p scriptc-try
-          cd scriptc-try
-          npm init -y >/dev/null 2>&1 || true
-          npm install scriptc@0.1.7 --no-audit --no-fund
-          cd ..
-      - name: Patch scriptc lib runtime (re-include async + child units)
-        run: python3 ci/patch_scriptc_lib_runtime.py "$GITHUB_WORKSPACE/scriptc-try"
-      - name: Install minimal type deps (Node types + undici for shims)
-        run: |
-          mkdir -p zfull/node_modules/@types /tmp/nt
-          cd /tmp/nt
-          npm init -y >/dev/null 2>&1 || true
-          npm install --no-audit --no-fund @types/node@25.6.0
-          cd "$GITHUB_WORKSPACE"
-          ln -sfn /tmp/nt/node_modules/@types/node zfull/node_modules/@types/node
-          ln -sfn /tmp/nt/node_modules/undici-types zfull/node_modules/undici-types
-      - name: Install zig (x86_64 linux)
-        run: |
-          curl -fsSL -o /tmp/zig.tar.xz https://ziglang.org/download/0.16.0/zig-x86_64-linux-0.16.0.tar.xz
-          tar -xf /tmp/zig.tar.xz -C /tmp
-          ZIGDIR="$(ls -d /tmp/zig-* | head -n1)"
-          echo "$ZIGDIR" >> "$GITHUB_PATH"
-          "$ZIGDIR/zig" version
-      - name: Install Android NDK r27c
-        run: |
-          curl -fsSL -o /tmp/ndk.zip https://dl.google.com/android/repository/android-ndk-r27c-linux.zip
-          unzip -q /tmp/ndk.zip -d /tmp/ndk
-          echo "ANDROID_NDK_ROOT=/tmp/ndk/android-ndk-r27c" >> "$GITHUB_ENV"
-      - name: Build zcode-rpc aarch64 static library
-        run: |
-          cd zfull
-          mkdir -p out
-          SCRIPTC_CC=zigcc SCRIPTC_TARGET=aarch64-linux-android node ../scriptc-try/node_modules/.bin/scriptc build --lib --profile profiles/rpc.profile.json
-          echo '--- out ---'
-          ls -la out/ 2>/dev/null || true
-          echo '--- .scriptc ---'
-          ls -la .scriptc/ 2>/dev/null | head -20 || true
-          find . -name '*.lib.a' -o -name '*.a' | head
-      - name: Link aarch64 shared library (.so)
-        run: |
+          set -eu
+          WS=$GITHUB_WORKSPACE
           NDK=/tmp/ndk/android-ndk-r27c
           TC=$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin
-          cd zfull/profiles
-          $TC/ld.lld -r --whole-archive .scriptc/rpc-probe.lib.a -o /tmp/combined.o
-          $TC/clang --target=aarch64-linux-android26 --sysroot="$NDK/toolchains/llvm/prebuilt/linux-x86_64/sysroot" -O1 -fPIC -c "$GITHUB_WORKSPACE/ci/android_child_stubs.c" -o /tmp/child_stubs.o
-          $TC/clang --target=aarch64-linux-android26 --sysroot="$NDK/toolchains/llvm/prebuilt/linux-x86_64/sysroot" -O1 -fPIC -c "$GITHUB_WORKSPACE/ci/android_ucontext_stubs.c" -o /tmp/ucontext_stubs.o
-          echo '--- lib.a symbols ---'
-          $TC/llvm-nm .scriptc/rpc-probe.lib.a 2>/dev/null | head -40 || true
-          echo '--- combined.o defined symbols ---'
-          $TC/llvm-nm /tmp/combined.o 2>/dev/null | grep -v ' U ' | head -40 || true
-          $TC/clang --target=aarch64-linux-android26 --sysroot="$NDK/toolchains/llvm/prebuilt/linux-x86_64/sysroot" -fuse-ld=lld -shared -rtlib=compiler-rt --unwindlib=none -Wl,-Bsymbolic -o ../out/libzcode_rpc.so /tmp/child_stubs.o /tmp/ucontext_stubs.o /tmp/combined.o -lc -lm
-          echo '--- dynamic section ---'
-          $TC/llvm-readelf -d ../out/libzcode_rpc.so | head -16 || true
-          echo '--- exported symbols ---'
-          $TC/llvm-nm -D ../out/libzcode_rpc.so 2>/dev/null | head -24 || true
-          echo '--- .so full symtab zr ---'
-          $TC/llvm-readelf -sW ../out/libzcode_rpc.so 2>/dev/null | grep -i 'zr_' | head -24 || true
-          ls -la ../out/
-          echo '=== unresolved symbols check ==='
-          $TC/llvm-readelf -sW ../out/libzcode_rpc.so | awk '$7=="UND" && $8 != "" {print $8}' | grep -v '@' | sort -u | tee /tmp/und.txt || true
-          if grep -q 'scr_' /tmp/und.txt; then echo 'UNRESOLVED scr_* SYMBOLS:'; cat /tmp/und.txt; exit 1; fi
+          SYSROOT=$NDK/toolchains/llvm/prebuilt/linux-x86_64/sysroot
+          ARCHIVE=$(find "$WS/zfull" -name '*.lib.a' | head -n1)
+          echo "archive: $ARCHIVE"
+          test -n "$ARCHIVE"
+          mkdir -p /tmp/link && cd /tmp/link
+          $TC/ld.lld -r --whole-archive "$ARCHIVE" -o combined.o
+          CPARM="--target=aarch64-linux-android26 --sysroot=$SYSROOT -O1 -fPIC"
+          $TC/clang $CPARM -c "$WS/android-port/jni/zc_compat.c" -o compat.o
+          $TC/clang $CPARM -c "$WS/android-port/jni/zcode_jni.c" -o jni.o
+          $TC/clang $CPARM -c "$WS/ci/android_child_stubs.c" -o child.o
+          $TC/clang $CPARM -c "$WS/ci/android_ucontext_stubs.c" -o uctx.o
+          $TC/clang --target=aarch64-linux-android26 --sysroot="$SYSROOT" -fuse-ld=lld -shared \
+            -rtlib=compiler-rt --unwindlib=none -Wl,-Bsymbolic \
+            -o /tmp/libzcodecore.so jni.o compat.o child.o uctx.o combined.o -lc -lm -llog
+          ls -la /tmp/libzcodecore.so
+          echo '=== exported zc_/Java_ symbols ==='
+          $TC/llvm-readelf -sW /tmp/libzcodecore.so | grep -E 'Java_|zc_' | head -24 || true
+          echo '=== unresolved scr_* check ==='
+          $TC/llvm-readelf -sW /tmp/libzcodecore.so | awk '$7=="UND" && $8 != "" {print $8}' | grep -v '@' | sort -u > /tmp/und.txt || true
+          cat /tmp/und.txt
+          if grep -q 'scr_' /tmp/und.txt; then echo 'UNRESOLVED scr_* SYMBOLS'; exit 1; fi
           echo 'no unresolved scr_* symbols'
-          echo '=== module binding holes check ==='
-          H=$(strings -a ../out/libzcode_rpc.so | grep -o "does not provide an export named '[^']*'" | sort -u || true)
-          if [ -n "$H" ]; then echo 'MODULE BINDING HOLES:'; echo "$H"; exit 1; fi
-          echo 'no module binding holes'
 
-      - name: Upload aarch64 library
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: lib-aarch64-zcode-rpc
-          path: |
-            zfull/out/
-            zfull/profiles/.scriptc/
-          if-no-files-found: warn
-          include-hidden-files: true
-
-  apk-aarch64:
-    runs-on: ubuntu-latest
-    timeout-minutes: 90
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-      - name: Setup Node.js 24
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-      - name: Setup JDK 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-      - name: Clone ZCode v3.14.3 and apply adaptation patch
-        run: |
-          git clone --depth 1 --branch v3.14.3 https://github.com/zai-org/ZCode.git ZCode
-          cd ZCode
-          git apply ../patches/zcode-adaptations.patch
-          cd ..
-      - name: Fix type-only imports (scriptc module linker bindings)
-        run: python3 ci/fix_type_only_imports.py ZCode
-      - name: Install scriptc (npm)
-        run: |
-          mkdir -p scriptc-try
-          cd scriptc-try
-          npm init -y >/dev/null 2>&1 || true
-          npm install scriptc@0.1.7 --no-audit --no-fund
-          cd ..
-      - name: Patch scriptc lib runtime (re-include async + child units)
-        run: python3 ci/patch_scriptc_lib_runtime.py "$GITHUB_WORKSPACE/scriptc-try"
-      - name: Install minimal type deps (Node types + undici for shims)
-        run: |
-          mkdir -p zfull/node_modules/@types /tmp/nt
-          cd /tmp/nt
-          npm init -y >/dev/null 2>&1 || true
-          npm install --no-audit --no-fund @types/node@25.6.0
-          cd "$GITHUB_WORKSPACE"
-          ln -sfn /tmp/nt/node_modules/@types/node zfull/node_modules/@types/node
-          ln -sfn /tmp/nt/node_modules/undici-types zfull/node_modules/undici-types
-      - name: Install zig (x86_64 linux)
-        run: |
-          curl -fsSL -o /tmp/zig.tar.xz https://ziglang.org/download/0.16.0/zig-x86_64-linux-0.16.0.tar.xz
-          tar -xf /tmp/zig.tar.xz -C /tmp
-          ZIGDIR="$(ls -d /tmp/zig-* | head -n1)"
-          echo "$ZIGDIR" >> "$GITHUB_PATH"
-          "$ZIGDIR/zig" version
-      - name: Install Android NDK r27c
-        run: |
-          curl -fsSL -o /tmp/ndk.zip https://dl.google.com/android/repository/android-ndk-r27c-linux.zip
-          unzip -q /tmp/ndk.zip -d /tmp/ndk
-          echo "ANDROID_NDK_ROOT=/tmp/ndk/android-ndk-r27c" >> "$GITHUB_ENV"
-      - name: Install Android SDK components (cmdline-tools)
+      - name: Install Android SDK build-tools
         run: |
           mkdir -p /tmp/android
           curl -fsSL -o /tmp/android/cmdline.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
@@ -245,258 +203,46 @@ jobs:
           yes | /tmp/android/cmdline/cmdline-tools/bin/sdkmanager --sdk_root=/tmp/android --licenses >/dev/null 2>&1 || true
           yes | /tmp/android/cmdline/cmdline-tools/bin/sdkmanager --sdk_root=/tmp/android "platforms;android-34" "build-tools;34.0.0" >/dev/null 2>&1
           ls /tmp/android/build-tools/ /tmp/android/platforms/
-      - name: Build rpc static archive
+
+      - name: Assemble APK
         run: |
-          cd zfull
-          mkdir -p out
-          SCRIPTC_CC=zigcc SCRIPTC_TARGET=aarch64-linux-android node ../scriptc-try/node_modules/.bin/scriptc build --lib --profile profiles/rpc.profile.json
-      - name: Link libzcodecore.so (runtime + JNI shim)
-        run: |
-          WS=$GITHUB_WORKSPACE
-          NDK=/tmp/ndk/android-ndk-r27c
-          TC=$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin
-          SYSROOT="$NDK/toolchains/llvm/prebuilt/linux-x86_64/sysroot"
-          cd $WS/zfull/profiles
-          $TC/ld.lld -r --whole-archive .scriptc/rpc-probe.lib.a -o /tmp/combined.o
-          $TC/clang --target=aarch64-linux-android26 --sysroot="$SYSROOT" -O1 -fPIC -c $WS/ci/android_child_stubs.c -o /tmp/child_stubs.o
-          $TC/clang --target=aarch64-linux-android26 --sysroot="$SYSROOT" -O1 -fPIC -c $WS/ci/android_ucontext_stubs.c -o /tmp/ucontext_stubs.o
-          $TC/clang --target=aarch64-linux-android26 --sysroot="$SYSROOT" -O1 -fPIC -c $WS/android/app/com/zcode/rpc/zcode_android_jni.c -o /tmp/jni.o
-          $TC/clang --target=aarch64-linux-android26 --sysroot="$SYSROOT" -fuse-ld=lld -shared -rtlib=compiler-rt --unwindlib=none -Wl,-Bsymbolic -o /tmp/libzcodecore.so /tmp/jni.o /tmp/child_stubs.o /tmp/ucontext_stubs.o /tmp/combined.o -lc -lm -llog
-          ls -la /tmp/libzcodecore.so
-          $TC/llvm-readelf -sW /tmp/libzcodecore.so | grep -E 'Java_|zr_' | head -16
-          echo '=== unresolved symbols check ==='
-          $TC/llvm-readelf -sW /tmp/libzcodecore.so | awk '$7=="UND" && $8 != "" {print $8}' | grep -v '@' | sort -u | tee /tmp/und.txt || true
-          if grep -q 'scr_' /tmp/und.txt; then echo 'UNRESOLVED scr_* SYMBOLS:'; cat /tmp/und.txt; exit 1; fi
-          echo 'no unresolved scr_* symbols'
-          echo '=== module binding holes check ==='
-          H=$(strings -a /tmp/libzcodecore.so | grep -o "does not provide an export named '[^']*'" | sort -u || true)
-          if [ -n "$H" ]; then echo 'MODULE BINDING HOLES:'; echo "$H"; exit 1; fi
-          echo 'no module binding holes'
-      - name: Build APK (javac + d8 + aapt2 + zipalign + apksigner)
-        run: |
+          set -eu
           WS=$GITHUB_WORKSPACE
           BT=/tmp/android/build-tools/34.0.0
           AJ=/tmp/android/platforms/android-34/android.jar
-          mkdir -p /tmp/apk/classes /tmp/apk/dex
-          javac -source 17 -target 17 -classpath "$AJ" -d /tmp/apk/classes $WS/android/app/com/zcode/rpc/MainActivity.java $WS/android/app/com/zcode/rpc/NativeCore.java
-          "$BT/d8" --min-api 26 --lib "$AJ" --output /tmp/apk/dex /tmp/apk/classes/com/zcode/rpc/*.class
-          "$BT/aapt2" link -I "$AJ" --manifest $WS/android/AndroidManifest.xml --min-sdk-version 26 --target-sdk-version 34 -o /tmp/apk/app.unsigned.apk
+          AP=$WS/android-port
+          mkdir -p /tmp/apk/classes /tmp/apk/dex /tmp/apk/jni/arm64-v8a
+          cp /tmp/libzcodecore.so /tmp/apk/jni/arm64-v8a/libzcodecore.so
+          if [ -f "$WS/zfull/out/zcodecore" ]; then
+            cp "$WS/zfull/out/zcodecore" /tmp/apk/jni/arm64-v8a/libzcodecore_cli.so
+          fi
+          javac -source 17 -target 17 -classpath "$AJ" -d /tmp/apk/classes \
+            $AP/app/com/zcode/port/MainActivity.java $AP/app/com/zcode/port/NativeCore.java
+          "$BT/d8" --min-api 26 --lib "$AJ" --output /tmp/apk/dex /tmp/apk/classes/com/zcode/port/*.class
+          "$BT/aapt2" link -I "$AJ" --manifest $AP/AndroidManifest.xml \
+            --min-sdk-version 26 --target-sdk-version 34 -o /tmp/apk/app.unsigned.apk
           python3 - <<'PY'
-          import zipfile
+          import os, zipfile
           zf = zipfile.ZipFile('/tmp/apk/app.unsigned.apk', 'a')
           zf.write('/tmp/apk/dex/classes.dex', 'classes.dex')
-          zf.write('/tmp/libzcodecore.so', 'lib/arm64-v8a/libzcodecore.so')
+          for fn in sorted(os.listdir('/tmp/apk/jni/arm64-v8a')):
+              zf.write('/tmp/apk/jni/arm64-v8a/' + fn, 'lib/arm64-v8a/' + fn)
           zf.close()
           print('zip updated')
           PY
           "$BT/zipalign" -f 4 /tmp/apk/app.unsigned.apk /tmp/apk/app.aligned.apk
-          cp "$GITHUB_WORKSPACE/ci/zcode-rpc-debug.keystore" /tmp/apk/debug.keystore
-          "$BT/apksigner" sign --ks /tmp/apk/debug.keystore --ks-pass pass:android --key-pass pass:android --ks-key-alias androiddebugkey --out /tmp/apk/zcode-rpc-debug.apk /tmp/apk/app.aligned.apk
-          "$BT/apksigner" verify -v /tmp/apk/zcode-rpc-debug.apk || true
+          cp "$WS/ci/zcode-rpc-debug.keystore" /tmp/apk/debug.keystore
+          "$BT/apksigner" sign --ks /tmp/apk/debug.keystore --ks-pass pass:android \
+            --key-pass pass:android --ks-key-alias androiddebugkey \
+            --out /tmp/apk/zcode-port-debug.apk /tmp/apk/app.aligned.apk
+          "$BT/apksigner" verify -v /tmp/apk/zcode-port-debug.apk || true
+          unzip -l /tmp/apk/zcode-port-debug.apk
           ls -la /tmp/apk/*.apk
+
       - name: Upload APK
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: apk-aarch64-zcode-rpc
-          path: /tmp/apk/zcode-rpc-debug.apk
-          if-no-files-found: warn
-
-  coverage-sweep:
-    runs-on: ubuntu-latest
-    timeout-minutes: 180
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js 24
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-
-      - name: Clone ZCode v3.14.3 and apply adaptation patch
-        run: |
-          git clone --depth 1 --branch v3.14.3 https://github.com/zai-org/ZCode.git ZCode
-          cd ZCode
-          git apply ../patches/zcode-adaptations.patch
-          echo "ZCode ready."
-
-      - name: Install scriptc (npm)
-        run: |
-          mkdir -p scriptc-try
-          cd scriptc-try
-          npm init -y >/dev/null 2>&1 || true
-          npm install scriptc@0.1.7 --no-audit --no-fund
-          cd ..
-      - name: Patch scriptc for diagnostics (locate badType source)
-        run: |
-          python3 - <<'PYEOF'
-          import io
-          p = "scriptc-try/node_modules/@scriptc/compiler/dist/frontend/lowering/lowerer.js"
-          s = io.open(p, encoding="utf-8").read().split(chr(10))
-          assert "throw new PoisonError();" in s[4221], s[4221]
-          s.insert(4221, '        try { console.error("[scriptc-diag] badType at", node && node.getSourceFile ? node.getSourceFile().fileName : "?", node && node.getStart ? node.getStart() : "?", this.checker.typeToString(type)); } catch (e) {}')
-          io.open(p, "w", encoding="utf-8").write(chr(10).join(s))
-          print("diag inserted")
-          PYEOF
-      - name: Patch scriptc for poison-escape (scan-phase PoisonError catch)
-        run: |
-          python3 - <<'PYEOF'
-          import io
-          p = "scriptc-try/node_modules/@scriptc/compiler/dist/frontend/lowering/lowerer.js"
-          lines = io.open(p, encoding="utf-8").read().split(chr(10))
-          idx = None
-          for i, ln in enumerate(lines):
-              if "promoteNode(fn);" in ln:
-                  idx = i
-                  break
-          assert idx is not None, "promoteNode(fn) not found"
-          assert "if (fn)" in lines[idx - 1], lines[idx - 1]
-          lines[idx - 1] = lines[idx - 1].rstrip() + " {"
-          lines[idx] = "                    try { promoteNode(fn); } catch (e) { if (!(e instanceof PoisonError)) throw e; }"
-          lines.insert(idx + 1, "                }")
-          io.open(p, "w", encoding="utf-8").write(chr(10).join(lines))
-          print("poison-escape patch applied")
-          PYEOF
-
-      - name: Install ZCode workspace deps (pnpm)
-        run: |
-          npm i -g pnpm@10.33.2 >/dev/null 2>&1 || true
-          cd ZCode
-          pnpm install --ignore-scripts --no-frozen-lockfile
-          cd ..
-
-      - name: Link @types/node + undici-types (so scriptc adopts real Node types)
-        run: |
-          mkdir -p zfull/node_modules/@types
-          ln -sfn "$PWD/ZCode/node_modules/@types/node" zfull/node_modules/@types/node
-          test -d "$PWD/ZCode/node_modules/undici-types" || { echo 'undici-types missing'; exit 1; }
-          ln -sfn "$PWD/ZCode/node_modules/undici-types" zfull/node_modules/undici-types
-          ls -la zfull/node_modules/@types/
-          ls -la zfull/node_modules/undici-types/ 2>/dev/null || true
-
-      - name: Generate dynamic-workflow libs (gitignored generated file)
-        run: |
-          cd ZCode/apps/zcode-cli/packages/dynamic-workflow
-          node scripts/generate-libs.mjs
-          cd -
-
-      - name: Build core dependency-chain dist (contracts, shared, core, ...)
-        run: |
-          cd ZCode
-          pnpm --filter @zcode/core... build
-          cd ..
-
-      - name: Full coverage sweep (22 entries)
-        run: |
-          cd zfull
-          mkdir -p reports
-          for name in core contracts shared shared-types dynamic-workflow dynamic-workflow-runtime adapters bootstrap telemetry i18n cli tui services provider provider-node rpc client server zcode-server-cli model-option-map formal-proof node-repl-host; do
-            echo "===== $name ====="
-            node ../scriptc-try/node_modules/.bin/scriptc coverage entries/$name.ts > reports/$name.cov.log 2>&1 || true
-            echo "done $name ($(wc -c < reports/$name.cov.log) bytes)"
-          done
-          echo ALL-DONE
-
-      - name: Upload coverage reports
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-reports
-          path: zfull/reports/
-          if-no-files-found: warn
-
-  lib-matrix:
-    runs-on: ubuntu-latest
-    timeout-minutes: 300
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-      - name: Setup Node.js 24
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-      - name: Clone ZCode v3.14.3 and apply adaptation patch
-        run: |
-          git clone --depth 1 --branch v3.14.3 https://github.com/zai-org/ZCode.git ZCode
-          cd ZCode
-          git apply ../patches/zcode-adaptations.patch
-          echo "ZCode ready."
-      - name: Fix type-only imports (scriptc module linker bindings)
-        run: python3 ci/fix_type_only_imports.py ZCode
-      - name: Install scriptc (npm)
-        run: |
-          mkdir -p scriptc-try
-          cd scriptc-try
-          npm init -y >/dev/null 2>&1 || true
-          npm install scriptc@0.1.7 --no-audit --no-fund
-          cd ..
-      - name: Patch scriptc lib runtime (re-include async + child units)
-        run: python3 ci/patch_scriptc_lib_runtime.py "$GITHUB_WORKSPACE/scriptc-try"
-      - name: Install minimal type deps (Node types + undici for shims)
-        run: |
-          mkdir -p zfull/node_modules/@types /tmp/nt
-          cd /tmp/nt
-          npm init -y >/dev/null 2>&1 || true
-          npm install --no-audit --no-fund @types/node@25.6.0
-          cd "$GITHUB_WORKSPACE"
-          ln -sfn /tmp/nt/node_modules/@types/node zfull/node_modules/@types/node
-          ln -sfn /tmp/nt/node_modules/undici-types zfull/node_modules/undici-types
-      - name: Install zig (x86_64 linux)
-        run: |
-          curl -fsSL -o /tmp/zig.tar.xz https://ziglang.org/download/0.16.0/zig-x86_64-linux-0.16.0.tar.xz
-          tar -xf /tmp/zig.tar.xz -C /tmp
-          ZIGDIR="$(ls -d /tmp/zig-* | head -n1)"
-          echo "$ZIGDIR" >> "$GITHUB_PATH"
-          "$ZIGDIR/zig" version
-      - name: Install Android NDK r27c
-        run: |
-          curl -fsSL -o /tmp/ndk.zip https://dl.google.com/android/repository/android-ndk-r27c-linux.zip
-          unzip -q /tmp/ndk.zip -d /tmp/ndk
-          echo "ANDROID_NDK_ROOT=/tmp/ndk/android-ndk-r27c" >> "$GITHUB_ENV"
-      - name: Install ZCode workspace deps (pnpm)
-        run: |
-          npm i -g pnpm@10.33.2 >/dev/null 2>&1 || true
-          cd ZCode
-          pnpm install --ignore-scripts --no-frozen-lockfile
-          cd ..
-      - name: Build ZCode dists (workspace package eligibility)
-        run: |
-          mkdir -p lib-logs
-          cd ZCode
-          pnpm -r build > ../lib-logs/zcode-build.log 2>&1 || true
-          tail -8 ../lib-logs/zcode-build.log || true
-          cd ..
-      - name: Link zod into zfull
-        run: |
-          test -d "$PWD/ZCode/node_modules/zod" || { echo 'zod missing'; exit 1; }
-          ln -sfn "$PWD/ZCode/node_modules/zod" zfull/node_modules/zod
-          ls -la zfull/node_modules/ | head -12
-      - name: Build library experiments
-        run: |
-          cd zfull
-          mkdir -p ../lib-logs
-          run_one() {
-            local name="$1"
-            local prof="$2"
-            echo "===== BUILD $name ====="
-            SCRIPTC_CC=zigcc SCRIPTC_TARGET=aarch64-linux-android timeout 1800 node ../scriptc-try/node_modules/.bin/scriptc build --lib --profile "$prof" > "../lib-logs/$name.log" 2>&1
-            local rc=$?
-            echo "$name exit=$rc"
-            tail -8 "../lib-logs/$name.log" || true
-          }
-          run_one zod-probe profiles/zod-probe.profile.json || true
-          run_one zod-js-probe profiles/zod-js-probe.profile.json || true
-          run_one zod-js2-probe profiles/zod-js2-probe.profile.json || true
-          run_one contracts profiles/lib-contracts.profile.json || true
-          run_one shared profiles/lib-shared.profile.json || true
-          run_one core profiles/lib-core.profile.json || true
-          run_one client profiles/lib-client.profile.json || true
-          echo DONE-LIB-MATRIX
-      - name: Upload lib-matrix logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: lib-matrix-logs
-          path: lib-logs/
+          name: apk-aarch64-zcode-port
+          path: /tmp/apk/zcode-port-debug.apk
           if-no-files-found: warn

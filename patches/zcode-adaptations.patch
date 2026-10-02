@@ -3959,7 +3959,7 @@ index 5a58c46..7a0ef4d 100644
      messageId: z.string(),
      agentId: z.string().optional(),
 diff --git a/apps/zcode-cli/packages/contracts/src/tools/skill.ts b/apps/zcode-cli/packages/contracts/src/tools/skill.ts
-index 0511a59..af57013 100644
+index 0511a59..9dd83b6 100644
 --- a/apps/zcode-cli/packages/contracts/src/tools/skill.ts
 +++ b/apps/zcode-cli/packages/contracts/src/tools/skill.ts
 @@ -7,8 +7,7 @@ import type { ToolCallId, TraceId } from "../interfaces/shared.js";
@@ -3972,17 +3972,29 @@ index 0511a59..af57013 100644
      .describe("The name of a skill from the available-skills list. Do not guess names."),
    args: z.string().optional().describe("Optional arguments for the skill"),
  });
-@@ -18,8 +17,7 @@ const LegacySkillInputSchema = z.object({
+@@ -18,12 +17,15 @@ const LegacySkillInputSchema = z.object({
    args: z.string().optional(),
  });
  
 -export const SkillInputSchema = z
 -  .union([SkillCurrentInputSchema, LegacySkillInputSchema])
+-  .transform((input) => ({
+-    args: input.args,
+-    skill: "skill" in input ? input.skill : input.name,
+-  }));
 +export const SkillInputSchema = z.union([SkillCurrentInputSchema, LegacySkillInputSchema])
-   .transform((input) => ({
-     args: input.args,
-     skill: "skill" in input ? input.skill : input.name,
-@@ -39,8 +37,7 @@ export interface SkillStructuredOutput {
++  .transform((input) => {
++    // ZCode Android port: scriptc 不支持对 any 用 'in'；先转型为固定 record 再判别。
++    const record = input as { skill?: string; name?: string; args?: string };
++    return {
++      args: record.args,
++      skill: record.skill !== undefined ? record.skill : (record.name as string),
++    };
++  });
+ 
+ export type SkillInput = z.infer<typeof SkillCurrentInputSchema>;
+ export type SkillRuntimeInput = z.infer<typeof SkillInputSchema>;
+@@ -39,8 +41,7 @@ export interface SkillStructuredOutput {
  
  export type SkillOutput = string | SkillStructuredOutput;
  
@@ -4022,10 +4034,10 @@ index c14c4ce..b4e13ff 100644
    })
    .strict();
 diff --git a/apps/zcode-cli/packages/contracts/src/tools/target.ts b/apps/zcode-cli/packages/contracts/src/tools/target.ts
-index 1ae309e..d18399d 100644
+index 1ae309e..7ebcacc 100644
 --- a/apps/zcode-cli/packages/contracts/src/tools/target.ts
 +++ b/apps/zcode-cli/packages/contracts/src/tools/target.ts
-@@ -28,14 +28,12 @@ export const GoalStatusSchema = z.enum([
+@@ -28,18 +28,17 @@ export const GoalStatusSchema = z.enum([
    "complete",
  ]);
  
@@ -4042,7 +4054,13 @@ index 1ae309e..d18399d 100644
    .transform((value) => value.trim())
    .refine((value) => value.length > 0, "goal objective must not be empty")
    .refine(
-@@ -62,8 +60,7 @@ export interface SessionGoal {
+-    (value) => Array.from(value).length <= MAX_GOAL_OBJECTIVE_CHARS,
++    // ZCode Android port: value 在 scriptc 里是 any，Array.from 需要静态 string 实参。
++    (value) => Array.from(value as string).length <= MAX_GOAL_OBJECTIVE_CHARS,
+     `goal objective must be at most ${MAX_GOAL_OBJECTIVE_CHARS} characters`,
+   );
+ 
+@@ -62,8 +61,7 @@ export interface SessionGoal {
    };
  }
  
@@ -4052,7 +4070,7 @@ index 1ae309e..d18399d 100644
      sessionID: z.string(),
      targetID: z.string(),
      objective: z.string().min(1),
-@@ -75,8 +72,7 @@ export const SessionGoalSchema = z
+@@ -75,8 +73,7 @@ export const SessionGoalSchema = z
      activeInputId: z.string().min(1).nullable().optional(),
      activeRunStartedAtMs: z.number().int().nonnegative().nullable().optional(),
      activeRunLastSeenAtMs: z.number().int().nonnegative().nullable().optional(),
@@ -4062,7 +4080,7 @@ index 1ae309e..d18399d 100644
          created: z.number().int().nonnegative(),
          updated: z.number().int().nonnegative(),
        })
-@@ -88,8 +84,7 @@ export const GoalReadInputSchema = z.object({}).strict();
+@@ -88,8 +85,7 @@ export const GoalReadInputSchema = z.object({}).strict();
  export type GoalReadInput = z.infer<typeof GoalReadInputSchema>;
  export const GoalReadInputJsonSchema = toToolJsonSchema(GoalReadInputSchema);
  
@@ -4072,7 +4090,7 @@ index 1ae309e..d18399d 100644
      goal: SessionGoalSchema.nullable(),
    })
    .strict();
-@@ -100,8 +95,7 @@ export interface GoalReadOutput {
+@@ -100,8 +96,7 @@ export interface GoalReadOutput {
  
  export const GoalReadOutputJsonSchema = toToolJsonSchema(GoalReadOutputSchema);
  
@@ -4083,10 +4101,10 @@ index 1ae309e..d18399d 100644
      passed: z.boolean(),
      reason: z.string(),
 diff --git a/apps/zcode-cli/packages/contracts/src/tools/task-output.ts b/apps/zcode-cli/packages/contracts/src/tools/task-output.ts
-index b0a0318..9152f62 100644
+index b0a0318..dcdc784 100644
 --- a/apps/zcode-cli/packages/contracts/src/tools/task-output.ts
 +++ b/apps/zcode-cli/packages/contracts/src/tools/task-output.ts
-@@ -22,8 +22,7 @@ export const TASK_OUTPUT_PROVIDER_DESCRIPTION = `DEPRECATED: Background tasks re
+@@ -22,25 +22,27 @@ export const TASK_OUTPUT_PROVIDER_DESCRIPTION = `DEPRECATED: Background tasks re
  - Task IDs can be found using the /tasks command
  - Works with all task types: background shells, async agents, and remote sessions`;
  
@@ -4094,9 +4112,23 @@ index b0a0318..9152f62 100644
 -  .object({
 +export const TaskOutputInputSchema = z.object({
      task_id: z.string().describe("The task ID to get output from"),
-     block: semanticBoolean(z.boolean().default(true)).describe("Whether to wait for completion"),
+-    block: semanticBoolean(z.boolean().default(true)).describe("Whether to wait for completion"),
++    block: semanticBoolean().describe("Whether to wait for completion"),
      timeout: z.number().min(0).max(600_000).default(30_000).describe("Max wait time in ms"),
-@@ -39,8 +38,7 @@ export const TaskOutputInputJsonSchema = {
+   })
+   .strict();
+ 
+ export type TaskOutputInput = z.infer<typeof TaskOutputInputSchema>;
+ 
++// ZCode Android port: scriptc 不接受把 ZodDefault<ZodBoolean> 作为泛型实参传入，
++// 改为 bash.ts 的零参 semanticBoolean 写法，把 default(true) 收进函数体内。
++const taskOutputInputBaseJsonSchema = toToolJsonSchema(TaskOutputInputSchema);
++
+ export const TaskOutputInputJsonSchema = {
+-  ...toToolJsonSchema(TaskOutputInputSchema),
++  ...taskOutputInputBaseJsonSchema,
+ 
+   // 的 provider schema 仍要求模型显式传入 task_id、block 和 timeout。
    required: ["task_id", "block", "timeout"],
  };
  
@@ -4106,7 +4138,7 @@ index b0a0318..9152f62 100644
      task_id: z.string(),
      task_type: z.string(),
      status: z.string(),
-@@ -56,8 +54,7 @@ export const TaskOutputTaskSchema = z
+@@ -56,8 +58,7 @@ export const TaskOutputTaskSchema = z
  
  export type TaskOutputTask = z.infer<typeof TaskOutputTaskSchema>;
  
@@ -4116,6 +4148,21 @@ index b0a0318..9152f62 100644
      retrieval_status: z.enum(["success", "not_ready", "timeout"]),
      task: TaskOutputTaskSchema.nullable(),
    })
+@@ -67,12 +68,10 @@ export type TaskOutputResult = z.infer<typeof TaskOutputResultSchema>;
+ 
+ export const TaskOutputResultJsonSchema = toToolJsonSchema(TaskOutputResultSchema);
+ 
+-function semanticBoolean(
+-  schema: z.ZodDefault<z.ZodBoolean>,
+-): z.ZodEffects<z.ZodDefault<z.ZodBoolean>, boolean, unknown> {
++function semanticBoolean(): z.ZodEffects<z.ZodDefault<z.ZodBoolean>, boolean, unknown> {
+   return z.preprocess((value) => {
+     if (value === "true") return true;
+     if (value === "false") return false;
+     return value;
+-  }, schema);
++  }, z.boolean().default(true));
+ }
 diff --git a/apps/zcode-cli/packages/contracts/src/tools/task-stop.ts b/apps/zcode-cli/packages/contracts/src/tools/task-stop.ts
 index d1cbc9e..39cd0ae 100644
 --- a/apps/zcode-cli/packages/contracts/src/tools/task-stop.ts
@@ -4808,7 +4855,7 @@ index 524ba99..24e4f7b 100644
  
  // -----------------------------------------------
 diff --git a/apps/zcode-cli/packages/contracts/src/workflow/index.ts b/apps/zcode-cli/packages/contracts/src/workflow/index.ts
-index 19014a9..6a3c104 100644
+index 19014a9..2820cd4 100644
 --- a/apps/zcode-cli/packages/contracts/src/workflow/index.ts
 +++ b/apps/zcode-cli/packages/contracts/src/workflow/index.ts
 @@ -86,8 +86,7 @@ export const WorkflowPhaseDefinitionSchema = z.object({
@@ -4841,8 +4888,23 @@ index 19014a9..6a3c104 100644
      description: z.string().min(1).optional(),
      id: z.string().min(1),
      prompt: z.string().min(1).optional(),
-@@ -595,7 +592,8 @@ const TERMINAL_DEPENDENCY_STATUSES = new Set<WorkflowNodeStatus>([
- ]);
+@@ -587,15 +584,17 @@ export const WorkflowSchedulerStateSchema = z.object({
+ });
+ export type WorkflowSchedulerState = z.infer<typeof WorkflowSchedulerStateSchema>;
+ 
+-const TERMINAL_DEPENDENCY_STATUSES = new Set<WorkflowNodeStatus>([
+-  "cancelled",
+-  "completed",
+-  "failed",
+-  "skipped",
+-]);
++// ZCode Android port: WorkflowNodeStatus 在 compat 下是 any，Set<any> 不可编译；
++// 改为空 Set<string> 逐个 add（元素都是字符串字面量，语义不变）。
++const TERMINAL_DEPENDENCY_STATUSES = new Set<string>();
++TERMINAL_DEPENDENCY_STATUSES.add("cancelled");
++TERMINAL_DEPENDENCY_STATUSES.add("completed");
++TERMINAL_DEPENDENCY_STATUSES.add("failed");
++TERMINAL_DEPENDENCY_STATUSES.add("skipped");
  
  export function deriveWorkflowSchedulerState(graph: WorkflowGraph): WorkflowSchedulerState {
 -  const nodesById = new Map(graph.nodes.map((node) => [node.id, node]));
@@ -4851,7 +4913,7 @@ index 19014a9..6a3c104 100644
    const incomingById = new Map<string, string[]>();
    const outgoingById = new Map<string, string[]>();
  
-@@ -630,7 +628,7 @@ export function deriveWorkflowSchedulerState(graph: WorkflowGraph): WorkflowSche
+@@ -630,7 +629,7 @@ export function deriveWorkflowSchedulerState(graph: WorkflowGraph): WorkflowSche
    const nodes = graph.nodes.map((node) => {
      const incoming = [...new Set(incomingById.get(node.id) ?? [])];
      const blockedBy = incoming.filter((dependencyId) => {
@@ -4860,7 +4922,7 @@ index 19014a9..6a3c104 100644
        return !dependency || !TERMINAL_DEPENDENCY_STATUSES.has(dependency.status);
      });
      return {
-@@ -660,13 +658,13 @@ export function deriveWorkflowSchedulerState(graph: WorkflowGraph): WorkflowSche
+@@ -660,13 +659,13 @@ export function deriveWorkflowSchedulerState(graph: WorkflowGraph): WorkflowSche
        ]),
      ];
      const activeCollectionNodeIds = nodeIds.filter(
@@ -6176,22 +6238,55 @@ index 2e562be..e0aa302 100644
      "moduleResolution": "NodeNext",
      "outDir": "./dist",
 diff --git a/apps/zcode-cli/packages/telemetry/src/agent-metrics.ts b/apps/zcode-cli/packages/telemetry/src/agent-metrics.ts
-index 0f6d09a..cad8ae3 100644
+index 0f6d09a..d492af0 100644
 --- a/apps/zcode-cli/packages/telemetry/src/agent-metrics.ts
 +++ b/apps/zcode-cli/packages/telemetry/src/agent-metrics.ts
-@@ -192,7 +192,9 @@ function duration(meter: Meter, name: string): Histogram {
+@@ -192,22 +192,24 @@ function duration(meter: Meter, name: string): Histogram {
    });
  }
  
 -const COMMON_TERMINAL_LABELS = ["error_category", "outcome"] as const;
+-const MODEL_CALL_LABELS = [
 +// scriptc 只支持「同元素类型数组」的展开：`as const` 元组展开进 string[] 字面量会报
-+// SC1090，这里显式声明成 readonly string[]，所有 TERMINAL_LABELS 条目才可编译。
++// SC1090，所有带展开的标签数组都显式声明成 readonly string[]（不写 as const）。
 +const COMMON_TERMINAL_LABELS: readonly string[] = ["error_category", "outcome"];
- const MODEL_CALL_LABELS = [
++const MODEL_CALL_LABELS: readonly string[] = [
    ...COMMON_TERMINAL_LABELS,
    "call_cause",
+   "model_operation",
+   "model_role",
+   "retry_state",
+-] as const;
+-const MODEL_ATTEMPT_LABELS = [
++];
++const MODEL_ATTEMPT_LABELS: readonly string[] = [
+   ...COMMON_TERMINAL_LABELS,
+   "model",
+   "model_operation",
+   "model_role",
+   "provider_kind",
+   "transport",
+-] as const;
++];
+ const MODEL_TOKEN_LABELS = [
+   "model",
+   "model_operation",
+@@ -216,11 +218,11 @@ const MODEL_TOKEN_LABELS = [
+   "token_type",
+   "transport",
+ ] as const;
+-const COMMAND_LABELS = [
++const COMMAND_LABELS: readonly string[] = [
+   ...COMMON_TERMINAL_LABELS,
+   "command_category",
+   "command_safe_name",
+-] as const;
++];
+ 
+ const TERMINAL_LABELS: Record<AgentMetricSpanName, readonly string[]> = {
+   agent_turn: [...COMMON_TERMINAL_LABELS, "actor_kind", "input_source", "launch_surface"],
 diff --git a/apps/zcode-cli/packages/telemetry/src/agent-trace-runtime.ts b/apps/zcode-cli/packages/telemetry/src/agent-trace-runtime.ts
-index ad852df..81fae85 100644
+index ad852df..186027e 100644
 --- a/apps/zcode-cli/packages/telemetry/src/agent-trace-runtime.ts
 +++ b/apps/zcode-cli/packages/telemetry/src/agent-trace-runtime.ts
 @@ -94,10 +94,9 @@ interface StartWriterOptions {
@@ -6281,7 +6376,7 @@ index ad852df..81fae85 100644
    ...NOOP_SCOPE,
    finishAbandoned() {},
    finishCancelled() {},
-@@ -1653,7 +1654,9 @@ export class NoopAgentExecutionTelemetry
+@@ -1653,10 +1654,14 @@ export class NoopAgentExecutionTelemetry
    captureCausation() {
      return undefined;
    }
@@ -6291,7 +6386,74 @@ index ad852df..81fae85 100644
 +  startCall(): any {
      return NOOP_MODEL_CALL_WRITER;
    }
-   startCompaction(): ContextCompactionSpanWriter {
+-  startCompaction(): ContextCompactionSpanWriter {
++  // 返回类型标 any：ContextCompactionSpanWriter 记录里的 finishFailed 参数类型在 scriptc
++  // 下无法编译（SC2009），标注具体类型会让整个 Noop 类的 lowering 被拒。
++  startCompaction(): any {
+     return NOOP_COMPACTION_WRITER;
+   }
+   startDetachedOperation(): DetachedOperationSpanWriter {
+diff --git a/apps/zcode-cli/packages/telemetry/src/agent-trace-support.ts b/apps/zcode-cli/packages/telemetry/src/agent-trace-support.ts
+index 82ae084..8432bbe 100644
+--- a/apps/zcode-cli/packages/telemetry/src/agent-trace-support.ts
++++ b/apps/zcode-cli/packages/telemetry/src/agent-trace-support.ts
+@@ -1,6 +1,5 @@
+ import {
+   context,
+-  createContextKey,
+   createTraceState,
+   ROOT_CONTEXT,
+   SpanStatusCode,
+@@ -18,7 +17,9 @@ import type {
+ } from "@zcode/contracts/telemetry";
+ import { claimSanitizedTelemetryError } from "./error-sanitizer.js";
+ 
+-const ACTIVE_WRITER_CONTEXT_KEY = createContextKey("@zcode/telemetry/active-writer-v4");
++// scriptc 不 lower @opentelemetry/api 的 createContextKey（其实现走 Symbol.for，调用返回
++// any，落到 symbol 槽位报 SC1090）；该键只在本模块内写入/读取，本地 Symbol 语义等价。
++const ACTIVE_WRITER_CONTEXT_KEY = Symbol("@zcode/telemetry/active-writer-v4");
+ const SAFE_ID_PATTERN = /^[A-Za-z0-9._:-]{1,128}$/u;
+ const SAFE_ENUM_PATTERN = /^[a-z0-9_./:-]{1,128}$/u;
+ const SAFE_IDENTIFIER_PATTERN = /^[A-Za-z0-9._:/-]{1,128}$/u;
+diff --git a/apps/zcode-cli/packages/telemetry/src/bootstrap.ts b/apps/zcode-cli/packages/telemetry/src/bootstrap.ts
+index 058c613..2ae02a1 100644
+--- a/apps/zcode-cli/packages/telemetry/src/bootstrap.ts
++++ b/apps/zcode-cli/packages/telemetry/src/bootstrap.ts
+@@ -19,8 +19,10 @@ const TELEMETRY_STATE_LOCK_STALE_MS = 5 * 60_000;
+ const TELEMETRY_ID_PATTERN = /^[A-Za-z0-9._:-]{1,128}$/u;
+ const BUILD_COMMIT_PATTERN = /^[0-9a-f]{7,64}$/iu;
+ const pendingStandaloneDeviceMidByStateFile = new Map<string, Promise<string | undefined>>();
+-let preparedOwner: AgentTelemetryRuntimeOwner | undefined;
+-let preparingOwner: Promise<AgentTelemetryRuntimeOwner | undefined> | undefined;
++// AgentTelemetryRuntimeOwner 是 contracts 接口，scriptc 下作为值 lowering 被拒（SC2009）；
++// 这两个槽只在本模块内传递并访问属性，用 any 保留运行期形状。
++let preparedOwner: any;
++let preparingOwner: any;
+ const noopExecution = new NoopAgentExecutionTelemetry();
+ 
+ export interface CreateModelTelemetryOptions {
+diff --git a/apps/zcode-cli/packages/telemetry/src/error-sanitizer.ts b/apps/zcode-cli/packages/telemetry/src/error-sanitizer.ts
+index 6a372bd..b36646f 100644
+--- a/apps/zcode-cli/packages/telemetry/src/error-sanitizer.ts
++++ b/apps/zcode-cli/packages/telemetry/src/error-sanitizer.ts
+@@ -1,6 +1,6 @@
+ const MAX_ERROR_MESSAGE_CHARS = 2_048;
+ const MAX_ERROR_CHAIN_DEPTH = 8;
+-const claimedErrorObjects = new WeakSet<object>();
++const claimedErrorObjects = new Set<object>();
+ 
+ export interface SanitizedTelemetryError {
+   cause?: {
+@@ -41,7 +41,8 @@ export function sanitizeTelemetryError(error: unknown): SanitizedTelemetryError
+  * 来源、最先认领它的 Span；父层继续记录 outcome/failure_stage，但不复制同一份正文。
+  *
+  * 包装错误的 cause 链也参与认领：AdapterError(cause=ProviderError) 不会在上层重新覆盖
+- * Provider Attempt 已记录的原始错误。WeakSet 不延长异常对象生命周期。
++ * Provider Attempt 已记录的原始错误。scriptc 没有 WeakSet lowering（SC2020），改用
++ * 强引用 Set；认领集合只保存错误对象，生命周期与进程一致。
+  */
+ export function claimSanitizedTelemetryError(error: unknown): SanitizedTelemetryError | undefined {
+   const objects = errorObjectChain(error);
 diff --git a/apps/zcode-cli/packages/telemetry/src/otlp-exporter.ts b/apps/zcode-cli/packages/telemetry/src/otlp-exporter.ts
 index d3e7c4b..4fc7527 100644
 --- a/apps/zcode-cli/packages/telemetry/src/otlp-exporter.ts
@@ -11536,12 +11698,12 @@ index 7d89774..bcc0ef5 100644
          field: z.enum(["beforeContent", "afterContent"]),
          refId: z.string(),
 diff --git a/packages/shared/src/validationAppSettings.ts b/packages/shared/src/validationAppSettings.ts
-index 3cb58a1..c6f25bd 100644
+index 3cb58a1..a19474b 100644
 --- a/packages/shared/src/validationAppSettings.ts
 +++ b/packages/shared/src/validationAppSettings.ts
 @@ -1,4 +1,5 @@
  /* oxlint-disable eslint(max-lines) -- AppSettings schema 聚合历史迁移、默认值和 patch 校验，拆分会削弱设置迁移的单一入口。 */
-+import { omitKey } from "@zcode/native-checks";
++import { isArray, omitKey } from "@zcode/native-checks";
  import { z } from "zod";
  import type { AppSettings } from "./protocol.js";
  import { REMOTE_ASSET_INSTALL_MODES } from "./remoteAssetInstallMode.js";
@@ -11574,7 +11736,7 @@ index 3cb58a1..c6f25bd 100644
          selectedPackageIds: z.array(z.string().refine(isKnownRemoteResourcePackageId)).optional(),
        })
        .optional(),
-@@ -140,14 +138,14 @@ function sanitizeZCodeEndpointOrigin(value: unknown): unknown {
+@@ -140,14 +138,17 @@ function sanitizeZCodeEndpointOrigin(value: unknown): unknown {
      return value;
    }
    const raw = value as Record<string, unknown>;
@@ -11584,14 +11746,18 @@ index 3cb58a1..c6f25bd 100644
    }
    const parsed = zcodeEndpointOriginSchema.safeParse(raw.zcodeEndpointOrigin);
    if (parsed.success && typeof parsed.data === "string") {
-     return { ...raw, zcodeEndpointOrigin: parsed.data };
+-    return { ...raw, zcodeEndpointOrigin: parsed.data };
++    // scriptc 不支持把索引签名记录展开进对象字面量：复制一份后按字段写回。
++    const patched = omitKey(raw, "zcodeEndpointOrigin");
++    patched.zcodeEndpointOrigin = parsed.data;
++    return patched;
    }
 -  const { zcodeEndpointOrigin: _zcodeEndpointOrigin, ...next } = raw;
 +  const next = omitKey(raw, "zcodeEndpointOrigin");
    // 非生产 endpoint override 是开发辅助字段，坏值只丢弃该字段，不能拖垮整个 settings 读取。
    return next;
  }
-@@ -157,14 +155,14 @@ function sanitizeDesktopWindowSize(value: unknown): unknown {
+@@ -157,14 +158,14 @@ function sanitizeDesktopWindowSize(value: unknown): unknown {
      return value;
    }
    const raw = value as Record<string, unknown>;
@@ -11608,7 +11774,7 @@ index 3cb58a1..c6f25bd 100644
    // 窗口尺寸是非关键偏好，坏值若参与整份 schema 校验，会让其他合法设置全部回退默认。
    // 读取历史设置时只丢弃损坏字段；写入 patch 仍保持严格校验，避免继续产生坏数据。
    return next;
-@@ -175,7 +173,7 @@ function sanitizeEmbeddedBrowserViewportPreference(value: unknown): unknown {
+@@ -175,7 +176,7 @@ function sanitizeEmbeddedBrowserViewportPreference(value: unknown): unknown {
      return value;
    }
    const raw = value as Record<string, unknown>;
@@ -11617,7 +11783,7 @@ index 3cb58a1..c6f25bd 100644
      return value;
    }
    const parsed = embeddedBrowserViewportPreferenceSchema.safeParse(
-@@ -184,7 +182,7 @@ function sanitizeEmbeddedBrowserViewportPreference(value: unknown): unknown {
+@@ -184,7 +185,7 @@ function sanitizeEmbeddedBrowserViewportPreference(value: unknown): unknown {
    if (parsed.success) {
      return value;
    }
@@ -11626,7 +11792,49 @@ index 3cb58a1..c6f25bd 100644
    // 显示偏好不是关键启动状态，单字段损坏不应让整份 setting.json 被隔离。
    // 读取时只丢弃坏偏好并回到默认值；patch 写入仍严格拒绝非法尺寸与缩放。
    return next;
-@@ -230,7 +228,7 @@ function migrateLegacyLocalePreference(value: unknown): unknown {
+@@ -198,13 +199,13 @@ function migrateCloseToTrayOnWindowsDefault(value: unknown): unknown {
+   if (raw.closeToTrayOnWindowsMigrationInitialized === true) {
+     return value;
+   }
+-  return {
+-    ...raw,
+-    // 初始化原因：旧版会把默认 false 和用户手动关闭都保存成同一个值，无法可靠区分。
+-    // 本版本统一开启一次；写入迁移标记后，后续再按用户明确选择保留 true/false。
+-    closeToTrayOnWindows: true,
+-    closeToTrayOnWindowsMigrationInitialized: true,
+-  };
++  // scriptc 不支持把索引签名记录展开进对象字面量：复制一份后按字段写回。
++  const patched = omitKey(raw, "closeToTrayOnWindows");
++  // 初始化原因：旧版会把默认 false 和用户手动关闭都保存成同一个值，无法可靠区分。
++  // 本版本统一开启一次；写入迁移标记后，后续再按用户明确选择保留 true/false。
++  patched.closeToTrayOnWindows = true;
++  patched.closeToTrayOnWindowsMigrationInitialized = true;
++  return patched;
+ }
+ 
+ function migrateMessageStreamShowReasoningDefault(value: unknown): unknown {
+@@ -215,13 +216,13 @@ function migrateMessageStreamShowReasoningDefault(value: unknown): unknown {
+   if (raw.messageStreamShowReasoningMigrationInitialized === true) {
+     return value;
+   }
+-  return {
+-    ...raw,
+-    // 初始化原因：旧版会把默认 false 和用户手动关闭都保存成同一个值，无法可靠区分。
+-    // 本版本统一开启一次；写入迁移标记后，后续再按用户明确选择保留 true/false。
+-    messageStreamShowReasoning: true,
+-    messageStreamShowReasoningMigrationInitialized: true,
+-  };
++  // scriptc 不支持把索引签名记录展开进对象字面量：复制一份后按字段写回。
++  const patched = omitKey(raw, "messageStreamShowReasoning");
++  // 初始化原因：旧版会把默认 false 和用户手动关闭都保存成同一个值，无法可靠区分。
++  // 本版本统一开启一次；写入迁移标记后，后续再按用户明确选择保留 true/false。
++  patched.messageStreamShowReasoning = true;
++  patched.messageStreamShowReasoningMigrationInitialized = true;
++  return patched;
+ }
+ 
+ function migrateLegacyLocalePreference(value: unknown): unknown {
+@@ -230,7 +231,7 @@ function migrateLegacyLocalePreference(value: unknown): unknown {
    }
  
    const raw = value as Record<string, unknown>;
@@ -11635,7 +11843,34 @@ index 3cb58a1..c6f25bd 100644
      return value;
    }
  
-@@ -264,11 +262,11 @@ function stripHistoricalRemoteResourcePackages(target: unknown): unknown {
+@@ -239,12 +240,12 @@ function migrateLegacyLocalePreference(value: unknown): unknown {
+     return value;
+   }
+ 
+-  return {
+-    ...raw,
+-    // 旧 setting.json 只有 locale，无法区分“用户显式选择 zh-CN”和“默认值 zh-CN”。
+-    // 对已经落盘的旧配置保留原 locale 作为显式偏好，避免升级后误切到 system。
+-    localePreference: parsedLocale.data,
+-  };
++  // scriptc 不支持把索引签名记录展开进对象字面量：复制一份后按字段写回。
++  const patched = omitKey(raw, "localePreference");
++  // 旧 setting.json 只有 locale，无法区分“用户显式选择 zh-CN”和“默认值 zh-CN”。
++  // 对已经落盘的旧配置保留原 locale 作为显式偏好，避免升级后误切到 system。
++  patched.localePreference = parsedLocale.data;
++  return patched;
+ }
+ 
+ const legacyRemoteWorkspaceHistoryEntrySchema = z.object({
+@@ -258,17 +259,19 @@ const legacyRemoteWorkspaceHistoryEntrySchema = z.object({
+   lastConnectionError: z.string().optional(),
+ });
+ 
++type LegacyRemoteWorkspaceHistoryEntry = z.infer<typeof legacyRemoteWorkspaceHistoryEntrySchema>;
++
+ function stripHistoricalRemoteResourcePackages(target: unknown): unknown {
+   if (!target || typeof target !== "object" || Array.isArray(target)) {
+     return target;
    }
  
    const rawTarget = target as Record<string, unknown>;
@@ -11649,16 +11884,258 @@ index 3cb58a1..c6f25bd 100644
    // SSH 部署固定使用完整 active 资源集；旧 setting.json 里的 resourcePackages 是历史裁剪，
    // 在配置入口清掉，避免后续重连或 tab 恢复继续读取。
    return nextTarget;
-@@ -293,7 +291,7 @@ function migrateLegacyWorkspaceSession(value: unknown): unknown {
-     if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
+@@ -279,137 +282,135 @@ function migrateLegacyWorkspaceSession(value: unknown): unknown {
+     return value;
+   }
+ 
+-  const raw = value as {
+-    lastOpenTabs?: unknown;
+-    lastWorkspaceSession?: unknown;
+-    remoteWorkspaceHistory?: unknown;
+-  };
+-  const migrated = { ...raw } as Record<string, unknown>;
+-  const lastWorkspaceSession = Array.isArray(raw.lastWorkspaceSession)
+-    ? raw.lastWorkspaceSession
+-    : [];
++  const raw = value as Record<string, unknown>;
++  // scriptc 不支持在索引签名记录上做对象展开；omitKey 复制整份记录并去掉迁移结束
++  // 必然删除的两个旧字段，结果与原来的 `{ ...raw }` + delete 一致。
++  const migrated = omitKey(omitKey(raw, "lastOpenTabs"), "remoteWorkspaceHistory");
++  const rawLastWorkspaceSession = raw.lastWorkspaceSession;
++  const lastWorkspaceSession = isArray(rawLastWorkspaceSession) ? rawLastWorkspaceSession : [];
+ 
+   const hasLegacyRemoteEntries = lastWorkspaceSession.some((entry) => {
+-    if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
++    if (!entry || typeof entry !== "object" || isArray(entry)) {
        return false;
      }
 -    return "historyId" in (entry as Record<string, unknown>);
 +    return (entry as Record<string, unknown>).historyId !== undefined;
    });
  
-   const legacyRemoteHistory = Array.isArray(raw.remoteWorkspaceHistory)
-@@ -527,8 +525,7 @@ export const appSettingsPatchSchema = z.object({
+-  const legacyRemoteHistory = Array.isArray(raw.remoteWorkspaceHistory)
+-    ? raw.remoteWorkspaceHistory
+-    : [];
+-  const legacyRemoteHistoryById = new Map(
+-    legacyRemoteHistory.flatMap((entry) => {
+-      const sanitizedEntry =
+-        entry && typeof entry === "object" && !Array.isArray(entry)
+-          ? {
+-              ...(entry as Record<string, unknown>),
+-              // 更老的 remoteWorkspaceHistory 可能保存了已退役资源包 ID。
+-              // 先剥离历史选择再走 schema，避免迁移阶段误删整条远程历史。
+-              target: stripHistoricalRemoteResourcePackages(
+-                (entry as Record<string, unknown>).target,
+-              ),
+-            }
+-          : entry;
+-      const parsed = legacyRemoteWorkspaceHistoryEntrySchema.safeParse(sanitizedEntry);
+-      return parsed.success ? [[parsed.data.id, parsed.data] as const] : [];
+-    }),
+-  );
++  const rawRemoteWorkspaceHistory = raw.remoteWorkspaceHistory;
++  const legacyRemoteHistory = isArray(rawRemoteWorkspaceHistory) ? rawRemoteWorkspaceHistory : [];
++  // Map 的 new/get 在 scriptc 里都没有 lowering，这里换成数组 + find 做同样的按 id 查找。
++  const legacyRemoteHistoryEntries: LegacyRemoteWorkspaceHistoryEntry[] = [];
++  for (const entry of legacyRemoteHistory) {
++    let sanitizedEntry = entry;
++    if (entry && typeof entry === "object" && !isArray(entry)) {
++      // 更老的 remoteWorkspaceHistory 可能保存了已退役资源包 ID。
++      // 先剥离历史选择再走 schema，避免迁移阶段误删整条远程历史。
++      // 索引签名记录不能展开，改为复制一份再写回 target 字段。
++      const sanitizedRecord = omitKey(entry as Record<string, unknown>, "target");
++      sanitizedRecord.target = stripHistoricalRemoteResourcePackages(
++        (entry as Record<string, unknown>).target,
++      );
++      sanitizedEntry = sanitizedRecord;
++    }
++    const parsed = legacyRemoteWorkspaceHistoryEntrySchema.safeParse(sanitizedEntry);
++    if (parsed.success) {
++      legacyRemoteHistoryEntries.push(parsed.data);
++    }
++  }
+ 
+-  const migratedWorkspaceSessionEntries: Record<string, unknown>[] =
+-    lastWorkspaceSession.length > 0
+-      ? lastWorkspaceSession.flatMap((entry): Record<string, unknown>[] => {
+-          if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
+-            return [];
++  // flatMap + 条件展开在 scriptc 里不支持，改为普通循环按需 push 字段。
++  const migratedWorkspaceSessionEntries: Record<string, unknown>[] = [];
++  if (lastWorkspaceSession.length > 0) {
++    for (const entry of lastWorkspaceSession) {
++      if (!entry || typeof entry !== "object" || isArray(entry)) {
++        continue;
++      }
++
++      const rawEntry = entry as Record<string, unknown>;
++      if (rawEntry.kind === "local" && typeof rawEntry.workspacePath === "string") {
++        migratedWorkspaceSessionEntries.push({
++          kind: "local",
++          workspacePath: rawEntry.workspacePath,
++          workspacePurpose:
++            rawEntry.workspacePurpose === "conversation" ? "conversation" : "project",
++        });
++        continue;
++      }
++
++      if (rawEntry.kind === "remote") {
++        if (typeof rawEntry.workspacePath === "string" && rawEntry.target) {
++          const legacyEntry = omitKey(rawEntry, "target");
++          legacyEntry.target = stripHistoricalRemoteResourcePackages(rawEntry.target);
++          migratedWorkspaceSessionEntries.push(legacyEntry);
++          continue;
++        }
++
++        if (typeof rawEntry.historyId === "string") {
++          const historyId = rawEntry.historyId;
++          const legacyRemoteEntry = legacyRemoteHistoryEntries.find(
++            (candidate) => candidate.id === historyId,
++          );
++          if (!legacyRemoteEntry) {
++            continue;
+           }
+ 
+-          const rawEntry = entry as Record<string, unknown>;
+-          if (rawEntry.kind === "local" && typeof rawEntry.workspacePath === "string") {
+-            return [
+-              {
+-                kind: "local",
+-                workspacePath: rawEntry.workspacePath,
+-                workspacePurpose:
+-                  rawEntry.workspacePurpose === "conversation" ? "conversation" : "project",
+-              },
+-            ];
++          const merged: Record<string, unknown> = {
++            kind: "remote",
++            workspacePath: legacyRemoteEntry.workspacePath,
++            target: stripHistoricalRemoteResourcePackages(legacyRemoteEntry.target),
++            lastOpenedAt: legacyRemoteEntry.lastOpenedAt,
++            lastConnectionStatus: legacyRemoteEntry.lastConnectionStatus,
++          };
++          // 条件展开在 scriptc 里不支持，改为按字段写回。
++          if (legacyRemoteEntry.localWorkspacePath) {
++            merged.localWorkspacePath = legacyRemoteEntry.localWorkspacePath;
+           }
+-
+-          if (rawEntry.kind === "remote") {
+-            if (typeof rawEntry.workspacePath === "string" && rawEntry.target) {
+-              return [
+-                {
+-                  ...rawEntry,
+-                  target: stripHistoricalRemoteResourcePackages(rawEntry.target),
+-                },
+-              ];
+-            }
+-
+-            if (typeof rawEntry.historyId === "string") {
+-              const legacyRemoteEntry = legacyRemoteHistoryById.get(rawEntry.historyId);
+-              return legacyRemoteEntry
+-                ? [
+-                    {
+-                      kind: "remote",
+-                      workspacePath: legacyRemoteEntry.workspacePath,
+-                      ...(legacyRemoteEntry.localWorkspacePath
+-                        ? { localWorkspacePath: legacyRemoteEntry.localWorkspacePath }
+-                        : {}),
+-                      ...(legacyRemoteEntry.workspaceIdentity
+-                        ? { workspaceIdentity: legacyRemoteEntry.workspaceIdentity }
+-                        : {}),
+-                      target: stripHistoricalRemoteResourcePackages(legacyRemoteEntry.target),
+-                      lastOpenedAt: legacyRemoteEntry.lastOpenedAt,
+-                      lastConnectionStatus: legacyRemoteEntry.lastConnectionStatus,
+-                      ...(legacyRemoteEntry.lastConnectionError
+-                        ? { lastConnectionError: legacyRemoteEntry.lastConnectionError }
+-                        : {}),
+-                    },
+-                  ]
+-                : [];
+-            }
++          if (legacyRemoteEntry.workspaceIdentity) {
++            merged.workspaceIdentity = legacyRemoteEntry.workspaceIdentity;
+           }
+-
+-          return [];
+-        })
+-      : [];
+-  const migratedLegacyLocalEntries = Array.isArray(raw.lastOpenTabs)
+-    ? raw.lastOpenTabs.flatMap((workspacePath) =>
+-        typeof workspacePath === "string"
+-          ? [
+-              {
+-                kind: "local" as const,
+-                workspacePath,
+-                workspacePurpose: "project" as const,
+-              },
+-            ]
+-          : [],
+-      )
+-    : [];
+-  const existingLocalWorkspacePaths = new Set(
+-    migratedWorkspaceSessionEntries.flatMap((entry) =>
+-      entry.kind === "local" && typeof entry.workspacePath === "string"
+-        ? [entry.workspacePath]
+-        : [],
+-    ),
+-  );
+-  const nextWorkspaceSession = [
+-    ...migratedWorkspaceSessionEntries,
+-    ...migratedLegacyLocalEntries.filter(
+-      (entry) => !existingLocalWorkspacePaths.has(entry.workspacePath),
+-    ),
+-  ];
++          if (legacyRemoteEntry.lastConnectionError) {
++            merged.lastConnectionError = legacyRemoteEntry.lastConnectionError;
++          }
++          migratedWorkspaceSessionEntries.push(merged);
++        }
++      }
++    }
++  }
++  const rawLastOpenTabs = raw.lastOpenTabs;
++  const migratedLegacyLocalEntries: Record<string, unknown>[] = [];
++  if (isArray(rawLastOpenTabs)) {
++    for (const workspacePath of rawLastOpenTabs) {
++      if (typeof workspacePath === "string") {
++        migratedLegacyLocalEntries.push({
++          kind: "local",
++          workspacePath,
++          workspacePurpose: "project",
++        });
++      }
++    }
++  }
++  const existingLocalWorkspacePaths = new Set<string>();
++  for (const entry of migratedWorkspaceSessionEntries) {
++    if (entry.kind === "local" && typeof entry.workspacePath === "string") {
++      existingLocalWorkspacePaths.add(entry.workspacePath);
++    }
++  }
++  const nextWorkspaceSession: Record<string, unknown>[] = [];
++  for (const entry of migratedWorkspaceSessionEntries) {
++    nextWorkspaceSession.push(entry);
++  }
++  for (const entry of migratedLegacyLocalEntries) {
++    const workspacePath = entry.workspacePath;
++    if (typeof workspacePath === "string" && !existingLocalWorkspacePaths.has(workspacePath)) {
++      nextWorkspaceSession.push(entry);
++    }
++  }
+ 
+   // 旧 setting.json 把本地会话、远端历史、组合会话拆在三处存，
+   // 一旦只删掉其中一处，启动恢复就会出现“列表还在但恢复不到”或“远端数据残留”的分叉状态。
+   // 这里在 schema 解析阶段统一合并进 lastWorkspaceSession，并主动移除旧字段，
+   // 保证后续所有读写都只围绕单一真相源展开。
+-  if (
+-    nextWorkspaceSession.length > 0 ||
+-    hasLegacyRemoteEntries ||
+-    Array.isArray(raw.lastOpenTabs)
+-  ) {
++  if (nextWorkspaceSession.length > 0 || hasLegacyRemoteEntries || isArray(rawLastOpenTabs)) {
+     migrated.lastWorkspaceSession = nextWorkspaceSession;
+   }
+   delete migrated.lastOpenTabs;
+@@ -527,8 +528,7 @@ export const appSettingsPatchSchema = z.object({
    providerFamilyDomainUpdatedAt: z.number().int().nonnegative().optional(),
    providerFamilyDomainMigrated: z.boolean().optional(),
    nativeSearchEnhancementsEnabled: z.boolean().optional(),
@@ -11668,7 +12145,7 @@ index 3cb58a1..c6f25bd 100644
        "office",
        "developer",
        "independent",
-@@ -554,8 +551,7 @@ export const appSettingsPatchSchema = z.object({
+@@ -554,8 +554,7 @@ export const appSettingsPatchSchema = z.object({
    pendingPostUpdateReleaseNotes: postUpdateReleaseNotesPayloadSchema.optional(),
    receivePreviewUpdates: z.boolean().optional(),
    autoDownloadAndInstallUpdates: z.boolean().optional(),

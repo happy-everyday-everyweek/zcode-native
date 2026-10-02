@@ -1266,27 +1266,20 @@ index f125336..bef8d0b 100644
      strategy: z.enum([MicrocompactStrategy.LocalToolResultClear]),
      preMicrocompactTokenCount: z.number().int().nonnegative(),
 diff --git a/apps/zcode-cli/packages/contracts/src/events/event-reducer-helpers.ts b/apps/zcode-cli/packages/contracts/src/events/event-reducer-helpers.ts
-index 8b61463..df0ec78 100644
+index 8b61463..c539c8f 100644
 --- a/apps/zcode-cli/packages/contracts/src/events/event-reducer-helpers.ts
 +++ b/apps/zcode-cli/packages/contracts/src/events/event-reducer-helpers.ts
-@@ -22,6 +22,8 @@ import type {
+@@ -22,7 +22,9 @@ import type {
    StreamingToolLedgerPayload,
  } from "./stream-recovery.events.js";
  
-+// ZCode Android port: 这个字面量不要加显式标注。scriptc 会把 Omit<...> 退化成 any，
-+// Date 字段就被判成「跨入 any-typed code」（SC1090）；去掉标注走静态推断即可。
- export const initialSessionProjection = {
+-export const initialSessionProjection = {
++// ZCode Android port: 显式标注对象字面量，否则 scriptc 把 Date 字段当动态对象构造，
++// 报 SC1090「Date 不能跨入 any-typed code」。
++export const initialSessionProjection: Omit<SessionProjection, "id"> = {
    createdAt: new Date(),
    updatedAt: new Date(),
-@@ -36,7 +38,7 @@ export const initialSessionProjection = {
-   activeToolCalls: [] as ActiveToolCall[],
-   streamingToolLedger: [] as SessionProjection["streamingToolLedger"],
-   backgroundTasks: [] as SessionProjection["backgroundTasks"],
--  currentTurnId: undefined as string | undefined,
-+  currentTurnId: undefined as SessionProjection["currentTurnId"],
-   lastError: undefined as SessionProjection["lastError"],
-   lastCompact: undefined as SessionProjection["lastCompact"],
-   lastCheckpoint: undefined as SessionProjection["lastCheckpoint"],
+   mode: "build" as CollaborationMode,
 diff --git a/apps/zcode-cli/packages/contracts/src/events/session.events.ts b/apps/zcode-cli/packages/contracts/src/events/session.events.ts
 index 655c088..06998e6 100644
 --- a/apps/zcode-cli/packages/contracts/src/events/session.events.ts
@@ -3102,7 +3095,7 @@ index d895b8b..886a9fe 100644
      durationMs: z.number().int().nonnegative(),
      numFiles: z.number().int().nonnegative(),
 diff --git a/apps/zcode-cli/packages/contracts/src/tools/json-schema.ts b/apps/zcode-cli/packages/contracts/src/tools/json-schema.ts
-index 21d92dc..be128b5 100644
+index 21d92dc..92c91ff 100644
 --- a/apps/zcode-cli/packages/contracts/src/tools/json-schema.ts
 +++ b/apps/zcode-cli/packages/contracts/src/tools/json-schema.ts
 @@ -1,3 +1,4 @@
@@ -3165,8 +3158,8 @@ index 21d92dc..be128b5 100644
    }
  
 -  const typeValues = Array.isArray(value.type) ? value.type : [value.type];
-+  // ZCode Android port: scriptc 不会用类型守卫收窄 unknown，这里必须显式转型（SC1100）。
-+  const typeValues: any[] = isArray(value.type) ? (value.type as any[]) : [value.type];
++  // ZCode Android port: isArray 类型守卫已能收窄，去掉 scriptc 不支持的 unknown->any[] 转型。
++  const typeValues: any[] = isArray(value.type) ? value.type : [value.type];
    if (
 -    typeValues.includes("object") &&
 +    includesValue(typeValues, "object") &&
@@ -4112,7 +4105,7 @@ index 1ae309e..7ebcacc 100644
      passed: z.boolean(),
      reason: z.string(),
 diff --git a/apps/zcode-cli/packages/contracts/src/tools/task-output.ts b/apps/zcode-cli/packages/contracts/src/tools/task-output.ts
-index b0a0318..585a97d 100644
+index b0a0318..dcdc784 100644
 --- a/apps/zcode-cli/packages/contracts/src/tools/task-output.ts
 +++ b/apps/zcode-cli/packages/contracts/src/tools/task-output.ts
 @@ -22,25 +22,27 @@ export const TASK_OUTPUT_PROVIDER_DESCRIPTION = `DEPRECATED: Background tasks re
@@ -4131,21 +4124,17 @@ index b0a0318..585a97d 100644
  
  export type TaskOutputInput = z.infer<typeof TaskOutputInputSchema>;
  
--export const TaskOutputInputJsonSchema = {
--  ...toToolJsonSchema(TaskOutputInputSchema),
-+// ZCode Android port: scriptc 不支持在索引签名形状上做对象展开（SC1090），改为显式逐键拷贝。
++// ZCode Android port: scriptc 不接受把 ZodDefault<ZodBoolean> 作为泛型实参传入，
++// 改为 bash.ts 的零参 semanticBoolean 写法，把 default(true) 收进函数体内。
 +const taskOutputInputBaseJsonSchema = toToolJsonSchema(TaskOutputInputSchema);
- 
--  // 的 provider schema 仍要求模型显式传入 task_id、block 和 timeout。
--  required: ["task_id", "block", "timeout"],
--};
-+export const TaskOutputInputJsonSchema: Record<string, any> = {};
-+for (const key of Object.keys(taskOutputInputBaseJsonSchema)) {
-+  TaskOutputInputJsonSchema[key] = taskOutputInputBaseJsonSchema[key];
-+}
 +
-+// 的 provider schema 仍要求模型显式传入 task_id、block 和 timeout。
-+TaskOutputInputJsonSchema.required = ["task_id", "block", "timeout"];
+ export const TaskOutputInputJsonSchema = {
+-  ...toToolJsonSchema(TaskOutputInputSchema),
++  ...taskOutputInputBaseJsonSchema,
+ 
+   // 的 provider schema 仍要求模型显式传入 task_id、block 和 timeout。
+   required: ["task_id", "block", "timeout"],
+ };
  
 -export const TaskOutputTaskSchema = z
 -  .object({
@@ -4163,15 +4152,13 @@ index b0a0318..585a97d 100644
      retrieval_status: z.enum(["success", "not_ready", "timeout"]),
      task: TaskOutputTaskSchema.nullable(),
    })
-@@ -67,12 +68,12 @@ export type TaskOutputResult = z.infer<typeof TaskOutputResultSchema>;
+@@ -67,12 +68,10 @@ export type TaskOutputResult = z.infer<typeof TaskOutputResultSchema>;
  
  export const TaskOutputResultJsonSchema = toToolJsonSchema(TaskOutputResultSchema);
  
 -function semanticBoolean(
 -  schema: z.ZodDefault<z.ZodBoolean>,
 -): z.ZodEffects<z.ZodDefault<z.ZodBoolean>, boolean, unknown> {
-+// ZCode Android port: 零参写法把 ZodDefault<ZodBoolean> 收进函数体，
-+// 避免作为泛型实参传递（SC1090），与 bash.ts 的 semanticBoolean 一致。
 +function semanticBoolean(): z.ZodEffects<z.ZodDefault<z.ZodBoolean>, boolean, unknown> {
    return z.preprocess((value) => {
      if (value === "true") return true;

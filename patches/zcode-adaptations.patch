@@ -5467,7 +5467,7 @@ index 39ddb0b..9ac8f5d 100644
 +  return wrapped;
  }
 diff --git a/apps/zcode-cli/packages/core/src/runtime/permission-full-access.ts b/apps/zcode-cli/packages/core/src/runtime/permission-full-access.ts
-index 58d99cf..18b6722 100644
+index 58d99cf..fb4296c 100644
 --- a/apps/zcode-cli/packages/core/src/runtime/permission-full-access.ts
 +++ b/apps/zcode-cli/packages/core/src/runtime/permission-full-access.ts
 @@ -12,7 +12,25 @@ import {
@@ -5506,13 +5506,11 @@ index 58d99cf..18b6722 100644
      if (!applied.has(interactionId)) {
        this.lastPermissionGrantId = interactionId;
        this.config.mode = payload.mode;
-@@ -94,8 +112,8 @@ export async function grantPermissionFullAccess(
-       for (const item of this.activeTurn?.pendingInputs ?? []) {
+@@ -95,7 +113,7 @@ export async function grantPermissionFullAccess(
          if (ids.has(item.id) && item.intent) item.intent = { ...item.intent, mode: "yolo" };
        }
--      applied.add(interactionId);
+       applied.add(interactionId);
 -      appliedGrants.set(this, applied);
-+      appliedGrantsPlaceholder: applied.add(interactionId);
 +      setAppliedPermissionGrants(this, applied);
      }
      const existing = (await this.eventStore.getEvents(this.sessionId)).find(
@@ -6309,6 +6307,40 @@ index 8260996..fca470c 100644
        const notes = [
          spec.type,
          spec.required === true ? "required" : undefined,
+diff --git a/apps/zcode-cli/packages/core/src/tool/handlers/read.ts b/apps/zcode-cli/packages/core/src/tool/handlers/read.ts
+index 397c1d6..930eec0 100644
+--- a/apps/zcode-cli/packages/core/src/tool/handlers/read.ts
++++ b/apps/zcode-cli/packages/core/src/tool/handlers/read.ts
+@@ -67,7 +67,15 @@ const READ_PROVIDER_DESCRIPTION = [
+   "- Do NOT re-read a file you just edited to verify — Edit/Write would have errored if the change failed, and the harness tracks file state for you.",
+ ].join("\n");
+ 
+-const fallbackReadFileStates = new WeakMap<ToolExecutionContext, ReadFileStateMap>();
++// 修复依据：scriptc 没有 WeakMap lowering（run73 SC2020）；数组按 context 对象引用查找。
++const fallbackReadFileStateEntries: { context: ToolExecutionContext; state: ReadFileStateMap }[] = [];
++
++function findFallbackReadFileState(context: ToolExecutionContext): ReadFileStateMap | undefined {
++  for (const entry of fallbackReadFileStateEntries) {
++    if (entry.context === context) return entry.state;
++  }
++  return undefined;
++}
+ 
+ function formatReadModelContent(output: unknown): ModelMessageContent {
+   const parsed = ReadOutputSchema.safeParse(output);
+@@ -321,10 +329,10 @@ function createReadTrace(context: ToolExecutionContext): TraceContext {
+ 
+ function getReadFileState(context: ToolExecutionContext): ReadFileStateMap {
+   if (context.readFileState) return context.readFileState;
+-  const existing = fallbackReadFileStates.get(context);
++  const existing = findFallbackReadFileState(context);
+   if (existing) return existing;
+   const state: ReadFileStateMap = new Map();
+-  fallbackReadFileStates.set(context, state);
++  fallbackReadFileStateEntries.push({ context, state });
+   return state;
+ }
+ 
 diff --git a/apps/zcode-cli/packages/core/src/tool/handlers/saved-workflows/args.ts b/apps/zcode-cli/packages/core/src/tool/handlers/saved-workflows/args.ts
 index 02108b8..623029d 100644
 --- a/apps/zcode-cli/packages/core/src/tool/handlers/saved-workflows/args.ts

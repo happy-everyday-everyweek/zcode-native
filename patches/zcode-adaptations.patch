@@ -13875,7 +13875,7 @@ index e490b14..66300f2 100644
  export type ControllerUnsubscribeParams = z.infer<typeof controllerUnsubscribeParamsSchema>;
  
 diff --git a/packages/shared/src/zcode-protocol-v4/core.ts b/packages/shared/src/zcode-protocol-v4/core.ts
-index 69712cc..c0e6a96 100644
+index 69712cc..e2e4778 100644
 --- a/packages/shared/src/zcode-protocol-v4/core.ts
 +++ b/packages/shared/src/zcode-protocol-v4/core.ts
 @@ -7,8 +7,7 @@ import { VIDEO_INPUT_MAX_BYTES } from "../zcode-media-policy.js";
@@ -13888,34 +13888,6 @@ index 69712cc..c0e6a96 100644
      rowId: z.number().int().nonnegative(),
      entityId: z.string().trim().min(1),
    })
-@@ -31,7 +30,17 @@ export interface DeliveryProfile {
-   toolProgress: boolean;
- }
- 
--export const DELIVERY_PROFILES = {
-+/**
-+ * 显式表格类型：scriptc 会把 `satisfies Record<string, DeliveryProfile>` 的初始化器推断成
-+ * 索引签名记录，再与自身的固定键记录比较时报 SC2002；这里用固定的两键接口标注，
-+ * 既保留每个 profile 与 DeliveryProfile 的匹配检查，又让键名仍是字面量联合。
-+ */
-+export interface DeliveryProfileTable {
-+  continuous: DeliveryProfile;
-+  replayable: DeliveryProfile;
-+}
-+
-+export const DELIVERY_PROFILES: DeliveryProfileTable = {
-   continuous: {
-     desktopOnlyRows: true,
-     flushWindowMs: 30,
-@@ -56,7 +65,7 @@ export const DELIVERY_PROFILES = {
-     streamOutputCapBytes: 0,
-     toolProgress: true,
-   },
--} as const satisfies Record<string, DeliveryProfile>;
-+};
- 
- export type DeliveryProfileName = keyof typeof DELIVERY_PROFILES;
- 
 diff --git a/packages/shared/src/zcode-protocol-v4/create-workflow-display.ts b/packages/shared/src/zcode-protocol-v4/create-workflow-display.ts
 index b63d07c..7c9f457 100644
 --- a/packages/shared/src/zcode-protocol-v4/create-workflow-display.ts
@@ -14055,24 +14027,11 @@ index 2c81931..7f55e84 100644
      eventId: z.string().min(1),
      eventSeq: z.number().int().nonnegative(),
 diff --git a/packages/shared/src/zcode-protocol-v4/delta.ts b/packages/shared/src/zcode-protocol-v4/delta.ts
-index 29ceb49..079696c 100644
+index 29ceb49..99e74ca 100644
 --- a/packages/shared/src/zcode-protocol-v4/delta.ts
 +++ b/packages/shared/src/zcode-protocol-v4/delta.ts
-@@ -30,6 +30,7 @@ import {
- import {
-   WORKFLOW_RUNS_LIMITS,
-   workflowRunActorSchema,
-+  workflowRunIdSchema,
-   workflowRunNodeSchema,
-   workflowRunSchema,
-   workflowRunsStateSchema,
-@@ -120,15 +121,14 @@ export const conversationDeltaSchema = z.discriminatedUnion("op", [
-    */
-   z.object({
-     op: z.literal("workflowRun.updated"),
--    runId: workflowRunSchema.shape.runId,
-+    // scriptc: 不能从 compat schema 的 .shape（any）取 ZBase 槽位（SC1090），复用导出的同一 schema。
-+    runId: workflowRunIdSchema,
+@@ -123,12 +123,10 @@ export const conversationDeltaSchema = z.discriminatedUnion("op", [
+     runId: workflowRunSchema.shape.runId,
      revision: workflowRunsStateSchema.shape.revision,
      run: workflowRunHeaderPatchSchema.optional(),
 -    cleared: z
@@ -14086,15 +14045,6 @@ index 29ceb49..079696c 100644
        .max(WORKFLOW_RUNS_LIMITS.maxActors)
        .optional(),
      removedNodes: z.array(workflowRunEntryRefSchema).max(WORKFLOW_RUNS_LIMITS.maxNodes).optional(),
-@@ -138,7 +138,7 @@ export const conversationDeltaSchema = z.discriminatedUnion("op", [
-   /** 这条 run 被生产者淘汰了（只有生产者淘汰，而且必须说出来——客户端永远不自行施加上界）。 */
-   z.object({
-     op: z.literal("workflowRun.removed"),
--    runId: workflowRunSchema.shape.runId,
-+    runId: workflowRunIdSchema,
-     revision: workflowRunsStateSchema.shape.revision,
-   }),
- ]);
 diff --git a/packages/shared/src/zcode-protocol-v4/fork.ts b/packages/shared/src/zcode-protocol-v4/fork.ts
 index 0d0152d..614ecd6 100644
 --- a/packages/shared/src/zcode-protocol-v4/fork.ts
@@ -15618,66 +15568,21 @@ index 3985ded..5350a6b 100644
      .max(WORKFLOW_RUNS_LIMITS.maxSubagentModelLength)
      .nullable()
 diff --git a/packages/shared/src/zcode-protocol-v4/workflow-runs-delta.ts b/packages/shared/src/zcode-protocol-v4/workflow-runs-delta.ts
-index 8e1d764..3ff037f 100644
+index 8e1d764..c22ec89 100644
 --- a/packages/shared/src/zcode-protocol-v4/workflow-runs-delta.ts
 +++ b/packages/shared/src/zcode-protocol-v4/workflow-runs-delta.ts
-@@ -44,24 +44,27 @@ import {
+@@ -44,7 +44,8 @@ import {
   *
   * 键序从 schema 派生，避免独立维护字段表导致生产者和消费者使用不同的 run 结构。
   */
 -const WORKFLOW_RUN_KEYS = Object.keys(workflowRunSchema.shape) as (keyof WorkflowRunState)[];
-+// scriptc: compat schema 的 .shape 静态类型是 any；Object.keys(any) 无 lowering（SC2020），
-+// 且 any 值不能直接进入 ZBase 槽位（SC1090）。先绑定为值类型具体、JSON 安全的记录，
-+// 键序仍在运行期从 schema 声明序读取。
-+const workflowRunShape: Record<string, any> = workflowRunSchema.shape;
-+const WORKFLOW_RUN_KEYS = Object.keys(workflowRunShape) as (string & keyof WorkflowRunState)[];
++const WORKFLOW_RUN_KEYS = Object.keys(workflowRunSchema.shape) as (string &
++  keyof WorkflowRunState)[];
  const WORKFLOW_RUN_KEY_SET: ReadonlySet<string> = new Set<string>(WORKFLOW_RUN_KEYS);
  
  /** header = run 减去两张按 (siteId, ordinal) 增量同步的表。顺序仍是 schema 声明序。 */
- export const WORKFLOW_RUN_HEADER_KEYS: readonly WorkflowRunHeaderKey[] = WORKFLOW_RUN_KEYS.filter(
--  (key): key is WorkflowRunHeaderKey => key !== "actors" && key !== "nodes",
--);
-+  (key: string): boolean => key !== "actors" && key !== "nodes",
-+) as WorkflowRunHeaderKey[];
- 
- /**
-  * header 里的**必填**键，同样从 schema 派生（`safeParse(undefined)` 通过 = 可缺省）。
-  * 它只用在一处：判一条 `workflowRun.updated` 的 header 够不够格让一条未知 run **出生**。
-+ * scriptc: 回调参数显式标 string，避免字面量联合被当作「非 string 键」索引（SC1090）。
-  */
--const runShape = workflowRunSchema.shape as unknown as Record<
--  string,
--  { safeParse: (value: unknown) => { success: boolean } }
-->;
- const WORKFLOW_RUN_REQUIRED_HEADER_KEYS: readonly WorkflowRunHeaderKey[] =
--  WORKFLOW_RUN_HEADER_KEYS.filter((key) => !runShape[key]!.safeParse(undefined).success);
-+  WORKFLOW_RUN_HEADER_KEYS.filter(
-+    (key: string) => !workflowRunShape[key]!.safeParse(undefined).success,
-+  );
- 
- /** 两张实例表的去重键。`\0` 分隔的理由与 reducer 的派生 actor 状态逐字相同：("a",12) 与 ("a1",2) 不能撞车。 */
- export function workflowRunEntryKey(entry: { siteId: string; ordinal: number }): string {
-@@ -74,8 +77,17 @@ export function workflowRunEntryKey(entry: { siteId: string; ordinal: number }):
-  * `undefined` 值的键按缺席处理，与 `JSON.stringify` 的语义对齐——协议线上只有「键在场」与
-  * 「键缺席」两态，没有第三态。schema 之外的键按原序缀在尾部：本模块没有资格替调用方丢数据。
-  */
-+/**
-+ * scriptc: 不能直接对 any 值做 any→unknown 的检查转型（SC1090），但 unknown→JSON 安全记录
-+ * 的检查转型是支持的（同文件 jsonValueEqual 的既有先例）。经一次 unknown 形参把两步拆开，
-+ * TS 侧也不再需要 `as unknown` 双跳。
-+ */
-+function asRecordView(value: unknown): Record<string, unknown> {
-+  return value as Record<string, unknown>;
-+}
-+
- export function canonicalWorkflowRun(run: WorkflowRunState): WorkflowRunState {
--  const source = run as unknown as Record<string, unknown>;
-+  const source = asRecordView(run);
-   const canonical: Record<string, unknown> = {};
-   for (const key of WORKFLOW_RUN_KEYS) {
-     const value = source[key];
 diff --git a/packages/shared/src/zcode-protocol-v4/workflow-runs.ts b/packages/shared/src/zcode-protocol-v4/workflow-runs.ts
-index cd27ebe..5e8fbc4 100644
+index cd27ebe..1239d45 100644
 --- a/packages/shared/src/zcode-protocol-v4/workflow-runs.ts
 +++ b/packages/shared/src/zcode-protocol-v4/workflow-runs.ts
 @@ -248,8 +248,7 @@ export const workflowRunNodeSchema = z.object({
@@ -15690,7 +15595,7 @@ index cd27ebe..5e8fbc4 100644
      .min(1)
      .max(WORKFLOW_RUNS_LIMITS.maxInstructionsHeadLength)
      .optional(),
-@@ -358,13 +357,34 @@ export const workflowRunPendingQuestionSchema = z.object({
+@@ -358,13 +357,28 @@ export const workflowRunPendingQuestionSchema = z.object({
  });
  export type WorkflowRunPendingQuestion = z.infer<typeof workflowRunPendingQuestionSchema>;
  
@@ -15709,15 +15614,8 @@ index cd27ebe..5e8fbc4 100644
 +  "superseded",
 +]);
 +
-+/**
-+ * runId 的 schema 单独导出：delta 的 `workflowRun.*` 载荷复用同一个实例。
-+ * compat schema 的 `.shape` 静态类型是 any，从 `.shape.runId` 取值会触发 SC1090。
-+ */
-+export const workflowRunIdSchema = z.string().min(1).max(128);
-+
  export const workflowRunSchema = z.object({
--  runId: z.string().min(1).max(128),
-+  runId: workflowRunIdSchema,
+   runId: z.string().min(1).max(128),
    /** 发起该 run 的 CreateWorkflow 工具调用（工具卡 → 详情页的关联键）。 */
    toolCallId: z.string().min(1).max(128).optional(),
 -  status: z.enum(["pending", "running", "completed", "errored", "stopped"]),
@@ -15728,7 +15626,7 @@ index cd27ebe..5e8fbc4 100644
    /**
     * lineage 的两端：本 run 修订自哪个 run
     * （`run-started` 载荷的 `resumedFrom`），以及本 run 被哪次修订停下并替代（`run-settled` 载荷的
-@@ -406,8 +426,7 @@ export const workflowRunSchema = z.object({
+@@ -406,8 +420,7 @@ export const workflowRunSchema = z.object({
     * optional 的第二个理由与 `reports` 相同：这是往一个**已有状态键**上追加字段，而已知键上的
     * 解析错误不会被剥离——必填会让任何一个不发该字段的旧 CLI 整帧被丢。
     */
@@ -15738,7 +15636,7 @@ index cd27ebe..5e8fbc4 100644
      .max(WORKFLOW_RUNS_LIMITS.maxPendingQuestions)
      .optional(),
    /**
-@@ -422,8 +441,7 @@ export const workflowRunSchema = z.object({
+@@ -422,8 +435,7 @@ export const workflowRunSchema = z.object({
     * 与 `concurrency.ceiling` 不同：那是读数芯片自己的水位，只随芯片在场；这一个**只要读得到就在**，
     * 不论本 run 是否低于它——「配置」弹层的步进器停在这里。optional 的理由与 `concurrency` 同：老 CLI 不发，少一个键是退化。
     */
@@ -15748,7 +15646,7 @@ index cd27ebe..5e8fbc4 100644
      .int()
      .positive()
      .max(WORKFLOW_RUNS_LIMITS.maxConcurrencyCeiling)
-@@ -451,8 +469,7 @@ export const workflowRunSchema = z.object({
+@@ -451,8 +463,7 @@ export const workflowRunSchema = z.object({
     * ⚠ 术语：这里的 artifact 是脚本发布给用户看的产出，不是 `resultPreview` 背后那个
     * 「脚本顶层返回值」（引擎内部也叫 artifact）。见 workflow-artifacts.ts 的文件头。
     */
@@ -15758,7 +15656,7 @@ index cd27ebe..5e8fbc4 100644
      .max(WORKFLOW_RUNS_LIMITS.maxArtifacts)
      .optional(),
    /**
-@@ -467,8 +484,7 @@ export const workflowRunSchema = z.object({
+@@ -467,8 +478,7 @@ export const workflowRunSchema = z.object({
     * 脚本**声明**的阶段表，按声明序（`run-launched.phaseNames`）。与 `phases`（已进入的）互补：侧栏迷你轨道据此画出前方还没到的站点。
     * 零条 / 旧 CLI / 无标记脚本时整个键缺席。
     */
@@ -15768,7 +15666,7 @@ index cd27ebe..5e8fbc4 100644
      .max(WORKFLOW_RUNS_LIMITS.maxPhases)
      .optional(),
    /**
-@@ -479,8 +495,7 @@ export const workflowRunSchema = z.object({
+@@ -479,8 +489,7 @@ export const workflowRunSchema = z.object({
     * 依附 `phaseNames`：后者不在场时它一定不在场；没有任何阶段并行时同样缺席——缺席就是
     * 「这条轨道是一条直线」。归约保证每个下标都落在被接受的那张表里（workflow-runs-phases.ts）。
     */
@@ -15778,7 +15676,7 @@ index cd27ebe..5e8fbc4 100644
      .max(WORKFLOW_RUNS_LIMITS.maxPhases)
      .optional(),
    /**
-@@ -490,8 +505,7 @@ export const workflowRunSchema = z.object({
+@@ -490,8 +499,7 @@ export const workflowRunSchema = z.object({
     * 表满之后新阶段的归属**丢掉**，run 级两个计数器照旧准——一个站点可以少一个它本来就没有的
     * 数字，run 的总数不可以说假话。
     */
@@ -15863,10 +15761,10 @@ index 7168ad8..478544d 100644
      /** 有界化后的正文；running 行与 failed 行缺席。 */
      result: z.unknown().optional(),
 diff --git a/packages/shared/src/zcode-protocol-v4/workspace-hook-review.ts b/packages/shared/src/zcode-protocol-v4/workspace-hook-review.ts
-index 120f95f..ab361dc 100644
+index 120f95f..e4eeac0 100644
 --- a/packages/shared/src/zcode-protocol-v4/workspace-hook-review.ts
 +++ b/packages/shared/src/zcode-protocol-v4/workspace-hook-review.ts
-@@ -17,21 +17,21 @@ export const workspaceHookReviewTrustStateSchema = z.enum([
+@@ -17,8 +17,7 @@ export const workspaceHookReviewTrustStateSchema = z.enum([
  ]);
  export type WorkspaceHookReviewTrustState = z.infer<typeof workspaceHookReviewTrustStateSchema>;
  
@@ -15876,14 +15774,7 @@ index 120f95f..ab361dc 100644
      action: z.literal("trust_selected"),
      reviewItemIds: z.array(nonEmptyStringSchema).min(1),
    })
-   .strict()
-   .superRefine((decision, context) => {
--    if ("reviewItemIds" in decision && decision.reviewItemIds) {
-+    // scriptc: decision 来自 compat schema（any），"in" 对 any 接收者无 lowering（SC1090）；
-+    // 直接读值判断在场性，语义一致。
-+    if (decision.reviewItemIds) {
-       addDuplicateItemIssue(decision.reviewItemIds, context, ["reviewItemIds"]);
-     }
+@@ -30,8 +29,7 @@ export const workspaceHookReviewDecisionSchema = z
    });
  export type WorkspaceHookReviewDecision = z.infer<typeof workspaceHookReviewDecisionSchema>;
  
@@ -15893,7 +15784,7 @@ index 120f95f..ab361dc 100644
      sessionId: nonEmptyStringSchema,
      taskId: nonEmptyStringSchema,
      runId: nonEmptyStringSchema,
-@@ -47,8 +47,7 @@ export type WorkspaceHookReviewCommandTarget = z.infer<
+@@ -47,8 +45,7 @@ export type WorkspaceHookReviewCommandTarget = z.infer<
    typeof workspaceHookReviewCommandTargetSchema
  >;
  
@@ -15903,7 +15794,7 @@ index 120f95f..ab361dc 100644
      sessionId: nonEmptyStringSchema,
      remoteSessionId: nonEmptyStringSchema.optional(),
      workspaceIdentity: nonEmptyStringSchema,
-@@ -64,8 +63,7 @@ export type WorkspaceHookTrustRevokeTarget = z.infer<typeof workspaceHookTrustRe
+@@ -64,8 +61,7 @@ export type WorkspaceHookTrustRevokeTarget = z.infer<typeof workspaceHookTrustRe
  // 软门禁：按需开审核 flow 的命令 target。
  // 克隆 revoke 的 non-flow target 变体,但不需要 hookDeclarationDigests
  // (审核 flow 从当前 snapshot 拉取全部 pending items,而非指定 declarations)。
@@ -15913,7 +15804,7 @@ index 120f95f..ab361dc 100644
      sessionId: nonEmptyStringSchema,
      remoteSessionId: nonEmptyStringSchema.optional(),
      workspaceIdentity: nonEmptyStringSchema,
-@@ -76,8 +74,7 @@ export type RequestWorkspaceHookReviewTarget = z.infer<
+@@ -76,8 +72,7 @@ export type RequestWorkspaceHookReviewTarget = z.infer<
    typeof requestWorkspaceHookReviewTargetSchema
  >;
  
@@ -15923,7 +15814,7 @@ index 120f95f..ab361dc 100644
      kind: z.literal("workspaceHookReview"),
      reviewFlowId: nonEmptyStringSchema,
      generation: positiveIntegerSchema,
-@@ -92,24 +89,21 @@ export const workspaceHookReviewRequestPayloadSchema = z
+@@ -92,24 +87,21 @@ export const workspaceHookReviewRequestPayloadSchema = z
      createdAt: timestampSchema,
      deadlineAt: timestampSchema,
      sourceFiles: z.array(
@@ -15951,17 +15842,7 @@ index 120f95f..ab361dc 100644
            reviewItemId: nonEmptyStringSchema,
            event: z.enum([
              "SessionStart",
-@@ -152,7 +146,8 @@ export const workspaceHookReviewRequestPayloadSchema = z
-         message: "hookCount must match the immutable request items",
-       });
-     }
--    const eventCount = new Set(request.items.map((item) => item.event)).size;
-+    // scriptc: Set 元素类型必须是 string/number，否则 .size 无 lowering（SC2020）。
-+    const eventCount = new Set<string>(request.items.map((item) => item.event)).size;
-     if (request.summary.eventCount !== eventCount) {
-       context.addIssue({
-         code: z.ZodIssueCode.custom,
-@@ -180,8 +175,7 @@ export type WorkspaceHookReviewRequestPayload = z.infer<
+@@ -180,8 +172,7 @@ export type WorkspaceHookReviewRequestPayload = z.infer<
    typeof workspaceHookReviewRequestPayloadSchema
  >;
  
@@ -15971,7 +15852,7 @@ index 120f95f..ab361dc 100644
      reviewFlowId: nonEmptyStringSchema,
      generation: positiveIntegerSchema,
      interactionId: nonEmptyStringSchema,
-@@ -199,7 +193,7 @@ export type PresentWorkspaceHookReviewRequest = z.infer<
+@@ -199,7 +190,7 @@ export type PresentWorkspaceHookReviewRequest = z.infer<
  function addDuplicateItemIssue(
    values: readonly string[],
    context: z.RefinementCtx,

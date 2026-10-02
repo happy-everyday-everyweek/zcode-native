@@ -633,7 +633,7 @@ index 19acf60..d5174ee 100644
              lite: modelSelectionSchema.optional(),
            })
 diff --git a/apps/zcode-cli/packages/bootstrap/src/app/legacy-cli-personal-provider-config-importer.ts b/apps/zcode-cli/packages/bootstrap/src/app/legacy-cli-personal-provider-config-importer.ts
-index a2f0592..246d53a 100644
+index a2f0592..a5852d7 100644
 --- a/apps/zcode-cli/packages/bootstrap/src/app/legacy-cli-personal-provider-config-importer.ts
 +++ b/apps/zcode-cli/packages/bootstrap/src/app/legacy-cli-personal-provider-config-importer.ts
 @@ -123,7 +123,7 @@ function importLegacyCliPersonalProviderConfig(
@@ -658,6 +658,15 @@ index a2f0592..246d53a 100644
  }
  
  type LegacyCliProvider = NonNullable<LegacyCliModelConfigProjection["provider"]>[string];
+@@ -164,7 +164,7 @@ function collectLegacyCliModelMembers(
+ ): readonly LegacyCliModelMember[] {
+   const seen = new Set<string>();
+   const members: LegacyCliModelMember[] = [];
+-  for (const [modelKey, model] of Object.entries(provider.models ?? {})) {
++  for (const [modelKey, model] of Object.entries(provider.models ?? {}) as [string, any][]) {
+     if (model.deleted === true) continue;
+     const modelId = (model.id ?? modelKey).trim();
+     if (!modelId || seen.has(modelId)) continue;
 diff --git a/apps/zcode-cli/packages/bootstrap/src/app/process-provider-registry-runtime.ts b/apps/zcode-cli/packages/bootstrap/src/app/process-provider-registry-runtime.ts
 index b8e0eb1..c6de350 100644
 --- a/apps/zcode-cli/packages/bootstrap/src/app/process-provider-registry-runtime.ts
@@ -776,7 +785,7 @@ index 3d81295..4124fc2 100644
 +  return cachedNativeHandlers;
 +}
 diff --git a/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/product-projection.ts b/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/product-projection.ts
-index b965640..d0f4716 100644
+index b965640..66cab61 100644
 --- a/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/product-projection.ts
 +++ b/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/product-projection.ts
 @@ -148,6 +148,7 @@ import {
@@ -796,6 +805,15 @@ index b965640..d0f4716 100644
          !sameSparseModelSelection(config.modelSelection, seed.modelSelection)
        ) {
          // 恢复的空选择也有明确语义，不能因为 falsy 而保留历史事件里的旧选型。
+@@ -1564,7 +1565,7 @@ export class ProductProjection {
+         ? { toolName: payload.toolName ?? previousExecution?.toolName }
+         : {}),
+     };
+-    const byRunId = new Map(
++    const byRunId = new Map<string, any>(
+       previousExecutions.map((candidate) => [candidate.hookRunId, candidate]),
+     );
+     byRunId.set(execution.hookRunId, execution);
 diff --git a/apps/zcode-cli/packages/bootstrap/src/zcode-protocol/model-execution.ts b/apps/zcode-cli/packages/bootstrap/src/zcode-protocol/model-execution.ts
 index 03f16a0..8e924d9 100644
 --- a/apps/zcode-cli/packages/bootstrap/src/zcode-protocol/model-execution.ts
@@ -2681,6 +2699,19 @@ index d895b8b..886a9fe 100644
      mode: z.enum(["content", "files_with_matches", "count"]),
      durationMs: z.number().int().nonnegative(),
      numFiles: z.number().int().nonnegative(),
+diff --git a/apps/zcode-cli/packages/contracts/src/tools/json-schema.ts b/apps/zcode-cli/packages/contracts/src/tools/json-schema.ts
+index 21d92dc..ff7a374 100644
+--- a/apps/zcode-cli/packages/contracts/src/tools/json-schema.ts
++++ b/apps/zcode-cli/packages/contracts/src/tools/json-schema.ts
+@@ -106,7 +106,7 @@ function inferSchemaType(schema: Record<string, unknown>): string | undefined {
+   if (Array.isArray(schema.enum)) {
+     return inferTypeFromValues(schema.enum);
+   }
+-  if ("const" in schema) {
++  if (schema.const !== undefined) {
+     return inferTypeFromValues([schema.const]);
+   }
+   if (typeof schema.minLength === "number" || typeof schema.maxLength === "number") {
 diff --git a/apps/zcode-cli/packages/contracts/src/tools/list-models.ts b/apps/zcode-cli/packages/contracts/src/tools/list-models.ts
 index 29fa411..6fa3615 100644
 --- a/apps/zcode-cli/packages/contracts/src/tools/list-models.ts
@@ -4828,6 +4859,19 @@ index 62c5204..21ffab6 100644
    const pathApi = getToolPathApi(platform);
    const isWindows = platform === "win32";
    const resolvedCwd = normalizeCwdBoundary(input.resolvedCwd ?? "", isWindows);
+diff --git a/apps/zcode-cli/packages/core/src/tool/handlers/create-workflow-source.ts b/apps/zcode-cli/packages/core/src/tool/handlers/create-workflow-source.ts
+index ebac052..209dc47 100644
+--- a/apps/zcode-cli/packages/core/src/tool/handlers/create-workflow-source.ts
++++ b/apps/zcode-cli/packages/core/src/tool/handlers/create-workflow-source.ts
+@@ -331,7 +331,7 @@ function describeArgsDeclaration(
+   label: string,
+   args: SavedWorkflowArgsDeclaration | undefined,
+ ): string {
+-  const declared = Object.entries(args ?? {});
++  const declared = Object.entries(args ?? {}) as [string, any][];
+   if (declared.length === 0) return `${label} declares no arguments.`;
+   return [
+     `${label} declares:`,
 diff --git a/apps/zcode-cli/packages/core/src/tool/handlers/list-saved-workflows.ts b/apps/zcode-cli/packages/core/src/tool/handlers/list-saved-workflows.ts
 index 8260996..fca470c 100644
 --- a/apps/zcode-cli/packages/core/src/tool/handlers/list-saved-workflows.ts
@@ -5298,6 +5342,19 @@ index 283656d..e859df7 100644
      "module": "NodeNext",
      "moduleResolution": "NodeNext",
      "target": "ES2022",
+diff --git a/apps/zcode-cli/packages/dynamic-workflow/src/analysis/causality-reduce.ts b/apps/zcode-cli/packages/dynamic-workflow/src/analysis/causality-reduce.ts
+index 2154cea..829a5b2 100644
+--- a/apps/zcode-cli/packages/dynamic-workflow/src/analysis/causality-reduce.ts
++++ b/apps/zcode-cli/packages/dynamic-workflow/src/analysis/causality-reduce.ts
+@@ -59,7 +59,7 @@ export interface ReducibleEdge {
+ }
+ 
+ /** Kinds a justifying path may consist of, per the kind of the edge under test. */
+-const JUSTIFIED_BY: Partial<Record<OrderKind, ReadonlySet<OrderKind>>> = {
++const JUSTIFIED_BY: Record<string, ReadonlySet<OrderKind>> = {
+   // A hard dependency yields only to a path of hard dependencies. `data` and `control`
+   // are both non-removable — no refactoring can make a consumer precede its producer,
+   // or a guarded step precede its guard — so either one justifies either one. What this
 diff --git a/apps/zcode-cli/packages/dynamic-workflow/tsconfig.json b/apps/zcode-cli/packages/dynamic-workflow/tsconfig.json
 index 283656d..e859df7 100644
 --- a/apps/zcode-cli/packages/dynamic-workflow/tsconfig.json
@@ -5401,6 +5458,72 @@ index 2e562be..e0aa302 100644
      "module": "NodeNext",
      "moduleResolution": "NodeNext",
      "outDir": "./dist",
+diff --git a/apps/zcode-cli/packages/telemetry/src/agent-trace-runtime.ts b/apps/zcode-cli/packages/telemetry/src/agent-trace-runtime.ts
+index ad852df..0dcae66 100644
+--- a/apps/zcode-cli/packages/telemetry/src/agent-trace-runtime.ts
++++ b/apps/zcode-cli/packages/telemetry/src/agent-trace-runtime.ts
+@@ -1546,7 +1546,7 @@ const NOOP_SCOPE = {
+   run: <T>(execute: () => T): T => execute(),
+ };
+ 
+-const NOOP_COMMAND_WRITER: CommandExecutionSpanWriter = {
++const NOOP_COMMAND_WRITER: CommandExecutionSpanWriter: any = {
+   ...NOOP_SCOPE,
+   finishBackgrounded() {},
+   finishCancelled() {},
+@@ -1560,7 +1560,7 @@ const NOOP_COMMAND_WRITER: CommandExecutionSpanWriter = {
+   setTimedOut() {},
+ };
+ 
+-const NOOP_TOOL_WRITER: ToolExecutionSpanWriter = {
++const NOOP_TOOL_WRITER: ToolExecutionSpanWriter: any = {
+   ...NOOP_SCOPE,
+   finishCancelled() {},
+   finishCompleted() {},
+@@ -1573,7 +1573,7 @@ const NOOP_TOOL_WRITER: ToolExecutionSpanWriter = {
+   startCommand: () => NOOP_COMMAND_WRITER,
+ };
+ 
+-const NOOP_STEP_WRITER: AgentStepSpanWriter = {
++const NOOP_STEP_WRITER: AgentStepSpanWriter: any = {
+   ...NOOP_SCOPE,
+   finishCancelled() {},
+   finishCompleted() {},
+@@ -1581,14 +1581,14 @@ const NOOP_STEP_WRITER: AgentStepSpanWriter = {
+   finishFailed() {},
+ };
+ 
+-const NOOP_TURN_WRITER: AgentTurnSpanWriter = {
++const NOOP_TURN_WRITER: AgentTurnSpanWriter: any = {
+   ...NOOP_SCOPE,
+   finishCancelled() {},
+   finishCompleted() {},
+   finishFailed() {},
+ };
+ 
+-const NOOP_COMPACTION_WRITER: ContextCompactionSpanWriter = {
++const NOOP_COMPACTION_WRITER: ContextCompactionSpanWriter: any = {
+   ...NOOP_SCOPE,
+   finishCancelled() {},
+   finishCompleted() {},
+@@ -1599,7 +1599,7 @@ const NOOP_COMPACTION_WRITER: ContextCompactionSpanWriter = {
+   setOutputTokens() {},
+ };
+ 
+-const NOOP_DETACHED_WRITER: DetachedOperationSpanWriter = {
++const NOOP_DETACHED_WRITER: DetachedOperationSpanWriter: any = {
+   ...NOOP_SCOPE,
+   finishCancelled() {},
+   finishCompleted() {},
+@@ -1607,7 +1607,7 @@ const NOOP_DETACHED_WRITER: DetachedOperationSpanWriter = {
+   setResultType() {},
+ };
+ 
+-const NOOP_MODEL_ATTEMPT_WRITER: ModelAttemptSpanWriter = {
++const NOOP_MODEL_ATTEMPT_WRITER: ModelAttemptSpanWriter: any = {
+   ...NOOP_SCOPE,
+   finishAbandoned() {},
+   finishCancelled() {},
 diff --git a/apps/zcode-cli/packages/telemetry/src/otlp-exporter.ts b/apps/zcode-cli/packages/telemetry/src/otlp-exporter.ts
 index d3e7c4b..4fc7527 100644
 --- a/apps/zcode-cli/packages/telemetry/src/otlp-exporter.ts
@@ -9021,6 +9144,33 @@ index 9bbfb1f..ec2095b 100644
      databaseStartupId: z.string().min(1).max(128),
    })
    .strict();
+diff --git a/packages/shared/src/env.ts b/packages/shared/src/env.ts
+index e2baa3c..c67867a 100644
+--- a/packages/shared/src/env.ts
++++ b/packages/shared/src/env.ts
+@@ -13,9 +13,7 @@ export function normalizeZCodeEnv(value: string | undefined): ZCodeEnv {
+   return value?.trim().toLowerCase() === "production" ? "production" : "test";
+ }
+ 
+-export const ZCODE_ENV = normalizeZCodeEnv(
+-  typeof __ZCODE_ENV__ !== "undefined" ? __ZCODE_ENV__ : undefined,
+-);
++export const ZCODE_ENV = normalizeZCodeEnv(undefined);
+ 
+ /**
+  * 身份缺省跟随后端环境（test → preview，production → production）。
+@@ -33,10 +31,7 @@ export function normalizeZCodeProductFlavor(
+   return zcodeEnv === "production" ? "production" : "preview";
+ }
+ 
+-export const ZCODE_PRODUCT_FLAVOR = normalizeZCodeProductFlavor(
+-  typeof __ZCODE_PRODUCT_FLAVOR__ !== "undefined" ? __ZCODE_PRODUCT_FLAVOR__ : undefined,
+-  ZCODE_ENV,
+-);
++export const ZCODE_PRODUCT_FLAVOR = normalizeZCodeProductFlavor(undefined, ZCODE_ENV);
+ export const ZCODE_APP_VERSION_ENV = "ZCODE_APP_VERSION" as const;
+ export const ZCODE_BUILD_COMMIT_ID_ENV = "ZCODE_BUILD_COMMIT_ID" as const;
+ 
 diff --git a/packages/shared/src/execution-output-preview.ts b/packages/shared/src/execution-output-preview.ts
 index c2118f4..b7b6bc6 100644
 --- a/packages/shared/src/execution-output-preview.ts
@@ -10474,10 +10624,16 @@ index 7d89774..bcc0ef5 100644
          field: z.enum(["beforeContent", "afterContent"]),
          refId: z.string(),
 diff --git a/packages/shared/src/validationAppSettings.ts b/packages/shared/src/validationAppSettings.ts
-index 3cb58a1..91c3c9f 100644
+index 3cb58a1..c6f25bd 100644
 --- a/packages/shared/src/validationAppSettings.ts
 +++ b/packages/shared/src/validationAppSettings.ts
-@@ -61,16 +61,14 @@ export const postUpdateReleaseNotesPayloadSchema = z.object({
+@@ -1,4 +1,5 @@
+ /* oxlint-disable eslint(max-lines) -- AppSettings schema 聚合历史迁移、默认值和 patch 校验，拆分会削弱设置迁移的单一入口。 */
++import { omitKey } from "@zcode/native-checks";
+ import { z } from "zod";
+ import type { AppSettings } from "./protocol.js";
+ import { REMOTE_ASSET_INSTALL_MODES } from "./remoteAssetInstallMode.js";
+@@ -61,16 +62,14 @@ export const postUpdateReleaseNotesPayloadSchema = z.object({
    title: nonEmptyStringSchema,
    markdown: nonEmptyStringSchema,
    releaseDate: nonEmptyStringSchema.optional(),
@@ -10496,7 +10652,7 @@ index 3cb58a1..91c3c9f 100644
    .default({});
  
  const remoteWorkspaceTargetSchema = z.discriminatedUnion("kind", [
-@@ -82,8 +80,7 @@ const remoteWorkspaceTargetSchema = z.discriminatedUnion("kind", [
+@@ -82,8 +81,7 @@ const remoteWorkspaceTargetSchema = z.discriminatedUnion("kind", [
      sshConfigAlias: nonEmptyStringSchema.optional(),
      privateKeyPath: z.string().optional(),
      assetInstallMode: z.enum(REMOTE_ASSET_INSTALL_MODES).optional(),
@@ -10506,7 +10662,91 @@ index 3cb58a1..91c3c9f 100644
          selectedPackageIds: z.array(z.string().refine(isKnownRemoteResourcePackageId)).optional(),
        })
        .optional(),
-@@ -527,8 +524,7 @@ export const appSettingsPatchSchema = z.object({
+@@ -140,14 +138,14 @@ function sanitizeZCodeEndpointOrigin(value: unknown): unknown {
+     return value;
+   }
+   const raw = value as Record<string, unknown>;
+-  if (!("zcodeEndpointOrigin" in raw)) {
++  if (raw.zcodeEndpointOrigin === undefined) {
+     return value;
+   }
+   const parsed = zcodeEndpointOriginSchema.safeParse(raw.zcodeEndpointOrigin);
+   if (parsed.success && typeof parsed.data === "string") {
+     return { ...raw, zcodeEndpointOrigin: parsed.data };
+   }
+-  const { zcodeEndpointOrigin: _zcodeEndpointOrigin, ...next } = raw;
++  const next = omitKey(raw, "zcodeEndpointOrigin");
+   // 非生产 endpoint override 是开发辅助字段，坏值只丢弃该字段，不能拖垮整个 settings 读取。
+   return next;
+ }
+@@ -157,14 +155,14 @@ function sanitizeDesktopWindowSize(value: unknown): unknown {
+     return value;
+   }
+   const raw = value as Record<string, unknown>;
+-  if (!("desktopWindowSize" in raw)) {
++  if (raw.desktopWindowSize === undefined) {
+     return value;
+   }
+   const parsed = desktopWindowSizeSchema.safeParse(raw.desktopWindowSize);
+   if (parsed.success) {
+     return value;
+   }
+-  const { desktopWindowSize: _desktopWindowSize, ...next } = raw;
++  const next = omitKey(raw, "desktopWindowSize");
+   // 窗口尺寸是非关键偏好，坏值若参与整份 schema 校验，会让其他合法设置全部回退默认。
+   // 读取历史设置时只丢弃损坏字段；写入 patch 仍保持严格校验，避免继续产生坏数据。
+   return next;
+@@ -175,7 +173,7 @@ function sanitizeEmbeddedBrowserViewportPreference(value: unknown): unknown {
+     return value;
+   }
+   const raw = value as Record<string, unknown>;
+-  if (!("embeddedBrowserViewportPreference" in raw)) {
++  if (raw.embeddedBrowserViewportPreference === undefined) {
+     return value;
+   }
+   const parsed = embeddedBrowserViewportPreferenceSchema.safeParse(
+@@ -184,7 +182,7 @@ function sanitizeEmbeddedBrowserViewportPreference(value: unknown): unknown {
+   if (parsed.success) {
+     return value;
+   }
+-  const { embeddedBrowserViewportPreference: _embeddedBrowserViewportPreference, ...next } = raw;
++  const next = omitKey(raw, "embeddedBrowserViewportPreference");
+   // 显示偏好不是关键启动状态，单字段损坏不应让整份 setting.json 被隔离。
+   // 读取时只丢弃坏偏好并回到默认值；patch 写入仍严格拒绝非法尺寸与缩放。
+   return next;
+@@ -230,7 +228,7 @@ function migrateLegacyLocalePreference(value: unknown): unknown {
+   }
+ 
+   const raw = value as Record<string, unknown>;
+-  if ("localePreference" in raw || !("locale" in raw)) {
++  if (raw.localePreference !== undefined || raw.locale === undefined) {
+     return value;
+   }
+ 
+@@ -264,11 +262,11 @@ function stripHistoricalRemoteResourcePackages(target: unknown): unknown {
+   }
+ 
+   const rawTarget = target as Record<string, unknown>;
+-  if (rawTarget.kind !== "ssh" || !("resourcePackages" in rawTarget)) {
++  if (rawTarget.kind !== "ssh" || rawTarget.resourcePackages === undefined) {
+     return target;
+   }
+ 
+-  const { resourcePackages: _resourcePackages, ...nextTarget } = rawTarget;
++  const nextTarget = omitKey(rawTarget, "resourcePackages");
+   // SSH 部署固定使用完整 active 资源集；旧 setting.json 里的 resourcePackages 是历史裁剪，
+   // 在配置入口清掉，避免后续重连或 tab 恢复继续读取。
+   return nextTarget;
+@@ -293,7 +291,7 @@ function migrateLegacyWorkspaceSession(value: unknown): unknown {
+     if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
+       return false;
+     }
+-    return "historyId" in (entry as Record<string, unknown>);
++    return (entry as Record<string, unknown>).historyId !== undefined;
+   });
+ 
+   const legacyRemoteHistory = Array.isArray(raw.remoteWorkspaceHistory)
+@@ -527,8 +525,7 @@ export const appSettingsPatchSchema = z.object({
    providerFamilyDomainUpdatedAt: z.number().int().nonnegative().optional(),
    providerFamilyDomainMigrated: z.boolean().optional(),
    nativeSearchEnhancementsEnabled: z.boolean().optional(),
@@ -10516,7 +10756,7 @@ index 3cb58a1..91c3c9f 100644
        "office",
        "developer",
        "independent",
-@@ -554,8 +550,7 @@ export const appSettingsPatchSchema = z.object({
+@@ -554,8 +551,7 @@ export const appSettingsPatchSchema = z.object({
    pendingPostUpdateReleaseNotes: postUpdateReleaseNotesPayloadSchema.optional(),
    receivePreviewUpdates: z.boolean().optional(),
    autoDownloadAndInstallUpdates: z.boolean().optional(),
@@ -10526,6 +10766,23 @@ index 3cb58a1..91c3c9f 100644
      .optional(),
    settingsSyncFirstRunPromptHandled: z.boolean().optional(),
    zcodeEndpointOrigin: zcodeEndpointOriginSchema.optional(),
+diff --git a/packages/shared/src/version.ts b/packages/shared/src/version.ts
+index 3044074..609195a 100644
+--- a/packages/shared/src/version.ts
++++ b/packages/shared/src/version.ts
+@@ -5,9 +5,6 @@ declare const __ZCODE_VERSION__: string;
+ declare const __ZCODE_COMMIT__: string;
+ declare const __ZCODE_BUILD_TIME__: string;
+ 
+-export const ZCODE_VERSION: string =
+-  typeof __ZCODE_VERSION__ !== "undefined" ? __ZCODE_VERSION__ : "0.0.0-dev";
+-export const ZCODE_COMMIT: string =
+-  typeof __ZCODE_COMMIT__ !== "undefined" ? __ZCODE_COMMIT__ : "unknown";
+-export const ZCODE_BUILD_TIME: string =
+-  typeof __ZCODE_BUILD_TIME__ !== "undefined" ? __ZCODE_BUILD_TIME__ : "unknown";
++export const ZCODE_VERSION: string = "0.0.0-dev";
++export const ZCODE_COMMIT: string = "unknown";
++export const ZCODE_BUILD_TIME: string = "unknown";
 diff --git a/packages/shared/src/workspace-hook-config.ts b/packages/shared/src/workspace-hook-config.ts
 index a49d8c5..467f733 100644
 --- a/packages/shared/src/workspace-hook-config.ts

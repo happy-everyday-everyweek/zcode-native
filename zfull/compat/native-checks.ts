@@ -24,3 +24,15 @@ export function sameValue(a: any, b: any): boolean {
 export function identityOf(v: any): any {
   return v;
 }
+
+/** 索引签名对象的「删掉某个键后复制」——替掉 rest 解构
+ *  (`const { k: _k, ...rest } = rec`)，scriptc 不支持在索引签名上做 rest 绑定。 */
+export function omitKey<T>(rec: Record<string, T>, key: string): Record<string, T> {
+  const out: Record<string, T> = {};
+  for (const k of Object.keys(rec)) {
+    if (k !== key) {
+      out[k] = rec[k];
+    }
+  }
+  return out;
+}

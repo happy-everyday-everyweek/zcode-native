@@ -1,5 +1,5 @@
 // scriptc 无 lowering 的标准库助手（原生环境下的同义实现）。
-export function isArray(v: any): boolean {
+export function isArray(v: any): v is any[] {
   return typeof v === "object" && v !== null && typeof v.length === "number" && typeof v.slice === "function";
 }
 
@@ -14,4 +14,13 @@ export function sameValue(a: any, b: any): boolean {
   // NaN === NaN 为假，Object.is 为真；JSON 值域内只有这一处差异需要保住。
   if (typeof a === "number" && typeof b === "number" && a !== a && b !== b) return true;
   return false;
+}
+
+/**
+ * Object.freeze 的替身：原生侧没有对象冻结语义，取值恒等。
+ * 之所以保留成**调用**形态而不是直接把 `Object.freeze(` 换成 `(`：
+ * 调用参数允许尾逗号，而 `(x,)` 是语法错误，直接换括号会制造非法语法。
+ */
+export function identityOf(v: any): any {
+  return v;
 }

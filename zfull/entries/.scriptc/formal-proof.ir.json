@@ -1,0 +1,3070 @@
+{
+  "irVersion": 11,
+  "sourceFile": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zfull/entries/formal-proof.ts",
+  "functions": [
+    {
+      "name": "%init.0",
+      "params": [],
+      "returnType": {
+        "kind": "void"
+      },
+      "locals": [],
+      "body": [
+        {
+          "kind": "if",
+          "cond": {
+            "kind": "varRef",
+            "localId": "%g.m0.%loaded",
+            "type": {
+              "kind": "bool"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zfull/shims/dom-globals.ts",
+              "start": 0,
+              "end": 0
+            }
+          },
+          "then": [
+            {
+              "kind": "return",
+              "value": null,
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zfull/shims/dom-globals.ts",
+                "start": 0,
+                "end": 0
+              }
+            }
+          ],
+          "else_": null,
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zfull/shims/dom-globals.ts",
+            "start": 0,
+            "end": 0
+          }
+        },
+        {
+          "kind": "assign",
+          "localId": "%g.m0.%loaded",
+          "value": {
+            "kind": "boolLit",
+            "value": true,
+            "type": {
+              "kind": "bool"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zfull/shims/dom-globals.ts",
+              "start": 0,
+              "end": 0
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zfull/shims/dom-globals.ts",
+            "start": 0,
+            "end": 0
+          }
+        }
+      ],
+      "loc": {
+        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zfull/shims/dom-globals.ts",
+        "start": 0,
+        "end": 0
+      }
+    },
+    {
+      "name": "%init.1",
+      "params": [],
+      "returnType": {
+        "kind": "void"
+      },
+      "locals": [],
+      "body": [
+        {
+          "kind": "if",
+          "cond": {
+            "kind": "varRef",
+            "localId": "%g.m1.%loaded",
+            "type": {
+              "kind": "bool"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+              "start": 0,
+              "end": 0
+            }
+          },
+          "then": [
+            {
+              "kind": "return",
+              "value": null,
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                "start": 0,
+                "end": 0
+              }
+            }
+          ],
+          "else_": null,
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+            "start": 0,
+            "end": 0
+          }
+        },
+        {
+          "kind": "assign",
+          "localId": "%g.m1.%loaded",
+          "value": {
+            "kind": "boolLit",
+            "value": true,
+            "type": {
+              "kind": "bool"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+              "start": 0,
+              "end": 0
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+            "start": 0,
+            "end": 0
+          }
+        },
+        {
+          "kind": "assign",
+          "localId": "%g.m1.profiles",
+          "value": {
+            "kind": "arrayLit",
+            "elems": [
+              {
+                "kind": "recordLit",
+                "fields": [
+                  {
+                    "name": "id",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "running",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 2101,
+                        "end": 2110
+                      }
+                    }
+                  },
+                  {
+                    "name": "label",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "running：消息发送中",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 2123,
+                        "end": 2138
+                      }
+                    }
+                  },
+                  {
+                    "name": "context",
+                    "value": {
+                      "kind": "recordLit",
+                      "fields": [
+                        {
+                          "name": "runPhase",
+                          "value": {
+                            "kind": "strLit",
+                            "value": "running",
+                            "type": {
+                              "kind": "string"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                              "start": 2171,
+                              "end": 2180
+                            }
+                          }
+                        },
+                        {
+                          "name": "queue",
+                          "value": {
+                            "kind": "strLit",
+                            "value": "empty",
+                            "type": {
+                              "kind": "string"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                              "start": 2195,
+                              "end": 2202
+                            }
+                          }
+                        },
+                        {
+                          "name": "compactMemory",
+                          "value": {
+                            "kind": "strLit",
+                            "value": "compactable",
+                            "type": {
+                              "kind": "string"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                              "start": 2225,
+                              "end": 2238
+                            }
+                          }
+                        },
+                        {
+                          "name": "canCompactAgain",
+                          "value": {
+                            "kind": "boolLit",
+                            "value": true,
+                            "type": {
+                              "kind": "bool"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                              "start": 2263,
+                              "end": 2267
+                            }
+                          }
+                        },
+                        {
+                          "name": "goal",
+                          "value": {
+                            "kind": "strLit",
+                            "value": "active",
+                            "type": {
+                              "kind": "string"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                              "start": 2281,
+                              "end": 2289
+                            }
+                          }
+                        },
+                        {
+                          "name": "selectedTurn",
+                          "value": {
+                            "kind": "strLit",
+                            "value": "latest",
+                            "type": {
+                              "kind": "string"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                              "start": 2311,
+                              "end": 2319
+                            }
+                          }
+                        },
+                        {
+                          "name": "forked",
+                          "value": {
+                            "kind": "boolLit",
+                            "value": false,
+                            "type": {
+                              "kind": "bool"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                              "start": 2335,
+                              "end": 2340
+                            }
+                          }
+                        }
+                      ],
+                      "type": {
+                        "kind": "record",
+                        "shapeId": "r0"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 2153,
+                        "end": 2347
+                      }
+                    }
+                  }
+                ],
+                "type": {
+                  "kind": "record",
+                  "shapeId": "r6"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                  "start": 2091,
+                  "end": 2352
+                }
+              },
+              {
+                "kind": "recordLit",
+                "fields": [
+                  {
+                    "name": "id",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "completed",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 2366,
+                        "end": 2377
+                      }
+                    }
+                  },
+                  {
+                    "name": "label",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "completed：消息已完成",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 2390,
+                        "end": 2407
+                      }
+                    }
+                  },
+                  {
+                    "name": "context",
+                    "value": {
+                      "kind": "recordLit",
+                      "fields": [
+                        {
+                          "name": "runPhase",
+                          "value": {
+                            "kind": "strLit",
+                            "value": "completed",
+                            "type": {
+                              "kind": "string"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                              "start": 2440,
+                              "end": 2451
+                            }
+                          }
+                        },
+                        {
+                          "name": "queue",
+                          "value": {
+                            "kind": "strLit",
+                            "value": "empty",
+                            "type": {
+                              "kind": "string"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                              "start": 2466,
+                              "end": 2473
+                            }
+                          }
+                        },
+                        {
+                          "name": "compactMemory",
+                          "value": {
+                            "kind": "strLit",
+                            "value": "compactable",
+                            "type": {
+                              "kind": "string"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                              "start": 2496,
+                              "end": 2509
+                            }
+                          }
+                        },
+                        {
+                          "name": "canCompactAgain",
+                          "value": {
+                            "kind": "boolLit",
+                            "value": true,
+                            "type": {
+                              "kind": "bool"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                              "start": 2534,
+                              "end": 2538
+                            }
+                          }
+                        },
+                        {
+                          "name": "goal",
+                          "value": {
+                            "kind": "strLit",
+                            "value": "active",
+                            "type": {
+                              "kind": "string"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                              "start": 2552,
+                              "end": 2560
+                            }
+                          }
+                        },
+                        {
+                          "name": "selectedTurn",
+                          "value": {
+                            "kind": "strLit",
+                            "value": "latest",
+                            "type": {
+                              "kind": "string"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                              "start": 2582,
+                              "end": 2590
+                            }
+                          }
+                        },
+                        {
+                          "name": "forked",
+                          "value": {
+                            "kind": "boolLit",
+                            "value": false,
+                            "type": {
+                              "kind": "bool"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                              "start": 2606,
+                              "end": 2611
+                            }
+                          }
+                        }
+                      ],
+                      "type": {
+                        "kind": "record",
+                        "shapeId": "r0"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 2422,
+                        "end": 2618
+                      }
+                    }
+                  }
+                ],
+                "type": {
+                  "kind": "record",
+                  "shapeId": "r6"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                  "start": 2356,
+                  "end": 2623
+                }
+              },
+              {
+                "kind": "recordLit",
+                "fields": [
+                  {
+                    "name": "id",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "goal-verifying",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 2637,
+                        "end": 2653
+                      }
+                    }
+                  },
+                  {
+                    "name": "label",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "goalVerifying：goal 验证中",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 2666,
+                        "end": 2690
+                      }
+                    }
+                  },
+                  {
+                    "name": "context",
+                    "value": {
+                      "kind": "recordLit",
+                      "fields": [
+                        {
+                          "name": "runPhase",
+                          "value": {
+                            "kind": "strLit",
+                            "value": "goalVerifying",
+                            "type": {
+                              "kind": "string"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                              "start": 2723,
+                              "end": 2738
+                            }
+                          }
+                        },
+                        {
+                          "name": "queue",
+                          "value": {
+                            "kind": "strLit",
+                            "value": "empty",
+                            "type": {
+                              "kind": "string"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                              "start": 2753,
+                              "end": 2760
+                            }
+                          }
+                        },
+                        {
+                          "name": "compactMemory",
+                          "value": {
+                            "kind": "strLit",
+                            "value": "compactable",
+                            "type": {
+                              "kind": "string"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                              "start": 2783,
+                              "end": 2796
+                            }
+                          }
+                        },
+                        {
+                          "name": "canCompactAgain",
+                          "value": {
+                            "kind": "boolLit",
+                            "value": true,
+                            "type": {
+                              "kind": "bool"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                              "start": 2821,
+                              "end": 2825
+                            }
+                          }
+                        },
+                        {
+                          "name": "goal",
+                          "value": {
+                            "kind": "strLit",
+                            "value": "verifying",
+                            "type": {
+                              "kind": "string"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                              "start": 2839,
+                              "end": 2850
+                            }
+                          }
+                        },
+                        {
+                          "name": "selectedTurn",
+                          "value": {
+                            "kind": "strLit",
+                            "value": "latest",
+                            "type": {
+                              "kind": "string"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                              "start": 2872,
+                              "end": 2880
+                            }
+                          }
+                        },
+                        {
+                          "name": "forked",
+                          "value": {
+                            "kind": "boolLit",
+                            "value": false,
+                            "type": {
+                              "kind": "bool"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                              "start": 2896,
+                              "end": 2901
+                            }
+                          }
+                        }
+                      ],
+                      "type": {
+                        "kind": "record",
+                        "shapeId": "r0"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 2705,
+                        "end": 2908
+                      }
+                    }
+                  }
+                ],
+                "type": {
+                  "kind": "record",
+                  "shapeId": "r6"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                  "start": 2627,
+                  "end": 2913
+                }
+              },
+              {
+                "kind": "recordLit",
+                "fields": [
+                  {
+                    "name": "id",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "compacting",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 2927,
+                        "end": 2939
+                      }
+                    }
+                  },
+                  {
+                    "name": "label",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "compacting：正在 compact",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 2952,
+                        "end": 2975
+                      }
+                    }
+                  },
+                  {
+                    "name": "context",
+                    "value": {
+                      "kind": "recordLit",
+                      "fields": [
+                        {
+                          "name": "runPhase",
+                          "value": {
+                            "kind": "strLit",
+                            "value": "compacting",
+                            "type": {
+                              "kind": "string"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                              "start": 3008,
+                              "end": 3020
+                            }
+                          }
+                        },
+                        {
+                          "name": "queue",
+                          "value": {
+                            "kind": "strLit",
+                            "value": "empty",
+                            "type": {
+                              "kind": "string"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                              "start": 3035,
+                              "end": 3042
+                            }
+                          }
+                        },
+                        {
+                          "name": "compactMemory",
+                          "value": {
+                            "kind": "strLit",
+                            "value": "compactable",
+                            "type": {
+                              "kind": "string"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                              "start": 3065,
+                              "end": 3078
+                            }
+                          }
+                        },
+                        {
+                          "name": "canCompactAgain",
+                          "value": {
+                            "kind": "boolLit",
+                            "value": true,
+                            "type": {
+                              "kind": "bool"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                              "start": 3103,
+                              "end": 3107
+                            }
+                          }
+                        },
+                        {
+                          "name": "goal",
+                          "value": {
+                            "kind": "strLit",
+                            "value": "active",
+                            "type": {
+                              "kind": "string"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                              "start": 3121,
+                              "end": 3129
+                            }
+                          }
+                        },
+                        {
+                          "name": "selectedTurn",
+                          "value": {
+                            "kind": "strLit",
+                            "value": "latest",
+                            "type": {
+                              "kind": "string"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                              "start": 3151,
+                              "end": 3159
+                            }
+                          }
+                        },
+                        {
+                          "name": "forked",
+                          "value": {
+                            "kind": "boolLit",
+                            "value": false,
+                            "type": {
+                              "kind": "bool"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                              "start": 3175,
+                              "end": 3180
+                            }
+                          }
+                        }
+                      ],
+                      "type": {
+                        "kind": "record",
+                        "shapeId": "r0"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 2990,
+                        "end": 3187
+                      }
+                    }
+                  }
+                ],
+                "type": {
+                  "kind": "record",
+                  "shapeId": "r6"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                  "start": 2917,
+                  "end": 3192
+                }
+              },
+              {
+                "kind": "recordLit",
+                "fields": [
+                  {
+                    "name": "id",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "just-compacted-noop",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 3206,
+                        "end": 3227
+                      }
+                    }
+                  },
+                  {
+                    "name": "label",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "justCompacted：刚压缩完，不需要继续压缩",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 3240,
+                        "end": 3268
+                      }
+                    }
+                  },
+                  {
+                    "name": "context",
+                    "value": {
+                      "kind": "recordLit",
+                      "fields": [
+                        {
+                          "name": "runPhase",
+                          "value": {
+                            "kind": "strLit",
+                            "value": "completed",
+                            "type": {
+                              "kind": "string"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                              "start": 3301,
+                              "end": 3312
+                            }
+                          }
+                        },
+                        {
+                          "name": "queue",
+                          "value": {
+                            "kind": "strLit",
+                            "value": "empty",
+                            "type": {
+                              "kind": "string"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                              "start": 3327,
+                              "end": 3334
+                            }
+                          }
+                        },
+                        {
+                          "name": "compactMemory",
+                          "value": {
+                            "kind": "strLit",
+                            "value": "justCompacted",
+                            "type": {
+                              "kind": "string"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                              "start": 3357,
+                              "end": 3372
+                            }
+                          }
+                        },
+                        {
+                          "name": "canCompactAgain",
+                          "value": {
+                            "kind": "boolLit",
+                            "value": false,
+                            "type": {
+                              "kind": "bool"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                              "start": 3397,
+                              "end": 3402
+                            }
+                          }
+                        },
+                        {
+                          "name": "goal",
+                          "value": {
+                            "kind": "strLit",
+                            "value": "active",
+                            "type": {
+                              "kind": "string"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                              "start": 3416,
+                              "end": 3424
+                            }
+                          }
+                        },
+                        {
+                          "name": "selectedTurn",
+                          "value": {
+                            "kind": "strLit",
+                            "value": "latest",
+                            "type": {
+                              "kind": "string"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                              "start": 3446,
+                              "end": 3454
+                            }
+                          }
+                        },
+                        {
+                          "name": "forked",
+                          "value": {
+                            "kind": "boolLit",
+                            "value": false,
+                            "type": {
+                              "kind": "bool"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                              "start": 3470,
+                              "end": 3475
+                            }
+                          }
+                        }
+                      ],
+                      "type": {
+                        "kind": "record",
+                        "shapeId": "r0"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 3283,
+                        "end": 3482
+                      }
+                    }
+                  }
+                ],
+                "type": {
+                  "kind": "record",
+                  "shapeId": "r6"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                  "start": 3196,
+                  "end": 3487
+                }
+              },
+              {
+                "kind": "recordLit",
+                "fields": [
+                  {
+                    "name": "id",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "just-compacted-more",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 3501,
+                        "end": 3522
+                      }
+                    }
+                  },
+                  {
+                    "name": "label",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "justCompacted：刚压缩完，但还能继续压缩",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 3535,
+                        "end": 3563
+                      }
+                    }
+                  },
+                  {
+                    "name": "context",
+                    "value": {
+                      "kind": "recordLit",
+                      "fields": [
+                        {
+                          "name": "runPhase",
+                          "value": {
+                            "kind": "strLit",
+                            "value": "completed",
+                            "type": {
+                              "kind": "string"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                              "start": 3596,
+                              "end": 3607
+                            }
+                          }
+                        },
+                        {
+                          "name": "queue",
+                          "value": {
+                            "kind": "strLit",
+                            "value": "empty",
+                            "type": {
+                              "kind": "string"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                              "start": 3622,
+                              "end": 3629
+                            }
+                          }
+                        },
+                        {
+                          "name": "compactMemory",
+                          "value": {
+                            "kind": "strLit",
+                            "value": "justCompacted",
+                            "type": {
+                              "kind": "string"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                              "start": 3652,
+                              "end": 3667
+                            }
+                          }
+                        },
+                        {
+                          "name": "canCompactAgain",
+                          "value": {
+                            "kind": "boolLit",
+                            "value": true,
+                            "type": {
+                              "kind": "bool"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                              "start": 3692,
+                              "end": 3696
+                            }
+                          }
+                        },
+                        {
+                          "name": "goal",
+                          "value": {
+                            "kind": "strLit",
+                            "value": "active",
+                            "type": {
+                              "kind": "string"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                              "start": 3710,
+                              "end": 3718
+                            }
+                          }
+                        },
+                        {
+                          "name": "selectedTurn",
+                          "value": {
+                            "kind": "strLit",
+                            "value": "latest",
+                            "type": {
+                              "kind": "string"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                              "start": 3740,
+                              "end": 3748
+                            }
+                          }
+                        },
+                        {
+                          "name": "forked",
+                          "value": {
+                            "kind": "boolLit",
+                            "value": false,
+                            "type": {
+                              "kind": "bool"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                              "start": 3764,
+                              "end": 3769
+                            }
+                          }
+                        }
+                      ],
+                      "type": {
+                        "kind": "record",
+                        "shapeId": "r0"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 3578,
+                        "end": 3776
+                      }
+                    }
+                  }
+                ],
+                "type": {
+                  "kind": "record",
+                  "shapeId": "r6"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                  "start": 3491,
+                  "end": 3781
+                }
+              }
+            ],
+            "type": {
+              "kind": "array",
+              "elem": {
+                "kind": "record",
+                "shapeId": "r6"
+              }
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+              "start": 2087,
+              "end": 3784
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+            "start": 2060,
+            "end": 3784
+          }
+        },
+        {
+          "kind": "assign",
+          "localId": "%g.m1.userCandidates",
+          "value": {
+            "kind": "arrayLit",
+            "elems": [
+              {
+                "kind": "recordLit",
+                "fields": [
+                  {
+                    "name": "id",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "sendText",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 3840,
+                        "end": 3850
+                      }
+                    }
+                  },
+                  {
+                    "name": "kind",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "user",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 3858,
+                        "end": 3864
+                      }
+                    }
+                  },
+                  {
+                    "name": "label",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "继续发送文字",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 3873,
+                        "end": 3881
+                      }
+                    }
+                  },
+                  {
+                    "name": "target",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "none",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 3891,
+                        "end": 3897
+                      }
+                    }
+                  },
+                  {
+                    "name": "surface",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "composer",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 3908,
+                        "end": 3918
+                      }
+                    }
+                  }
+                ],
+                "type": {
+                  "kind": "record",
+                  "shapeId": "r1"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                  "start": 3834,
+                  "end": 3920
+                }
+              },
+              {
+                "kind": "recordLit",
+                "fields": [
+                  {
+                    "name": "id",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "slashCompact",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 3930,
+                        "end": 3944
+                      }
+                    }
+                  },
+                  {
+                    "name": "kind",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "user",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 3952,
+                        "end": 3958
+                      }
+                    }
+                  },
+                  {
+                    "name": "label",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "输入 /compact",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 3967,
+                        "end": 3980
+                      }
+                    }
+                  },
+                  {
+                    "name": "target",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "none",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 3990,
+                        "end": 3996
+                      }
+                    }
+                  },
+                  {
+                    "name": "surface",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "composer",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 4007,
+                        "end": 4017
+                      }
+                    }
+                  }
+                ],
+                "type": {
+                  "kind": "record",
+                  "shapeId": "r1"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                  "start": 3924,
+                  "end": 4019
+                }
+              },
+              {
+                "kind": "recordLit",
+                "fields": [
+                  {
+                    "name": "id",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "setGoal",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 4029,
+                        "end": 4038
+                      }
+                    }
+                  },
+                  {
+                    "name": "kind",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "user",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 4046,
+                        "end": 4052
+                      }
+                    }
+                  },
+                  {
+                    "name": "label",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "设置 goal",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 4061,
+                        "end": 4070
+                      }
+                    }
+                  },
+                  {
+                    "name": "target",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "none",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 4080,
+                        "end": 4086
+                      }
+                    }
+                  },
+                  {
+                    "name": "surface",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "goal control",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 4097,
+                        "end": 4111
+                      }
+                    }
+                  }
+                ],
+                "type": {
+                  "kind": "record",
+                  "shapeId": "r1"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                  "start": 4023,
+                  "end": 4113
+                }
+              },
+              {
+                "kind": "recordLit",
+                "fields": [
+                  {
+                    "name": "id",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "compact",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 4123,
+                        "end": 4132
+                      }
+                    }
+                  },
+                  {
+                    "name": "kind",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "user",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 4140,
+                        "end": 4146
+                      }
+                    }
+                  },
+                  {
+                    "name": "label",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "点击 compact",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 4155,
+                        "end": 4167
+                      }
+                    }
+                  },
+                  {
+                    "name": "target",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "none",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 4177,
+                        "end": 4183
+                      }
+                    }
+                  },
+                  {
+                    "name": "surface",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "toolbar",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 4194,
+                        "end": 4203
+                      }
+                    }
+                  }
+                ],
+                "type": {
+                  "kind": "record",
+                  "shapeId": "r1"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                  "start": 4117,
+                  "end": 4205
+                }
+              },
+              {
+                "kind": "recordLit",
+                "fields": [
+                  {
+                    "name": "id",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "forkLatest",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 4219,
+                        "end": 4231
+                      }
+                    }
+                  },
+                  {
+                    "name": "kind",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "user",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 4243,
+                        "end": 4249
+                      }
+                    }
+                  },
+                  {
+                    "name": "label",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "fork 最新轮次",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 4262,
+                        "end": 4273
+                      }
+                    }
+                  },
+                  {
+                    "name": "target",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "latest",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 4287,
+                        "end": 4295
+                      }
+                    }
+                  },
+                  {
+                    "name": "surface",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "turn actions",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 4310,
+                        "end": 4324
+                      }
+                    }
+                  }
+                ],
+                "type": {
+                  "kind": "record",
+                  "shapeId": "r1"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                  "start": 4209,
+                  "end": 4329
+                }
+              },
+              {
+                "kind": "recordLit",
+                "fields": [
+                  {
+                    "name": "id",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "forkOld",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 4339,
+                        "end": 4348
+                      }
+                    }
+                  },
+                  {
+                    "name": "kind",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "user",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 4356,
+                        "end": 4362
+                      }
+                    }
+                  },
+                  {
+                    "name": "label",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "fork 老轮次",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 4371,
+                        "end": 4381
+                      }
+                    }
+                  },
+                  {
+                    "name": "target",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "old",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 4391,
+                        "end": 4396
+                      }
+                    }
+                  },
+                  {
+                    "name": "surface",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "turn actions",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 4407,
+                        "end": 4421
+                      }
+                    }
+                  }
+                ],
+                "type": {
+                  "kind": "record",
+                  "shapeId": "r1"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                  "start": 4333,
+                  "end": 4423
+                }
+              },
+              {
+                "kind": "recordLit",
+                "fields": [
+                  {
+                    "name": "id",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "editLatest",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 4437,
+                        "end": 4449
+                      }
+                    }
+                  },
+                  {
+                    "name": "kind",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "user",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 4461,
+                        "end": 4467
+                      }
+                    }
+                  },
+                  {
+                    "name": "label",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "编辑最新 query",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 4480,
+                        "end": 4492
+                      }
+                    }
+                  },
+                  {
+                    "name": "target",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "latest",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 4506,
+                        "end": 4514
+                      }
+                    }
+                  },
+                  {
+                    "name": "surface",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "message actions",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 4529,
+                        "end": 4546
+                      }
+                    }
+                  }
+                ],
+                "type": {
+                  "kind": "record",
+                  "shapeId": "r1"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                  "start": 4427,
+                  "end": 4551
+                }
+              },
+              {
+                "kind": "recordLit",
+                "fields": [
+                  {
+                    "name": "id",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "editOld",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 4561,
+                        "end": 4570
+                      }
+                    }
+                  },
+                  {
+                    "name": "kind",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "user",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 4578,
+                        "end": 4584
+                      }
+                    }
+                  },
+                  {
+                    "name": "label",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "编辑老 query",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 4593,
+                        "end": 4604
+                      }
+                    }
+                  },
+                  {
+                    "name": "target",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "old",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 4614,
+                        "end": 4619
+                      }
+                    }
+                  },
+                  {
+                    "name": "surface",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "message actions",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 4630,
+                        "end": 4647
+                      }
+                    }
+                  }
+                ],
+                "type": {
+                  "kind": "record",
+                  "shapeId": "r1"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                  "start": 4555,
+                  "end": 4649
+                }
+              }
+            ],
+            "type": {
+              "kind": "array",
+              "elem": {
+                "kind": "record",
+                "shapeId": "r1"
+              }
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+              "start": 3830,
+              "end": 4652
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+            "start": 3800,
+            "end": 4652
+          }
+        },
+        {
+          "kind": "assign",
+          "localId": "%g.m1.systemCandidates",
+          "value": {
+            "kind": "arrayLit",
+            "elems": [
+              {
+                "kind": "recordLit",
+                "fields": [
+                  {
+                    "name": "id",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "assistantComplete",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 4707,
+                        "end": 4726
+                      }
+                    }
+                  },
+                  {
+                    "name": "kind",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "system",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 4738,
+                        "end": 4746
+                      }
+                    }
+                  },
+                  {
+                    "name": "label",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "assistant 完成当前 run",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 4759,
+                        "end": 4779
+                      }
+                    }
+                  },
+                  {
+                    "name": "target",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "none",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 4793,
+                        "end": 4799
+                      }
+                    }
+                  },
+                  {
+                    "name": "surface",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "runtime event",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 4814,
+                        "end": 4829
+                      }
+                    }
+                  }
+                ],
+                "type": {
+                  "kind": "record",
+                  "shapeId": "r1"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                  "start": 4697,
+                  "end": 4834
+                }
+              },
+              {
+                "kind": "recordLit",
+                "fields": [
+                  {
+                    "name": "id",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "compactComplete",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 4848,
+                        "end": 4865
+                      }
+                    }
+                  },
+                  {
+                    "name": "kind",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "system",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 4877,
+                        "end": 4885
+                      }
+                    }
+                  },
+                  {
+                    "name": "label",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "compact 完成",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 4898,
+                        "end": 4910
+                      }
+                    }
+                  },
+                  {
+                    "name": "target",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "none",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 4924,
+                        "end": 4930
+                      }
+                    }
+                  },
+                  {
+                    "name": "surface",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "runtime event",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 4945,
+                        "end": 4960
+                      }
+                    }
+                  }
+                ],
+                "type": {
+                  "kind": "record",
+                  "shapeId": "r1"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                  "start": 4838,
+                  "end": 4965
+                }
+              },
+              {
+                "kind": "recordLit",
+                "fields": [
+                  {
+                    "name": "id",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "compactNoop",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 4979,
+                        "end": 4992
+                      }
+                    }
+                  },
+                  {
+                    "name": "kind",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "system",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 5004,
+                        "end": 5012
+                      }
+                    }
+                  },
+                  {
+                    "name": "label",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "compact 判断不需要继续",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 5025,
+                        "end": 5042
+                      }
+                    }
+                  },
+                  {
+                    "name": "target",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "none",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 5056,
+                        "end": 5062
+                      }
+                    }
+                  },
+                  {
+                    "name": "surface",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "runtime event",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 5077,
+                        "end": 5092
+                      }
+                    }
+                  }
+                ],
+                "type": {
+                  "kind": "record",
+                  "shapeId": "r1"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                  "start": 4969,
+                  "end": 5097
+                }
+              },
+              {
+                "kind": "recordLit",
+                "fields": [
+                  {
+                    "name": "id",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "goalVerifyStart",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 5111,
+                        "end": 5128
+                      }
+                    }
+                  },
+                  {
+                    "name": "kind",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "system",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 5140,
+                        "end": 5148
+                      }
+                    }
+                  },
+                  {
+                    "name": "label",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "开始 goal 验证",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 5161,
+                        "end": 5173
+                      }
+                    }
+                  },
+                  {
+                    "name": "target",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "none",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 5187,
+                        "end": 5193
+                      }
+                    }
+                  },
+                  {
+                    "name": "surface",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "goal runtime",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 5208,
+                        "end": 5222
+                      }
+                    }
+                  }
+                ],
+                "type": {
+                  "kind": "record",
+                  "shapeId": "r1"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                  "start": 5101,
+                  "end": 5227
+                }
+              },
+              {
+                "kind": "recordLit",
+                "fields": [
+                  {
+                    "name": "id",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "goalVerifyPass",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 5241,
+                        "end": 5257
+                      }
+                    }
+                  },
+                  {
+                    "name": "kind",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "system",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 5269,
+                        "end": 5277
+                      }
+                    }
+                  },
+                  {
+                    "name": "label",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "goal 验证通过",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 5290,
+                        "end": 5301
+                      }
+                    }
+                  },
+                  {
+                    "name": "target",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "none",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 5315,
+                        "end": 5321
+                      }
+                    }
+                  },
+                  {
+                    "name": "surface",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "goal runtime",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 5336,
+                        "end": 5350
+                      }
+                    }
+                  }
+                ],
+                "type": {
+                  "kind": "record",
+                  "shapeId": "r1"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                  "start": 5231,
+                  "end": 5355
+                }
+              },
+              {
+                "kind": "recordLit",
+                "fields": [
+                  {
+                    "name": "id",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "goalVerifyFail",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 5369,
+                        "end": 5385
+                      }
+                    }
+                  },
+                  {
+                    "name": "kind",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "system",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 5397,
+                        "end": 5405
+                      }
+                    }
+                  },
+                  {
+                    "name": "label",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "goal 验证失败",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 5418,
+                        "end": 5429
+                      }
+                    }
+                  },
+                  {
+                    "name": "target",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "none",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 5443,
+                        "end": 5449
+                      }
+                    }
+                  },
+                  {
+                    "name": "surface",
+                    "value": {
+                      "kind": "strLit",
+                      "value": "goal runtime",
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                        "start": 5464,
+                        "end": 5478
+                      }
+                    }
+                  }
+                ],
+                "type": {
+                  "kind": "record",
+                  "shapeId": "r1"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+                  "start": 5359,
+                  "end": 5483
+                }
+              }
+            ],
+            "type": {
+              "kind": "array",
+              "elem": {
+                "kind": "record",
+                "shapeId": "r1"
+              }
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+              "start": 4693,
+              "end": 5486
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+            "start": 4661,
+            "end": 5486
+          }
+        },
+        {
+          "kind": "assign",
+          "localId": "%g.m1.nextNodeId",
+          "value": {
+            "kind": "numLit",
+            "value": 0,
+            "type": {
+              "kind": "f64"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+              "start": 5506,
+              "end": 5507
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+            "start": 5493,
+            "end": 5507
+          }
+        },
+        {
+          "kind": "assign",
+          "localId": "%g.m1.nextCaseId",
+          "value": {
+            "kind": "numLit",
+            "value": 0,
+            "type": {
+              "kind": "f64"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+              "start": 5526,
+              "end": 5527
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+            "start": 5513,
+            "end": 5527
+          }
+        }
+      ],
+      "loc": {
+        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+        "start": 0,
+        "end": 0
+      }
+    },
+    {
+      "name": "%init.2",
+      "params": [],
+      "returnType": {
+        "kind": "void"
+      },
+      "locals": [],
+      "body": [
+        {
+          "kind": "if",
+          "cond": {
+            "kind": "varRef",
+            "localId": "%g.e.%loaded",
+            "type": {
+              "kind": "bool"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zfull/entries/formal-proof.ts",
+              "start": 0,
+              "end": 0
+            }
+          },
+          "then": [
+            {
+              "kind": "return",
+              "value": null,
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zfull/entries/formal-proof.ts",
+                "start": 0,
+                "end": 0
+              }
+            }
+          ],
+          "else_": null,
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zfull/entries/formal-proof.ts",
+            "start": 0,
+            "end": 0
+          }
+        },
+        {
+          "kind": "assign",
+          "localId": "%g.e.%loaded",
+          "value": {
+            "kind": "boolLit",
+            "value": true,
+            "type": {
+              "kind": "bool"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zfull/entries/formal-proof.ts",
+              "start": 0,
+              "end": 0
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zfull/entries/formal-proof.ts",
+            "start": 0,
+            "end": 0
+          }
+        },
+        {
+          "kind": "exprStmt",
+          "expr": {
+            "kind": "call",
+            "callee": "%init.0",
+            "args": [],
+            "type": {
+              "kind": "void"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zfull/entries/formal-proof.ts",
+              "start": 0,
+              "end": 33
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zfull/entries/formal-proof.ts",
+            "start": 0,
+            "end": 33
+          }
+        },
+        {
+          "kind": "exprStmt",
+          "expr": {
+            "kind": "call",
+            "callee": "%init.1",
+            "args": [],
+            "type": {
+              "kind": "void"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zfull/entries/formal-proof.ts",
+              "start": 34,
+              "end": 70
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zfull/entries/formal-proof.ts",
+            "start": 34,
+            "end": 70
+          }
+        }
+      ],
+      "loc": {
+        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zfull/entries/formal-proof.ts",
+        "start": 0,
+        "end": 0
+      }
+    },
+    {
+      "name": "%main",
+      "params": [],
+      "returnType": {
+        "kind": "void"
+      },
+      "locals": [],
+      "body": [
+        {
+          "kind": "exprStmt",
+          "expr": {
+            "kind": "call",
+            "callee": "%init.2",
+            "args": [],
+            "type": {
+              "kind": "void"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zfull/entries/formal-proof.ts",
+              "start": 0,
+              "end": 0
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zfull/entries/formal-proof.ts",
+            "start": 0,
+            "end": 0
+          }
+        }
+      ],
+      "loc": {
+        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zfull/entries/formal-proof.ts",
+        "start": 0,
+        "end": 0
+      }
+    }
+  ],
+  "classes": [
+    {
+      "name": "%Error",
+      "runtime": true,
+      "fields": [
+        {
+          "name": "name",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "message",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "%code",
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "loc": {
+        "file": "<builtin>",
+        "start": 0,
+        "end": 0
+      }
+    },
+    {
+      "name": "%TypeError",
+      "runtime": true,
+      "base": "%Error",
+      "fields": [
+        {
+          "name": "name",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "message",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "%code",
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "loc": {
+        "file": "<builtin>",
+        "start": 0,
+        "end": 0
+      }
+    },
+    {
+      "name": "%RangeError",
+      "runtime": true,
+      "base": "%Error",
+      "fields": [
+        {
+          "name": "name",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "message",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "%code",
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "loc": {
+        "file": "<builtin>",
+        "start": 0,
+        "end": 0
+      }
+    },
+    {
+      "name": "%SyntaxError",
+      "runtime": true,
+      "base": "%Error",
+      "fields": [
+        {
+          "name": "name",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "message",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "%code",
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "loc": {
+        "file": "<builtin>",
+        "start": 0,
+        "end": 0
+      }
+    },
+    {
+      "name": "%DOMException",
+      "runtime": true,
+      "base": "%Error",
+      "fields": [
+        {
+          "name": "name",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "message",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "%code",
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "loc": {
+        "file": "<builtin>",
+        "start": 0,
+        "end": 0
+      }
+    }
+  ],
+  "records": [
+    {
+      "id": "r0",
+      "fields": [
+        {
+          "name": "canCompactAgain",
+          "type": {
+            "kind": "bool"
+          }
+        },
+        {
+          "name": "compactMemory",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "forked",
+          "type": {
+            "kind": "bool"
+          }
+        },
+        {
+          "name": "goal",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "queue",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "runPhase",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "selectedTurn",
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "declaredOrder": [
+        "runPhase",
+        "queue",
+        "compactMemory",
+        "canCompactAgain",
+        "goal",
+        "selectedTurn",
+        "forked"
+      ]
+    },
+    {
+      "id": "r1",
+      "fields": [
+        {
+          "name": "id",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "kind",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "label",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "surface",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "target",
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "declaredOrder": [
+        "id",
+        "kind",
+        "label",
+        "target",
+        "surface"
+      ]
+    },
+    {
+      "id": "r6",
+      "fields": [
+        {
+          "name": "context",
+          "type": {
+            "kind": "record",
+            "shapeId": "r0"
+          }
+        },
+        {
+          "name": "id",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "label",
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "declaredOrder": [
+        "id",
+        "label",
+        "context"
+      ]
+    }
+  ],
+  "unions": [],
+  "globals": [
+    {
+      "id": "%g.m1.profiles",
+      "name": "profiles",
+      "type": {
+        "kind": "array",
+        "elem": {
+          "kind": "record",
+          "shapeId": "r6"
+        }
+      },
+      "mutable": false,
+      "source": {
+        "loc": {
+          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+          "start": 2060,
+          "end": 2068
+        },
+        "scope": {
+          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+          "start": 0,
+          "end": 24226
+        }
+      }
+    },
+    {
+      "id": "%g.m1.userCandidates",
+      "name": "userCandidates",
+      "type": {
+        "kind": "array",
+        "elem": {
+          "kind": "record",
+          "shapeId": "r1"
+        }
+      },
+      "mutable": false,
+      "source": {
+        "loc": {
+          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+          "start": 3800,
+          "end": 3814
+        },
+        "scope": {
+          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+          "start": 0,
+          "end": 24226
+        }
+      }
+    },
+    {
+      "id": "%g.m1.systemCandidates",
+      "name": "systemCandidates",
+      "type": {
+        "kind": "array",
+        "elem": {
+          "kind": "record",
+          "shapeId": "r1"
+        }
+      },
+      "mutable": false,
+      "source": {
+        "loc": {
+          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+          "start": 4661,
+          "end": 4677
+        },
+        "scope": {
+          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+          "start": 0,
+          "end": 24226
+        }
+      }
+    },
+    {
+      "id": "%g.m1.nextNodeId",
+      "name": "nextNodeId",
+      "type": {
+        "kind": "f64"
+      },
+      "mutable": true,
+      "source": {
+        "loc": {
+          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+          "start": 5493,
+          "end": 5503
+        },
+        "scope": {
+          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+          "start": 0,
+          "end": 24226
+        }
+      }
+    },
+    {
+      "id": "%g.m1.nextCaseId",
+      "name": "nextCaseId",
+      "type": {
+        "kind": "f64"
+      },
+      "mutable": true,
+      "source": {
+        "loc": {
+          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+          "start": 5513,
+          "end": 5523
+        },
+        "scope": {
+          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts",
+          "start": 0,
+          "end": 24226
+        }
+      }
+    },
+    {
+      "id": "%g.m0.%loaded",
+      "name": "%loaded",
+      "type": {
+        "kind": "bool"
+      },
+      "mutable": true
+    },
+    {
+      "id": "%g.m1.%loaded",
+      "name": "%loaded",
+      "type": {
+        "kind": "bool"
+      },
+      "mutable": true
+    },
+    {
+      "id": "%g.e.%loaded",
+      "name": "%loaded",
+      "type": {
+        "kind": "bool"
+      },
+      "mutable": true
+    }
+  ],
+  "entry": "%main"
+}

@@ -335,10 +335,98 @@ index 623616f..ffb1de5 100644
  
  export type PluginUpdateStatus = "none" | "update-available" | "version-changed";
  
+diff --git a/apps/zcode-cli/packages/adapters/src/storage/session-store/migration-runner.ts b/apps/zcode-cli/packages/adapters/src/storage/session-store/migration-runner.ts
+index 7e21283..2383cb6 100644
+--- a/apps/zcode-cli/packages/adapters/src/storage/session-store/migration-runner.ts
++++ b/apps/zcode-cli/packages/adapters/src/storage/session-store/migration-runner.ts
+@@ -5,7 +5,7 @@ import {
+   type DatabaseMigrationFacts,
+ } from "@zcode/shared";
+ import { createHash } from "node:crypto";
+-import type { DatabaseSync } from "node:sqlite";
++import type { DatabaseSync } from "@zcode/node-sqlite";
+ import { SqliteSessionMigrationError } from "./errors.js";
+ import { SQLITE_MIGRATIONS } from "./migrations.js";
+ import type { SchemaMigrationRow } from "./rows.js";
+diff --git a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/debug.ts b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/debug.ts
+index 213fc18..38f0186 100644
+--- a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/debug.ts
++++ b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/debug.ts
+@@ -1,4 +1,4 @@
+-import type { DatabaseSync, SQLInputValue } from "node:sqlite";
++import type { DatabaseSync, SQLInputValue } from "@zcode/node-sqlite";
+ import type { SessionId } from "@zcode/contracts";
+ import type { SessionStoreDebugCounts } from "../options.js";
+ 
+diff --git a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/dwf-journal-artifacts.ts b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/dwf-journal-artifacts.ts
+index 553d20f..bb4155d 100644
+--- a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/dwf-journal-artifacts.ts
++++ b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/dwf-journal-artifacts.ts
+@@ -15,7 +15,7 @@
+  * 与 dwf-journal-codecs.ts 同一种分法。
+  */
+ 
+-import type { DatabaseSync } from "node:sqlite";
++import type { DatabaseSync } from "@zcode/node-sqlite";
+ import type { NodeRecord } from "@zcode/dynamic-workflow";
+ import { decodeNode, type DwfEventRow, type DwfNodeRow } from "./dwf-journal-codecs.js";
+ 
+diff --git a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/dwf-journal-introspection.ts b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/dwf-journal-introspection.ts
+index f21eab2..82a3a47 100644
+--- a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/dwf-journal-introspection.ts
++++ b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/dwf-journal-introspection.ts
+@@ -8,7 +8,7 @@
+  * 引擎的 `JournalStorePort` 写面不在这里——这里没有任何写入者。
+  */
+ 
+-import type { DatabaseSync } from "node:sqlite";
++import type { DatabaseSync } from "@zcode/node-sqlite";
+ import type { NodeRecord, NodeRecordStatus, RunStatus, StoredEvent } from "@zcode/dynamic-workflow";
+ import type { DwfArtifactItem, DwfArtifactItemsQuery } from "./dwf-journal-artifacts.js";
+ import {
+diff --git a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/dwf-journal.ts b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/dwf-journal.ts
+index a011dc8..8f75fa0 100644
+--- a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/dwf-journal.ts
++++ b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/dwf-journal.ts
+@@ -10,7 +10,7 @@
+  * 事务性不在端口面上：需要与 session 写入同原子的场景由 driver 用 `begin immediate` 组合。
+  */
+ 
+-import type { DatabaseSync } from "node:sqlite";
++import type { DatabaseSync } from "@zcode/node-sqlite";
+ import type {
+   ActorRecord,
+   Caps,
+diff --git a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/input-history.ts b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/input-history.ts
+index 485f1ea..541e813 100644
+--- a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/input-history.ts
++++ b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/input-history.ts
+@@ -1,4 +1,4 @@
+-import type { DatabaseSync } from "node:sqlite";
++import type { DatabaseSync } from "@zcode/node-sqlite";
+ import type {
+   InputHistoryAttachment,
+   InputHistoryEntry,
+diff --git a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/local-settings.ts b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/local-settings.ts
+index 4d4c465..bd7a50b 100644
+--- a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/local-settings.ts
++++ b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/local-settings.ts
+@@ -1,4 +1,4 @@
+-import type { DatabaseSync } from "node:sqlite";
++import type { DatabaseSync } from "@zcode/node-sqlite";
+ import type { CollaborationMode, PermissionRuleset, ProjectId } from "@zcode/contracts";
+ import { isCollaborationMode } from "../codecs.js";
+ import { decodeJson } from "../json.js";
 diff --git a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/messages.ts b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/messages.ts
-index 2defa6d..5a89c55 100644
+index 2defa6d..d9e1d9c 100644
 --- a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/messages.ts
 +++ b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/messages.ts
+@@ -1,4 +1,4 @@
+-import type { DatabaseSync } from "node:sqlite";
++import type { DatabaseSync } from "@zcode/node-sqlite";
+ import type {
+   MessageId,
+   MessageInfo,
 @@ -12,6 +12,7 @@ import { decodeMessageRow, decodePartRow, partCreatedAt } from "../codecs.js";
  import { encodeJson } from "../json.js";
  import type { MessageRow, PartRow } from "../rows.js";
@@ -356,6 +444,113 @@ index 2defa6d..5a89c55 100644
    return result;
  }
  
+diff --git a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/permission-full-access.ts b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/permission-full-access.ts
+index 7e607a2..c7f10a0 100644
+--- a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/permission-full-access.ts
++++ b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/permission-full-access.ts
+@@ -1,4 +1,4 @@
+-import type { DatabaseSync } from "node:sqlite";
++import type { DatabaseSync } from "@zcode/node-sqlite";
+ import type { SessionStorePort } from "@zcode/contracts";
+ import { saveSessionEntry } from "./session-entries.js";
+ 
+diff --git a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/script-workflow-activities.ts b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/script-workflow-activities.ts
+index a2a13f2..d9b2ce3 100644
+--- a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/script-workflow-activities.ts
++++ b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/script-workflow-activities.ts
+@@ -1,4 +1,4 @@
+-import type { DatabaseSync } from "node:sqlite";
++import type { DatabaseSync } from "@zcode/node-sqlite";
+ import type {
+   CreateScriptWorkflowActivityInput,
+   CreateSessionTaskLinkInput,
+diff --git a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/script-workflow-runs.ts b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/script-workflow-runs.ts
+index 659346f..95d329f 100644
+--- a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/script-workflow-runs.ts
++++ b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/script-workflow-runs.ts
+@@ -1,4 +1,4 @@
+-import type { DatabaseSync, SQLInputValue } from "node:sqlite";
++import type { DatabaseSync, SQLInputValue } from "@zcode/node-sqlite";
+ import type {
+   CreateScriptWorkflowRunInput,
+   ScriptWorkflowDefinitionRecord,
+diff --git a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/session-entries.ts b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/session-entries.ts
+index 7507fa9..875a571 100644
+--- a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/session-entries.ts
++++ b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/session-entries.ts
+@@ -1,4 +1,4 @@
+-import type { DatabaseSync } from "node:sqlite";
++import type { DatabaseSync } from "@zcode/node-sqlite";
+ import {
+   SESSION_ENTRY_MODEL_SELECTION,
+   type SessionEntryInfo,
+diff --git a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/session-inputs.ts b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/session-inputs.ts
+index 7d816b1..24f7493 100644
+--- a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/session-inputs.ts
++++ b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/session-inputs.ts
+@@ -2,7 +2,7 @@
+ // 语义：admitted（已接受）→ promoted（与 user message/parts 同事务落 transcript）
+ // / cancelled / discarded / failed。promotion 的原子性是硬要求：杜绝
+ // 「queue 已消费但 transcript 无 user message」的孤儿窗口（旧 drain 跨 store 无事务）。
+-import type { DatabaseSync } from "node:sqlite";
++import type { DatabaseSync } from "@zcode/node-sqlite";
+ import type {
+   MessageInfo,
+   MessagePart,
+diff --git a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/sessions.ts b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/sessions.ts
+index bf63dd7..33bc2eb 100644
+--- a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/sessions.ts
++++ b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/sessions.ts
+@@ -1,4 +1,4 @@
+-import type { DatabaseSync, SQLInputValue } from "node:sqlite";
++import type { DatabaseSync, SQLInputValue } from "@zcode/node-sqlite";
+ import {
+   SESSION_TASK_TYPES,
+   type ClaimLegacySessionWorkspaceInput,
+diff --git a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/todos.ts b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/todos.ts
+index e410c7e..78fbd5a 100644
+--- a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/todos.ts
++++ b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/todos.ts
+@@ -1,4 +1,4 @@
+-import type { DatabaseSync } from "node:sqlite";
++import type { DatabaseSync } from "@zcode/node-sqlite";
+ import type { SessionId, TodoItem } from "@zcode/contracts";
+ import { decodeTodoRow } from "../codecs.js";
+ import type { TodoRow } from "../rows.js";
+diff --git a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/usage.ts b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/usage.ts
+index 8dbc3a2..50d4863 100644
+--- a/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/usage.ts
++++ b/apps/zcode-cli/packages/adapters/src/storage/session-store/repositories/usage.ts
+@@ -1,4 +1,4 @@
+-import type { DatabaseSync, SQLInputValue } from "node:sqlite";
++import type { DatabaseSync, SQLInputValue } from "@zcode/node-sqlite";
+ import type {
+   AppUsageDayModelRow,
+   AppUsageDayRow,
+diff --git a/apps/zcode-cli/packages/adapters/src/storage/session-store/sqlite-session-store.ts b/apps/zcode-cli/packages/adapters/src/storage/session-store/sqlite-session-store.ts
+index 1f413ad..c743129 100644
+--- a/apps/zcode-cli/packages/adapters/src/storage/session-store/sqlite-session-store.ts
++++ b/apps/zcode-cli/packages/adapters/src/storage/session-store/sqlite-session-store.ts
+@@ -1,5 +1,5 @@
+ import * as permissionFullAccessRepository from "./repositories/permission-full-access.js";
+-import { DatabaseSync } from "node:sqlite";
++import { DatabaseSync } from "@zcode/node-sqlite";
+ import type {
+   CollaborationMode,
+   ClaimLegacySessionWorkspaceInput,
+diff --git a/apps/zcode-cli/packages/adapters/src/storage/session-target.ts b/apps/zcode-cli/packages/adapters/src/storage/session-target.ts
+index f39234b..ffafbd9 100644
+--- a/apps/zcode-cli/packages/adapters/src/storage/session-target.ts
++++ b/apps/zcode-cli/packages/adapters/src/storage/session-target.ts
+@@ -3,7 +3,7 @@
+ // ============================================================
+ 
+ import { randomUUID } from "node:crypto";
+-import type { DatabaseSync } from "node:sqlite";
++import type { DatabaseSync } from "@zcode/node-sqlite";
+ import type { SessionId, SessionGoal, GoalStatus } from "@zcode/contracts";
+ 
+ interface TargetRow {
 diff --git a/apps/zcode-cli/packages/bootstrap/src/app/legacy-cli-model-config.ts b/apps/zcode-cli/packages/bootstrap/src/app/legacy-cli-model-config.ts
 index 19acf60..d5174ee 100644
 --- a/apps/zcode-cli/packages/bootstrap/src/app/legacy-cli-model-config.ts
@@ -4716,6 +4911,55 @@ index 461d678..4934bd4 100644
  ): ReadFileStateEntry | undefined {
    if (!readFileState) return undefined;
  
+diff --git a/apps/zcode-cli/packages/core/src/workflow/lifecycle.ts b/apps/zcode-cli/packages/core/src/workflow/lifecycle.ts
+index f326ae8..5be010f 100644
+--- a/apps/zcode-cli/packages/core/src/workflow/lifecycle.ts
++++ b/apps/zcode-cli/packages/core/src/workflow/lifecycle.ts
+@@ -86,7 +86,7 @@ const CANCELLABLE_STATUSES = new Set<WorkflowNodeStatus>(["active", "pending"]);
+ const REOPENABLE_STATUSES = new Set<WorkflowNodeStatus>(["completed", "failed", "skipped"]);
+ 
+ export function reconcileWorkflowSnapshotForResume<TSnapshot extends WorkflowRunSnapshot>(
+-  snapshot: TSnapshot,
++  snapshot: any,
+   options: ReconcileWorkflowSnapshotForResumeOptions,
+ ): WorkflowSnapshotLifecycleResult<TSnapshot> {
+   const reason = options.reason ?? DEFAULT_RESUME_RESET_REASON;
+@@ -161,7 +161,7 @@ export function reconcileWorkflowSnapshotForResume<TSnapshot extends WorkflowRun
+ }
+ 
+ export function cancelWorkflowSnapshot<TSnapshot extends WorkflowRunSnapshot>(
+-  snapshot: TSnapshot,
++  snapshot: any,
+   options: CancelWorkflowSnapshotOptions,
+ ): WorkflowSnapshotLifecycleResult<TSnapshot> {
+   const reason = options.reason ?? DEFAULT_CANCEL_REASON;
+@@ -229,7 +229,7 @@ export function cancelWorkflowSnapshot<TSnapshot extends WorkflowRunSnapshot>(
+ }
+ 
+ export function reopenWorkflowGraphNode<TSnapshot extends WorkflowRunSnapshot>(
+-  snapshot: TSnapshot,
++  snapshot: any,
+   options: ReopenWorkflowGraphNodeOptions,
+ ): ReopenWorkflowGraphNodeResult<TSnapshot> {
+   const node = snapshot.graph.nodes.find((item) => item.id === options.nodeId);
+@@ -280,7 +280,7 @@ export function reopenWorkflowGraphNode<TSnapshot extends WorkflowRunSnapshot>(
+ }
+ 
+ export function applyWorkflowGraphSeed<TSnapshot extends WorkflowRunSnapshot>(
+-  snapshot: TSnapshot,
++  snapshot: any,
+   seed: WorkflowGraphSeed,
+   options: ApplyWorkflowGraphSeedOptions,
+ ): ApplyWorkflowGraphSeedResult<TSnapshot> {
+@@ -373,7 +373,7 @@ export function applyWorkflowGraphSeed<TSnapshot extends WorkflowRunSnapshot>(
+ }
+ 
+ export function applyWorkflowNodePromptUpdates<TSnapshot extends WorkflowRunSnapshot>(
+-  snapshot: TSnapshot,
++  snapshot: any,
+   updates: readonly WorkflowNodePromptUpdate[],
+   options: ApplyWorkflowNodePromptUpdatesOptions,
+ ): ApplyWorkflowNodePromptUpdatesResult<TSnapshot> {
 diff --git a/apps/zcode-cli/packages/core/src/workflow/scheduler.ts b/apps/zcode-cli/packages/core/src/workflow/scheduler.ts
 index 0fb8dac..c817819 100644
 --- a/apps/zcode-cli/packages/core/src/workflow/scheduler.ts
@@ -4729,6 +4973,19 @@ index 0fb8dac..c817819 100644
        options.executableNodeIds ?? options.snapshot.graph.nodes.map((node) => node.id),
      );
      const resumeRepair = reconcileWorkflowSnapshotForResume(options.snapshot, {
+diff --git a/apps/zcode-cli/packages/debug/server/sources.ts b/apps/zcode-cli/packages/debug/server/sources.ts
+index e935755..8af8688 100644
+--- a/apps/zcode-cli/packages/debug/server/sources.ts
++++ b/apps/zcode-cli/packages/debug/server/sources.ts
+@@ -2,7 +2,7 @@ import { existsSync } from "node:fs";
+ import { readdir, readFile, stat } from "node:fs/promises";
+ import { homedir } from "node:os";
+ import { basename, join, resolve } from "node:path";
+-import { DatabaseSync } from "node:sqlite";
++import { DatabaseSync } from "@zcode/node-sqlite";
+ import type {
+   DbMessageRecord,
+   DbObservation,
 diff --git a/apps/zcode-cli/packages/dynamic-workflow-runtime/src/child-source.ts b/apps/zcode-cli/packages/dynamic-workflow-runtime/src/child-source.ts
 index 4492d49..3d4417c 100644
 --- a/apps/zcode-cli/packages/dynamic-workflow-runtime/src/child-source.ts
@@ -4808,6 +5065,34 @@ index d98946c..71d04ff 100644
    const match = isRecord(value.match) ? readMockResponseMatch(value.match) : undefined;
    return {
      ...(match ? { match } : {}),
+diff --git a/native-shims/native-checks.d.ts b/native-shims/native-checks.d.ts
+new file mode 100644
+index 0000000..10d399b
+--- /dev/null
++++ b/native-shims/native-checks.d.ts
+@@ -0,0 +1,6 @@
++// 仅类型垫片：ZCode 自己的 tsc 用它解析说明符；scriptc 侧由 zfull/tsconfig.json
++// 的 paths 指到真正的运行时兼容模块 zfull/compat/native-checks.ts。
++export declare function isArray(v: any): v is any[];
++export declare function hasOwnKey(o: any, k: string): boolean;
++export declare function sameValue(a: any, b: any): boolean;
++export declare function identityOf(v: any): any;
+diff --git a/native-shims/node-sqlite.d.ts b/native-shims/node-sqlite.d.ts
+new file mode 100644
+index 0000000..f20ad00
+--- /dev/null
++++ b/native-shims/node-sqlite.d.ts
+@@ -0,0 +1,2 @@
++// 仅类型垫片：透传 Node 自带的 node:sqlite 类型（ZCode 侧 tsc 用）。
++export * from "node:sqlite";
+diff --git a/native-shims/node-vm.d.ts b/native-shims/node-vm.d.ts
+new file mode 100644
+index 0000000..3b9a0be
+--- /dev/null
++++ b/native-shims/node-vm.d.ts
+@@ -0,0 +1,2 @@
++// 仅类型垫片：透传 Node 自带的 node:vm 类型（ZCode 侧 tsc 用）。
++export * from "node:vm";
 diff --git a/packages/desktop/src/host/storagePreparationProcesses.ts b/packages/desktop/src/host/storagePreparationProcesses.ts
 index be9bd93..45bf940 100644
 --- a/packages/desktop/src/host/storagePreparationProcesses.ts
@@ -4895,7 +5180,7 @@ index 3303783..c285e64 100644
    return program;
  }
 diff --git a/packages/model-option-map/src/evaluator.ts b/packages/model-option-map/src/evaluator.ts
-index 6914196..23e1329 100644
+index 6914196..462c56b 100644
 --- a/packages/model-option-map/src/evaluator.ts
 +++ b/packages/model-option-map/src/evaluator.ts
 @@ -5,6 +5,7 @@ import {
@@ -4990,13 +5275,12 @@ index 6914196..23e1329 100644
 +  return value;
  }
  
--function isJsonObject(value: JsonValue): value is JsonObject {
+ function isJsonObject(value: JsonValue): value is JsonObject {
 -  return value !== null && typeof value === "object" && !Array.isArray(value);
-+function isJsonObject(value: any): boolean {
 +  return value !== null && typeof value === "object" && !isArray(value);
  }
 diff --git a/packages/model-option-map/src/merge-patch.ts b/packages/model-option-map/src/merge-patch.ts
-index dba4133..5da4d9d 100644
+index dba4133..48d5b9c 100644
 --- a/packages/model-option-map/src/merge-patch.ts
 +++ b/packages/model-option-map/src/merge-patch.ts
 @@ -1,4 +1,5 @@
@@ -5026,9 +5310,8 @@ index dba4133..5da4d9d 100644
    return result;
  }
  
--function isJsonObject(value: JsonValue | undefined): value is JsonObject {
+ function isJsonObject(value: JsonValue | undefined): value is JsonObject {
 -  return value !== null && typeof value === "object" && !Array.isArray(value);
-+function isJsonObject(value: any): boolean {
 +  return value !== null && typeof value === "object" && !isArray(value);
  }
 diff --git a/packages/model-option-map/src/option-maps.ts b/packages/model-option-map/src/option-maps.ts
@@ -5940,7 +6223,7 @@ index bee940e..31157e4 100644
 +  };
  }
 diff --git a/packages/provider/src/facades.ts b/packages/provider/src/facades.ts
-index 015acca..771ffa1 100644
+index 015acca..e088051 100644
 --- a/packages/provider/src/facades.ts
 +++ b/packages/provider/src/facades.ts
 @@ -251,13 +251,13 @@ export class ProviderSettingsFacade {
@@ -5977,7 +6260,7 @@ index 015acca..771ffa1 100644
    }
  
    onDidChange(listener: (view: ProviderSettingsView) => void): () => void {
-@@ -439,9 +439,9 @@ export class ProviderSettingsFacade {
+@@ -439,17 +439,17 @@ export class ProviderSettingsFacade {
      if (!provider) throw new Error(`Provider 不存在: ${providerId}`);
      // 配置成员与可执行模型不是同一名单：禁用、无权益和不完整模型仍可编辑。
      // Account 的空/替换名单也必须原样使用，不能再与静态 Built-in 取并集。
@@ -5985,11 +6268,12 @@ index 015acca..771ffa1 100644
 +    return {
        providerId,
 -      inheritedModelIds: Object.freeze(
+-        provider.models.filter((model) => model.source === "builtin").map((model) => model.modelId),
 +      inheritedModelIds: (
-         provider.models.filter((model) => model.source === "builtin").map((model) => model.modelId),
++        provider.models.filter((model) => model.source === "builtin").map((model) => model.modelId)
        ),
        personalRevision: snapshot.config.personalRevision,
-@@ -449,7 +449,7 @@ export class ProviderSettingsFacade {
+       assertCurrent: () => {
          if (this.#source.getSnapshot() !== snapshot)
            throw new Error("Provider Settings snapshot revision conflict");
        },
@@ -5998,7 +6282,7 @@ index 015acca..771ffa1 100644
    }
  
    async #mutate(
-@@ -542,9 +542,9 @@ export class ModelSelectionFacade {
+@@ -542,12 +542,12 @@ export class ModelSelectionFacade {
        registry,
        configuredDefault: normalizedDefault,
      });
@@ -6009,7 +6293,11 @@ index 015acca..771ffa1 100644
 +      providers: (
          registry.providers
            .filter((provider) => provider.config.visibility !== "hidden")
-           .map(projectModelSelectionProviderView),
+-          .map(projectModelSelectionProviderView),
++          .map(projectModelSelectionProviderView)
+       ),
+       ...(initial.source === "none" ? {} : { preferredSelection: initial.selection }),
+       ...(input
 @@ -559,7 +559,7 @@ export class ModelSelectionFacade {
              resolveLegacyReasoningLevel,
            })
@@ -6037,7 +6325,8 @@ index 015acca..771ffa1 100644
            modelId: model.modelId,
            config: serializeRegistryModelConfig(model.config),
          }),
-       ),
+-      ),
++      )
      ),
 -  });
 +  };
@@ -6071,9 +6360,12 @@ index 015acca..771ffa1 100644
              kind: model.kind,
              modelId: model.modelId,
              builtin: model.source === "builtin",
-@@ -659,30 +659,30 @@ function createProviderSettingsView(input: {
+@@ -657,32 +657,32 @@ function createProviderSettingsView(input: {
+             selectable: model.selectable,
+             issues: model.issues,
            });
-         }),
+-        }),
++        })
        ),
 -    });
 +    };
@@ -6096,13 +6388,15 @@ index 015acca..771ffa1 100644
              templateNameMap: template.templateNameMap,
              config: template.config.toJSON(),
            }),
-         ),
+-        ),
++        )
      ),
 -    providerOrder: Object.freeze(
 +    providerOrder: (
        configuredProviders
          .filter((provider) => provider.config.group === "standard-personal")
-         .map((provider) => provider.providerId),
+-        .map((provider) => provider.providerId),
++        .map((provider) => provider.providerId)
      ),
 -    providers: Object.freeze(configuredProviders.map(projectProvider)),
 -  });
@@ -6190,7 +6484,7 @@ index 107bbf2..99d2613 100644
 +  };
  }
 diff --git a/packages/provider/src/registry.ts b/packages/provider/src/registry.ts
-index 4b92e76..d50cbb9 100644
+index 4b92e76..a8775c9 100644
 --- a/packages/provider/src/registry.ts
 +++ b/packages/provider/src/registry.ts
 @@ -94,7 +94,7 @@ export class ProviderRegistry {
@@ -6227,8 +6521,9 @@ index 4b92e76..d50cbb9 100644
 +      models: (
          provider.models.map((model) =>
 -          Object.freeze({ modelId: model.modelId, config: model.config }),
+-        ),
 +          ({ modelId: model.modelId, config: model.config }),
-         ),
++        )
        ),
 -    }),
 -  );
@@ -6956,6 +7251,19 @@ index be03553..351db83 100644
  import { getAppConfigDir } from "../paths.js";
  
  // app 场景的自签 CA（区别于 debug 抓包代理那套，仅 debug 环境用）。
+diff --git a/packages/services/src/session/automationRepo.ts b/packages/services/src/session/automationRepo.ts
+index 500856a..0e4b3d7 100644
+--- a/packages/services/src/session/automationRepo.ts
++++ b/packages/services/src/session/automationRepo.ts
+@@ -31,7 +31,7 @@ import { getTasksIndexDatabasePath } from "#src/paths.js";
+ import { runTasksDatabaseMigrations } from "#src/session/tasksDatabase/migrations.js";
+ 
+ const require = createRequire(import.meta.url);
+-const { DatabaseSync } = require("node:sqlite") as typeof import("node:sqlite");
++const { DatabaseSync } = require("@zcode/node-sqlite") as typeof import("node:sqlite");
+ type DatabaseSyncInstance = InstanceType<typeof DatabaseSync>;
+ 
+ /** 派发失败退避常量。 */
 diff --git a/packages/services/src/session/offPeakServerClient.ts b/packages/services/src/session/offPeakServerClient.ts
 index 264f849..01839c2 100644
 --- a/packages/services/src/session/offPeakServerClient.ts
@@ -7024,6 +7332,64 @@ index 264f849..01839c2 100644
        .passthrough()
        .nullish(),
    })
+diff --git a/packages/services/src/session/offPeakTaskRepo.ts b/packages/services/src/session/offPeakTaskRepo.ts
+index bd98782..d2847be 100644
+--- a/packages/services/src/session/offPeakTaskRepo.ts
++++ b/packages/services/src/session/offPeakTaskRepo.ts
+@@ -24,7 +24,7 @@ import { getTasksIndexDatabasePath } from "#src/paths.js";
+ import { runTasksDatabaseMigrations } from "#src/session/tasksDatabase/migrations.js";
+ 
+ const require = createRequire(import.meta.url);
+-const { DatabaseSync } = require("node:sqlite") as typeof import("node:sqlite");
++const { DatabaseSync } = require("@zcode/node-sqlite") as typeof import("node:sqlite");
+ type DatabaseSyncInstance = InstanceType<typeof DatabaseSync>;
+ 
+ /** 认领超时回收：claim_running=1 超过该时长仍未结算，视为持有者已崩溃，允许重新认领。
+diff --git a/packages/services/src/session/taskIndexRepo.ts b/packages/services/src/session/taskIndexRepo.ts
+index 4bfc84e..2f051f0 100644
+--- a/packages/services/src/session/taskIndexRepo.ts
++++ b/packages/services/src/session/taskIndexRepo.ts
+@@ -40,7 +40,7 @@ import { getTasksIndexDatabasePath } from "#src/paths.js";
+ import { runTasksDatabaseMigrations } from "#src/session/tasksDatabase/migrations.js";
+ 
+ const require = createRequire(import.meta.url);
+-const { DatabaseSync } = require("node:sqlite") as typeof import("node:sqlite");
++const { DatabaseSync } = require("@zcode/node-sqlite") as typeof import("node:sqlite");
+ 
+ function appendZCodeAgentIndexedProviderFilter(
+   where: string[],
+diff --git a/packages/services/src/session/tasksDatabase/migrations.ts b/packages/services/src/session/tasksDatabase/migrations.ts
+index 0def79c..3ff56c7 100644
+--- a/packages/services/src/session/tasksDatabase/migrations.ts
++++ b/packages/services/src/session/tasksDatabase/migrations.ts
+@@ -1,6 +1,6 @@
+ import { databaseMigrationIdSchema, type DatabaseMigrationFacts } from "@zcode/shared";
+ import { createHash } from "node:crypto";
+-import type { DatabaseSync } from "node:sqlite";
++import type { DatabaseSync } from "@zcode/node-sqlite";
+ import {
+   AUTOMATION_SCHEMA,
+   OFF_PEAK_SCHEMA,
+diff --git a/packages/services/src/session/tasksDatabase/prepared.ts b/packages/services/src/session/tasksDatabase/prepared.ts
+index b78f22b..4c7f854 100644
+--- a/packages/services/src/session/tasksDatabase/prepared.ts
++++ b/packages/services/src/session/tasksDatabase/prepared.ts
+@@ -1,4 +1,4 @@
+-import type { DatabaseSync } from "node:sqlite";
++import type { DatabaseSync } from "@zcode/node-sqlite";
+ import { areTasksDatabaseMigrationsApplied } from "#src/session/tasksDatabase/migrations.js";
+ // 仅当前进程的启动交接凭据；不落盘、不代替 SQLite 账本，不影响不同路径的新库。
+ const migrated = new Set<string>();
+diff --git a/packages/services/src/session/tasksDatabase/provider-selection-v2.ts b/packages/services/src/session/tasksDatabase/provider-selection-v2.ts
+index 52f1de1..6cd0302 100644
+--- a/packages/services/src/session/tasksDatabase/provider-selection-v2.ts
++++ b/packages/services/src/session/tasksDatabase/provider-selection-v2.ts
+@@ -1,4 +1,4 @@
+-import type { DatabaseSync } from "node:sqlite";
++import type { DatabaseSync } from "@zcode/node-sqlite";
+ import type { ModelSelection } from "@zcode/shared";
+ 
+ // 冻结 0002 的发布前已裁决编码；不能调用将来可能修改的运行时 parser/身份表。
 diff --git a/packages/services/src/setting/legacyAccountConnectionSettings.ts b/packages/services/src/setting/legacyAccountConnectionSettings.ts
 index 6a167ea..dc63235 100644
 --- a/packages/services/src/setting/legacyAccountConnectionSettings.ts
@@ -7117,6 +7483,19 @@ index 492984b..f11a334 100644
    for (const entry of entries) {
      if (!entry.isDirectory() && !entry.isSymbolicLink()) {
        continue;
+diff --git a/packages/services/test/nonCliAcpRetirement.test.ts b/packages/services/test/nonCliAcpRetirement.test.ts
+index d69fe69..151151b 100644
+--- a/packages/services/test/nonCliAcpRetirement.test.ts
++++ b/packages/services/test/nonCliAcpRetirement.test.ts
+@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
+ import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+ import { tmpdir } from "node:os";
+ import { dirname, join } from "node:path";
+-import { DatabaseSync } from "node:sqlite";
++import { DatabaseSync } from "@zcode/node-sqlite";
+ import test from "node:test";
+ import { fileURLToPath } from "node:url";
+ import {
 diff --git a/packages/shared/src/app-runtime-preferences.ts b/packages/shared/src/app-runtime-preferences.ts
 index 5785630..8842d25 100644
 --- a/packages/shared/src/app-runtime-preferences.ts
@@ -9696,7 +10075,7 @@ index 3cb58a1..91c3c9f 100644
    settingsSyncFirstRunPromptHandled: z.boolean().optional(),
    zcodeEndpointOrigin: zcodeEndpointOriginSchema.optional(),
 diff --git a/packages/shared/src/workspace-hook-config.ts b/packages/shared/src/workspace-hook-config.ts
-index a49d8c5..4ddb716 100644
+index a49d8c5..467f733 100644
 --- a/packages/shared/src/workspace-hook-config.ts
 +++ b/packages/shared/src/workspace-hook-config.ts
 @@ -21,8 +21,7 @@ export type WorkspaceHookConfigFileKind = "zcode.json" | ".zcode/config.json" |
@@ -9749,6 +10128,15 @@ index a49d8c5..4ddb716 100644
          SessionStart: z.array(workspaceHookMatcherConfigSchema).optional(),
          UserPromptSubmit: z.array(workspaceHookMatcherConfigSchema).optional(),
          PreToolUse: z.array(workspaceHookMatcherConfigSchema).optional(),
+@@ -111,7 +105,7 @@ export interface WorkspaceHookSourceReadError {
+ }
+ 
+ export function resolveWorkspaceHookTimeoutMs(
+-  hook: Pick<WorkspaceHookDefinition, "type" | "timeoutMs"> & { timeout?: number },
++  hook: any,
+   defaultTimeoutMs: number,
+ ): number {
+   const timeoutMs =
 diff --git a/packages/shared/src/workspace-hook-digest.ts b/packages/shared/src/workspace-hook-digest.ts
 index efc2e92..1cfd910 100644
 --- a/packages/shared/src/workspace-hook-digest.ts
@@ -15022,3 +15410,37 @@ index 16ef2d8..02e7ed1 100644
              id: z.string().min(1),
              sha256: z.string().regex(/^[a-f0-9]{64}$/i),
              paths: z.array(z.string().min(1)).min(1),
+diff --git a/tsconfig.base.json b/tsconfig.base.json
+index 4d5d641..9687cd4 100644
+--- a/tsconfig.base.json
++++ b/tsconfig.base.json
+@@ -1,7 +1,9 @@
+ {
+   "compilerOptions": {
+     "target": "es2024",
+-    "lib": ["es2024"],
++    "lib": [
++      "es2024"
++    ],
+     "module": "nodenext",
+     "moduleResolution": "nodenext",
+     "declaration": true,
+@@ -13,6 +15,17 @@
+     "skipLibCheck": true,
+     "verbatimModuleSyntax": true,
+     "isolatedModules": true,
+-    "noUncheckedIndexedAccess": true
++    "noUncheckedIndexedAccess": true,
++    "paths": {
++      "@zcode/native-checks": [
++        "./native-shims/native-checks.d.ts"
++      ],
++      "@zcode/node-sqlite": [
++        "./native-shims/node-sqlite.d.ts"
++      ],
++      "@zcode/node-vm": [
++        "./native-shims/node-vm.d.ts"
++      ]
++    }
+   }
+ }

@@ -168,6 +168,9 @@ jobs:
           find .. -name '*.lib.a' -print
 
       - name: Build dynamic-tier program (aarch64)
+        # 动态层可执行文件是可选的附赠项：APK 的核心是第 11 步产出的 libzcodecore.so，
+        # 链接与装配都不依赖它。这里容错，避免一步失败拖住链接/装配/签名。
+        continue-on-error: true
         run: |
           cd zfull/entries
           mkdir -p ../out

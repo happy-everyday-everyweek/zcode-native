@@ -4114,7 +4114,7 @@ index 1ae309e..7ebcacc 100644
      passed: z.boolean(),
      reason: z.string(),
 diff --git a/apps/zcode-cli/packages/contracts/src/tools/task-output.ts b/apps/zcode-cli/packages/contracts/src/tools/task-output.ts
-index b0a0318..27a7586 100644
+index b0a0318..462b86c 100644
 --- a/apps/zcode-cli/packages/contracts/src/tools/task-output.ts
 +++ b/apps/zcode-cli/packages/contracts/src/tools/task-output.ts
 @@ -22,25 +22,26 @@ export const TASK_OUTPUT_PROVIDER_DESCRIPTION = `DEPRECATED: Background tasks re
@@ -4160,13 +4160,15 @@ index b0a0318..27a7586 100644
      retrieval_status: z.enum(["success", "not_ready", "timeout"]),
      task: TaskOutputTaskSchema.nullable(),
    })
-@@ -67,12 +67,10 @@ export type TaskOutputResult = z.infer<typeof TaskOutputResultSchema>;
+@@ -67,12 +67,12 @@ export type TaskOutputResult = z.infer<typeof TaskOutputResultSchema>;
  
  export const TaskOutputResultJsonSchema = toToolJsonSchema(TaskOutputResultSchema);
  
 -function semanticBoolean(
 -  schema: z.ZodDefault<z.ZodBoolean>,
 -): z.ZodEffects<z.ZodDefault<z.ZodBoolean>, boolean, unknown> {
++// ZCode Android port: 零参写法把 ZodDefault<ZodBoolean> 收进函数体，
++// 避免作为泛型实参传递（SC1090），与 bash.ts 的 semanticBoolean 一致。
 +function semanticBoolean(): z.ZodEffects<z.ZodDefault<z.ZodBoolean>, boolean, unknown> {
    return z.preprocess((value) => {
      if (value === "true") return true;
@@ -6298,7 +6300,7 @@ index 0f6d09a..d492af0 100644
  const TERMINAL_LABELS: Record<AgentMetricSpanName, readonly string[]> = {
    agent_turn: [...COMMON_TERMINAL_LABELS, "actor_kind", "input_source", "launch_surface"],
 diff --git a/apps/zcode-cli/packages/telemetry/src/agent-trace-runtime.ts b/apps/zcode-cli/packages/telemetry/src/agent-trace-runtime.ts
-index ad852df..186027e 100644
+index ad852df..02417df 100644
 --- a/apps/zcode-cli/packages/telemetry/src/agent-trace-runtime.ts
 +++ b/apps/zcode-cli/packages/telemetry/src/agent-trace-runtime.ts
 @@ -94,10 +94,9 @@ interface StartWriterOptions {
@@ -6388,23 +6390,38 @@ index ad852df..186027e 100644
    ...NOOP_SCOPE,
    finishAbandoned() {},
    finishCancelled() {},
-@@ -1653,10 +1654,14 @@ export class NoopAgentExecutionTelemetry
+@@ -1653,22 +1654,25 @@ export class NoopAgentExecutionTelemetry
    captureCausation() {
      return undefined;
    }
 -  startCall(): ModelCallSpanWriter {
-+  // 返回类型标 any：ModelCallSpanWriter 记录里 startAttempt 的参数类型在 scriptc 下
-+  // 无法编译（SC2009），标注具体类型会让整个 Noop 类的 lowering 被拒。
++  // 返回类型统一标 any：这些 SpanWriter 记录里含 scriptc 无法 lowering 的成员类型
++  // （finishFailed 等的参数联合类型，SC2009）。编译按成员逐个报拒，标注具体类型会
++  // 让整个 Noop 类的 lowering 被拒，因此六种 writer 返回类型都标 any。
 +  startCall(): any {
      return NOOP_MODEL_CALL_WRITER;
    }
 -  startCompaction(): ContextCompactionSpanWriter {
-+  // 返回类型标 any：ContextCompactionSpanWriter 记录里的 finishFailed 参数类型在 scriptc
-+  // 下无法编译（SC2009），标注具体类型会让整个 Noop 类的 lowering 被拒。
 +  startCompaction(): any {
      return NOOP_COMPACTION_WRITER;
    }
-   startDetachedOperation(): DetachedOperationSpanWriter {
+-  startDetachedOperation(): DetachedOperationSpanWriter {
++  startDetachedOperation(): any {
+     return NOOP_DETACHED_WRITER;
+   }
+-  startStep(): AgentStepSpanWriter {
++  startStep(): any {
+     return NOOP_STEP_WRITER;
+   }
+-  startTool(): ToolExecutionSpanWriter {
++  startTool(): any {
+     return NOOP_TOOL_WRITER;
+   }
+-  startTurn(): AgentTurnSpanWriter {
++  startTurn(): any {
+     return NOOP_TURN_WRITER;
+   }
+ }
 diff --git a/apps/zcode-cli/packages/telemetry/src/agent-trace-support.ts b/apps/zcode-cli/packages/telemetry/src/agent-trace-support.ts
 index 82ae084..8432bbe 100644
 --- a/apps/zcode-cli/packages/telemetry/src/agent-trace-support.ts
@@ -6445,27 +6462,60 @@ index 058c613..2ae02a1 100644
  
  export interface CreateModelTelemetryOptions {
 diff --git a/apps/zcode-cli/packages/telemetry/src/error-sanitizer.ts b/apps/zcode-cli/packages/telemetry/src/error-sanitizer.ts
-index 6a372bd..b36646f 100644
+index 6a372bd..3914289 100644
 --- a/apps/zcode-cli/packages/telemetry/src/error-sanitizer.ts
 +++ b/apps/zcode-cli/packages/telemetry/src/error-sanitizer.ts
-@@ -1,6 +1,6 @@
+@@ -1,6 +1,9 @@
  const MAX_ERROR_MESSAGE_CHARS = 2_048;
  const MAX_ERROR_CHAIN_DEPTH = 8;
 -const claimedErrorObjects = new WeakSet<object>();
-+const claimedErrorObjects = new Set<object>();
++// scriptc 的 Set 只支持 string/number 元素（SC2009/SC1090「elements are limited to
++// numbers and strings」），认领集合改用对象数组按引用同一性去重；每进程错误对象很少，
++// 线性扫描与 Set.has 语义一致。
++const claimedErrorObjects: object[] = [];
  
  export interface SanitizedTelemetryError {
    cause?: {
-@@ -41,7 +41,8 @@ export function sanitizeTelemetryError(error: unknown): SanitizedTelemetryError
+@@ -41,13 +44,17 @@ export function sanitizeTelemetryError(error: unknown): SanitizedTelemetryError
   * 来源、最先认领它的 Span；父层继续记录 outcome/failure_stage，但不复制同一份正文。
   *
   * 包装错误的 cause 链也参与认领：AdapterError(cause=ProviderError) 不会在上层重新覆盖
 - * Provider Attempt 已记录的原始错误。WeakSet 不延长异常对象生命周期。
-+ * Provider Attempt 已记录的原始错误。scriptc 没有 WeakSet lowering（SC2020），改用
-+ * 强引用 Set；认领集合只保存错误对象，生命周期与进程一致。
++ * Provider Attempt 已记录的原始错误。scriptc 没有 WeakSet lowering（SC2020），且 Set
++ * 只支持 string/number 元素，认领集合用对象数组按引用同一性去重；只保存错误对象，
++ * 生命周期与进程一致。
   */
  export function claimSanitizedTelemetryError(error: unknown): SanitizedTelemetryError | undefined {
    const objects = errorObjectChain(error);
+   if (objects.length === 0) return sanitizeTelemetryError(error);
+-  const alreadyClaimed = objects.some((candidate) => claimedErrorObjects.has(candidate));
+-  for (const candidate of objects) claimedErrorObjects.add(candidate);
++  const alreadyClaimed = objects.some((candidate) =>
++    claimedErrorObjects.some((claimed) => claimed === candidate),
++  );
++  for (const candidate of objects) claimedErrorObjects.push(candidate);
+   return alreadyClaimed ? undefined : sanitizeTelemetryError(error);
+ }
+ 
+@@ -97,15 +104,15 @@ function objectRecord(value: unknown): Record<string, unknown> {
+ 
+ function errorObjectChain(error: unknown): object[] {
+   const result: object[] = [];
+-  const seen = new Set<object>();
++  const seen: object[] = [];
+   let current = error;
+   for (
+     let depth = 0;
+     depth < MAX_ERROR_CHAIN_DEPTH && current && typeof current === "object";
+     depth += 1
+   ) {
+-    if (seen.has(current)) break;
+-    seen.add(current);
++    if (seen.some((candidate) => candidate === current)) break;
++    seen.push(current);
+     result.push(current);
+     const record = current as Record<string, unknown>;
+     // 部分流包装器使用 adapterError/error；沿单条优先链复用同一认领机制，避免父 Span 重复记录。
 diff --git a/apps/zcode-cli/packages/telemetry/src/otlp-exporter.ts b/apps/zcode-cli/packages/telemetry/src/otlp-exporter.ts
 index d3e7c4b..4fc7527 100644
 --- a/apps/zcode-cli/packages/telemetry/src/otlp-exporter.ts
@@ -10027,19 +10077,39 @@ index 00553a5..5bc122d 100644
      })
      .nullish(),
 diff --git a/packages/shared/src/config-schema.ts b/packages/shared/src/config-schema.ts
-index 2d75ead..ed5cacd 100644
+index 2d75ead..a10f3c6 100644
 --- a/packages/shared/src/config-schema.ts
 +++ b/packages/shared/src/config-schema.ts
-@@ -1,8 +1,8 @@
- import type { z } from "zod";
+@@ -1,8 +1,25 @@
+-import type { z } from "zod";
++import type { ZodRawShape } from "zod";
  
  /** 每个字段保持原 schema，只派生覆盖所需的缺省/null；嵌套结构由调用方显式派生。 */
 -export function sparseShape<T extends Record<string, z.ZodType>>(shape: T) {
-+export function sparseShape(shape: Record<string, any>): Record<string, z.ZodTypeAny> {
-   return Object.fromEntries(
-     Object.entries(shape).map(([key, schema]) => [key, schema.nullable().optional()]),
+-  return Object.fromEntries(
+-    Object.entries(shape).map(([key, schema]) => [key, schema.nullable().optional()]),
 -  ) as { [K in keyof T]: z.ZodOptional<z.ZodNullable<T[K]>> };
-+  ) as Record<string, z.ZodTypeAny>;
++export function sparseShape(shape: Record<string, any>): ZodRawShape {
++  const sparse: ZodRawShape = {};
++  for (const key of Object.keys(shape)) {
++    const schema = shape[key];
++    sparse[key] = schema.nullable().optional();
++  }
++  return sparse;
++}
++
++/**
++ * 原样复制 zod shape，供 `...schema.shape` 形态的对象展开使用。
++ *
++ * scriptc 不认 `Object.fromEntries`，也不肯展开类型为 `any` 的 `.shape`（compat 的 shape
++ * getter 是 any）；复制成索引签名记录后两个问题都没有了。
++ */
++export function copyShape(shape: Record<string, any>): ZodRawShape {
++  const copied: ZodRawShape = {};
++  for (const key of Object.keys(shape)) {
++    copied[key] = shape[key];
++  }
++  return copied;
  }
 diff --git a/packages/shared/src/conversation-share.ts b/packages/shared/src/conversation-share.ts
 index 6c210a6..3e6e5f3 100644
@@ -10328,10 +10398,16 @@ index 0a07bcd..9b925b8 100644
  
  export function resolveIntranetMachineHost(env: IntranetEnv = readProcessEnv()) {
 diff --git a/packages/shared/src/localTtft.ts b/packages/shared/src/localTtft.ts
-index 27d7065..21db3dc 100644
+index 27d7065..282306e 100644
 --- a/packages/shared/src/localTtft.ts
 +++ b/packages/shared/src/localTtft.ts
-@@ -22,8 +22,7 @@ export const LOCAL_TTFT_PREPARATION_STAGES = [
+@@ -1,4 +1,5 @@
+ import { z } from "zod";
++import { copyShape } from "./config-schema.js";
+ 
+ export const LOCAL_TTFT_STAGES = [
+   "renderer_prepare",
+@@ -22,10 +23,15 @@ export const LOCAL_TTFT_PREPARATION_STAGES = [
    "request_assembly",
  ] as const;
  const diagnosticTime = z.number().finite().nonnegative();
@@ -10339,9 +10415,18 @@ index 27d7065..21db3dc 100644
 -  .object({
 +export const localTtftDetailSchema = z.object({
      id: z.string().min(1).max(128),
-     stage: z.enum([...LOCAL_TTFT_PREPARATION_STAGES, "attempt", "retry_wait", "user_confirmation"]),
+-    stage: z.enum([...LOCAL_TTFT_PREPARATION_STAGES, "attempt", "retry_wait", "user_confirmation"]),
++    // scriptc 不能把 readonly 元组展开进 string[] 字面量，按 readonly string[] 收窄后再展开。
++    stage: z.enum([
++      ...(LOCAL_TTFT_PREPARATION_STAGES as readonly string[]),
++      "attempt",
++      "retry_wait",
++      "user_confirmation",
++    ]),
      start: diagnosticTime,
-@@ -43,12 +42,10 @@ export const LOCAL_TTFT_CLOCK_MAX_ERROR_MS = 10;
+     end: diagnosticTime.optional(),
+     outcome: z.enum(["completed", "failed", "cancelled", "first_output"]).optional(),
+@@ -43,12 +49,10 @@ export const LOCAL_TTFT_CLOCK_MAX_ERROR_MS = 10;
  export const LOCAL_TTFT_CLOCK_TTL_MS = 60_000;
  const time = z.number().finite().nonnegative();
  const identifier = z.string().min(1).max(128);
@@ -10356,17 +10441,19 @@ index 27d7065..21db3dc 100644
    .strict();
  export type LocalTtftClock = z.infer<typeof localTtftClockSchema>;
  export interface LocalTtftCalibration {
-@@ -80,8 +77,7 @@ export function calibrateLocalTtftClock(
+@@ -80,9 +84,8 @@ export function calibrateLocalTtftClock(
  }
  export const localTtftOutputKindSchema = z.enum(["text", "reasoning", "tool"]);
  export type LocalTtftOutputKind = z.infer<typeof localTtftOutputKindSchema>;
 -export const localTtftFactsSchema = z
 -  .object({
+-    ...localTtftContextSchema.shape,
 +export const localTtftFactsSchema = z.object({
-     ...localTtftContextSchema.shape,
++    ...copyShape(localTtftContextSchema.shape),
      instanceId: identifier,
      commandId: identifier,
-@@ -110,8 +106,7 @@ export const localTtftFactsSchema = z
+     sessionId: identifier.optional(),
+@@ -110,8 +113,7 @@ export const localTtftFactsSchema = z
    })
    .strict();
  export type LocalTtftFacts = z.infer<typeof localTtftFactsSchema>;
@@ -10376,7 +10463,7 @@ index 27d7065..21db3dc 100644
      stage: z.enum(LOCAL_TTFT_STAGES),
      start: time,
      end: time,
-@@ -119,8 +114,7 @@ export const localTtftIntervalSchema = z
+@@ -119,8 +121,7 @@ export const localTtftIntervalSchema = z
    })
    .strict()
    .refine((interval) => interval.end >= interval.start);
@@ -10386,7 +10473,7 @@ index 27d7065..21db3dc 100644
      version: z.literal(1),
      observationId: z.string().uuid(),
      commandId: identifier.optional(),
-@@ -163,8 +157,7 @@ export const localTtftRecordSchema = z
+@@ -163,8 +164,7 @@ export const localTtftRecordSchema = z
      truncated: z.boolean().optional(),
      sendMode: z.enum(["idle", "queued", "guided"]).optional(),
      visibility: z.enum(["foreground", "background", "background_returned"]).optional(),
@@ -10396,7 +10483,7 @@ index 27d7065..21db3dc 100644
        .max(32)
        .optional(),
      userWaitMs: time.optional(),
-@@ -177,8 +170,7 @@ export const localTtftRecordSchema = z
+@@ -177,8 +177,7 @@ export const localTtftRecordSchema = z
    .strict()
    .refine((record) => record.end >= record.start);
  export type LocalTtftRecord = z.infer<typeof localTtftRecordSchema>;
@@ -10406,7 +10493,7 @@ index 27d7065..21db3dc 100644
      version: z.literal(1),
      rendererInstanceId: identifier,
      sequence: z.number().int().nonnegative(),
-@@ -188,5 +180,5 @@ export const localTtftBatchSchema = z
+@@ -188,5 +187,5 @@ export const localTtftBatchSchema = z
    .strict();
  export type LocalTtftBatch = z.infer<typeof localTtftBatchSchema>;
  export function localTtftNow(): number {
@@ -10429,7 +10516,7 @@ index 3e020d5..efc122e 100644
        const lowerCmd = command.toLowerCase();
        const unwrappedCommand = args[1];
 diff --git a/packages/shared/src/model-config.ts b/packages/shared/src/model-config.ts
-index 1853167..d71bca6 100644
+index 1853167..fb594e2 100644
 --- a/packages/shared/src/model-config.ts
 +++ b/packages/shared/src/model-config.ts
 @@ -3,8 +3,7 @@ import { compileModelOptionMap } from "@zcode/model-option-map";
@@ -10442,7 +10529,7 @@ index 1853167..d71bca6 100644
      .min(1)
      .superRefine((source, context) => {
        try {
-@@ -18,13 +17,10 @@ function optionMapSchema(variableName: "reasoningLevel" | "maxOutputTokens") {
+@@ -18,38 +17,39 @@ function optionMapSchema(variableName: "reasoningLevel" | "maxOutputTokens") {
      });
  }
  
@@ -10459,7 +10546,18 @@ index 1853167..d71bca6 100644
            .refine((value) => value.trim().length > 0, "reasoningLevel.values 必须是非空字符串"),
        )
        .min(1, "reasoningLevel.values 不能为空")
-@@ -34,22 +30,18 @@ export const completeEnumOptionSpecDataSchema = z
+-      .refine((values) => new Set(values).size === values.length, "reasoningLevel.values 不能重复")
++      .refine((values: string[]) => {
++        // scriptc 对 Set<any>.size 没有 lowering；用记录表判重，保持"值必须互不相同"的原语义。
++        const seen: Record<string, boolean> = {};
++        for (const value of values) {
++          if (seen[value] === true) return false;
++          seen[value] = true;
++        }
++        return true;
++      }, "reasoningLevel.values 不能重复")
+       .readonly(),
+     map: optionMapSchema("reasoningLevel"),
    })
    .strict();
  
@@ -10486,7 +10584,7 @@ index 1853167..d71bca6 100644
      supportsText: z.boolean(),
      supportsImage: z.boolean(),
      supportsVideo: z.boolean(),
-@@ -58,15 +50,12 @@ export const completeModelInputFormatDataSchema = z
+@@ -58,15 +58,12 @@ export const completeModelInputFormatDataSchema = z
    })
    .strict();
  export const completeModelOutputFormatDataSchema = z.object({ supportsText: z.boolean() }).strict();
@@ -10505,7 +10603,7 @@ index 1853167..d71bca6 100644
      requiresMfjsToolSchema: z.boolean(),
      contextWindow: z.number().int().positive(),
      inputFormat: completeModelInputFormatDataSchema,
-@@ -77,37 +66,32 @@ export const completeModelPropertiesDataSchema = z
+@@ -77,37 +74,32 @@ export const completeModelPropertiesDataSchema = z
      supportsMidConversationSystem: z.boolean(),
    })
    .strict();
@@ -13129,6 +13227,32 @@ index 0ab6fd2..605dd48 100644
        toolCallId: z.string(),
        planEnabled: z.boolean(),
      })
+diff --git a/packages/shared/src/zcode-protocol-v4/sessions-index-workflow-activity.ts b/packages/shared/src/zcode-protocol-v4/sessions-index-workflow-activity.ts
+index 6aa8166..c654bdb 100644
+--- a/packages/shared/src/zcode-protocol-v4/sessions-index-workflow-activity.ts
++++ b/packages/shared/src/zcode-protocol-v4/sessions-index-workflow-activity.ts
+@@ -11,7 +11,8 @@ import { timestampSchema } from "./core.js";
+ import type { BackgroundWorkSummary } from "./snapshot.js";
+ import {
+   WORKFLOW_RUNS_LIMITS,
+-  workflowRunSchema,
++  workflowRunStatusSchema,
++  workflowRunStopReasonSchema,
+   type WorkflowRunNode,
+   type WorkflowRunState,
+   type WorkflowRunsState,
+@@ -50,8 +51,9 @@ export const sessionWorkflowRunSummarySchema = z.object({
+   toolCallId: z.string().min(1).optional(),
+   /** 工作流后台工作的标题（= run 的展示名）；投影里没有对应后台工作时缺席。 */
+   name: z.string().min(1).optional(),
+-  status: workflowRunSchema.shape.status,
+-  stopReason: workflowRunSchema.shape.stopReason,
++  // scriptc 不能把 any 类型的 `workflowRunSchema.shape.status` 传进 z.object，改用抽出的具体 schema。
++  status: workflowRunStatusSchema,
++  stopReason: workflowRunStopReasonSchema.optional(),
+   /** 后台工作的开始时刻，tooltip 的 elapsed 用；没有后台工作时缺席。 */
+   startedAt: timestampSchema.optional(),
+   /**
 diff --git a/packages/shared/src/zcode-protocol-v4/shared-context-import.ts b/packages/shared/src/zcode-protocol-v4/shared-context-import.ts
 index f172bed..5576dc0 100644
 --- a/packages/shared/src/zcode-protocol-v4/shared-context-import.ts
@@ -14481,7 +14605,7 @@ index 8e1d764..c22ec89 100644
  
  /** header = run 减去两张按 (siteId, ordinal) 增量同步的表。顺序仍是 schema 声明序。 */
 diff --git a/packages/shared/src/zcode-protocol-v4/workflow-runs.ts b/packages/shared/src/zcode-protocol-v4/workflow-runs.ts
-index cd27ebe..acf4bcd 100644
+index cd27ebe..1239d45 100644
 --- a/packages/shared/src/zcode-protocol-v4/workflow-runs.ts
 +++ b/packages/shared/src/zcode-protocol-v4/workflow-runs.ts
 @@ -248,8 +248,7 @@ export const workflowRunNodeSchema = z.object({
@@ -14494,7 +14618,38 @@ index cd27ebe..acf4bcd 100644
      .min(1)
      .max(WORKFLOW_RUNS_LIMITS.maxInstructionsHeadLength)
      .optional(),
-@@ -406,8 +405,7 @@ export const workflowRunSchema = z.object({
+@@ -358,13 +357,28 @@ export const workflowRunPendingQuestionSchema = z.object({
+ });
+ export type WorkflowRunPendingQuestion = z.infer<typeof workflowRunPendingQuestionSchema>;
+ 
++export const workflowRunStatusSchema = z.enum([
++  "pending",
++  "running",
++  "completed",
++  "errored",
++  "stopped",
++]);
++export const workflowRunStopReasonSchema = z.enum([
++  "user",
++  "model",
++  "provider",
++  "interrupted",
++  "superseded",
++]);
++
+ export const workflowRunSchema = z.object({
+   runId: z.string().min(1).max(128),
+   /** 发起该 run 的 CreateWorkflow 工具调用（工具卡 → 详情页的关联键）。 */
+   toolCallId: z.string().min(1).max(128).optional(),
+-  status: z.enum(["pending", "running", "completed", "errored", "stopped"]),
++  status: workflowRunStatusSchema,
+   /** `status === "stopped"` 才在场。 */
+-  stopReason: z.enum(["user", "model", "provider", "interrupted", "superseded"]).optional(),
++  stopReason: workflowRunStopReasonSchema.optional(),
+   /**
+    * lineage 的两端：本 run 修订自哪个 run
+    * （`run-started` 载荷的 `resumedFrom`），以及本 run 被哪次修订停下并替代（`run-settled` 载荷的
+@@ -406,8 +420,7 @@ export const workflowRunSchema = z.object({
     * optional 的第二个理由与 `reports` 相同：这是往一个**已有状态键**上追加字段，而已知键上的
     * 解析错误不会被剥离——必填会让任何一个不发该字段的旧 CLI 整帧被丢。
     */
@@ -14504,7 +14659,7 @@ index cd27ebe..acf4bcd 100644
      .max(WORKFLOW_RUNS_LIMITS.maxPendingQuestions)
      .optional(),
    /**
-@@ -422,8 +420,7 @@ export const workflowRunSchema = z.object({
+@@ -422,8 +435,7 @@ export const workflowRunSchema = z.object({
     * 与 `concurrency.ceiling` 不同：那是读数芯片自己的水位，只随芯片在场；这一个**只要读得到就在**，
     * 不论本 run 是否低于它——「配置」弹层的步进器停在这里。optional 的理由与 `concurrency` 同：老 CLI 不发，少一个键是退化。
     */
@@ -14514,7 +14669,7 @@ index cd27ebe..acf4bcd 100644
      .int()
      .positive()
      .max(WORKFLOW_RUNS_LIMITS.maxConcurrencyCeiling)
-@@ -451,8 +448,7 @@ export const workflowRunSchema = z.object({
+@@ -451,8 +463,7 @@ export const workflowRunSchema = z.object({
     * ⚠ 术语：这里的 artifact 是脚本发布给用户看的产出，不是 `resultPreview` 背后那个
     * 「脚本顶层返回值」（引擎内部也叫 artifact）。见 workflow-artifacts.ts 的文件头。
     */
@@ -14524,7 +14679,7 @@ index cd27ebe..acf4bcd 100644
      .max(WORKFLOW_RUNS_LIMITS.maxArtifacts)
      .optional(),
    /**
-@@ -467,8 +463,7 @@ export const workflowRunSchema = z.object({
+@@ -467,8 +478,7 @@ export const workflowRunSchema = z.object({
     * 脚本**声明**的阶段表，按声明序（`run-launched.phaseNames`）。与 `phases`（已进入的）互补：侧栏迷你轨道据此画出前方还没到的站点。
     * 零条 / 旧 CLI / 无标记脚本时整个键缺席。
     */
@@ -14534,7 +14689,7 @@ index cd27ebe..acf4bcd 100644
      .max(WORKFLOW_RUNS_LIMITS.maxPhases)
      .optional(),
    /**
-@@ -479,8 +474,7 @@ export const workflowRunSchema = z.object({
+@@ -479,8 +489,7 @@ export const workflowRunSchema = z.object({
     * 依附 `phaseNames`：后者不在场时它一定不在场；没有任何阶段并行时同样缺席——缺席就是
     * 「这条轨道是一条直线」。归约保证每个下标都落在被接受的那张表里（workflow-runs-phases.ts）。
     */
@@ -14544,7 +14699,7 @@ index cd27ebe..acf4bcd 100644
      .max(WORKFLOW_RUNS_LIMITS.maxPhases)
      .optional(),
    /**
-@@ -490,8 +484,7 @@ export const workflowRunSchema = z.object({
+@@ -490,8 +499,7 @@ export const workflowRunSchema = z.object({
     * 表满之后新阶段的归属**丢掉**，run 级两个计数器照旧准——一个站点可以少一个它本来就没有的
     * 数字，run 的总数不可以说假话。
     */
@@ -14730,10 +14885,16 @@ index 120f95f..e4eeac0 100644
    if (new Set(values).size === values.length) return;
    context.addIssue({
 diff --git a/packages/shared/src/zcode-protocol/index.ts b/packages/shared/src/zcode-protocol/index.ts
-index 5b3de01..47adfff 100644
+index 5b3de01..e33af19 100644
 --- a/packages/shared/src/zcode-protocol/index.ts
 +++ b/packages/shared/src/zcode-protocol/index.ts
-@@ -88,15 +88,11 @@ const protocolInstantSchema = z.union([timestampMsSchema, nonEmptyString, z.date
+@@ -1,3 +1,5 @@
++import { isArray } from "@zcode/native-checks";
++import { copyShape } from "../config-schema.js";
+ import {
+   databaseStartupErrorCodeSchema,
+   databaseStartupErrorDetailsSchema,
+@@ -88,15 +90,11 @@ const protocolInstantSchema = z.union([timestampMsSchema, nonEmptyString, z.date
  
  // Tool result display 不受模型文本 budget 约束；Node REPL 图片必须在 Agent/App 协议边界
  // 做严格限长，避免截图把 continuous 或 replayable 消息扩成无界载荷。
@@ -14753,7 +14914,7 @@ index 5b3de01..47adfff 100644
                .min(1)
                .max(200 * 1024),
              mimeType: z.string().regex(/^image\/[a-z0-9.+-]+$/iu),
-@@ -119,28 +115,23 @@ export const zcodeNodeReplImageToolResultDisplaySchema = z
+@@ -119,28 +117,23 @@ export const zcodeNodeReplImageToolResultDisplaySchema = z
  // 字面量（head）与最后一个洞之后的字面量（tail）。至少一个在场，两者都已 trim 且含实义字符。
  // Bug 修复：这两个字段随 0a8b059f40 落进 contracts 与 v4 镜像，v3 这份漏改——.strict()
  // 之下带插值名的工作流会让整个 display 验证失败、图整块消失，所以这里必须与 v4 逐字段对齐。
@@ -14787,7 +14948,7 @@ index 5b3de01..47adfff 100644
              id: z.string().min(1).max(64),
              kind: z.enum(["ask", "world-read"]),
              label: z.string().min(1).max(128),
-@@ -161,10 +152,8 @@ const zcodeCreateWorkflowCausalityGraphDisplaySchema = z
+@@ -161,10 +154,8 @@ const zcodeCreateWorkflowCausalityGraphDisplaySchema = z
            .strict(),
        )
        .max(64),
@@ -14800,7 +14961,7 @@ index 5b3de01..47adfff 100644
              id: z.string().min(1).max(64),
              name: z.string().min(1).max(128).optional(),
              // `name` 缺席而 agent() 首参是带洞的模板串时的静态形状；与 name 互斥。
-@@ -176,16 +165,13 @@ const zcodeCreateWorkflowCausalityGraphDisplaySchema = z
+@@ -176,16 +167,13 @@ const zcodeCreateWorkflowCausalityGraphDisplaySchema = z
        )
        .max(32),
      // 参与者与交接；镜像 v4。
@@ -14820,7 +14981,7 @@ index 5b3de01..47adfff 100644
                .strict()
                .optional(),
              many: z.literal(true).optional(),
-@@ -193,8 +179,7 @@ const zcodeCreateWorkflowCausalityGraphDisplaySchema = z
+@@ -193,8 +181,7 @@ const zcodeCreateWorkflowCausalityGraphDisplaySchema = z
            .strict(),
        )
        .max(64),
@@ -14830,7 +14991,7 @@ index 5b3de01..47adfff 100644
          zcodeWorkflowEdgeSchema
            .extend({ types: z.array(z.string().min(1).max(128)).min(1).max(8).optional() })
            .strict(),
-@@ -203,10 +188,8 @@ const zcodeCreateWorkflowCausalityGraphDisplaySchema = z
+@@ -203,10 +190,8 @@ const zcodeCreateWorkflowCausalityGraphDisplaySchema = z
      // 阶段词汇表：作者施加的分组结构，主画面以它为节点。与 phaseEdges / exits / Step.phase
      // 全有或全无——零标记脚本全缺席，UI 据此退回 step/车道视图。零成员阶段也在表里。
      // `unphased` 无 name，显示名由 UI 本地化。
@@ -14843,7 +15004,7 @@ index 5b3de01..47adfff 100644
              id: z.string().min(1).max(64),
              name: z.string().min(1).max(128).optional(),
              line: z.number().int().positive().optional(),
-@@ -228,15 +211,12 @@ const zcodeCreateWorkflowCausalityGraphDisplaySchema = z
+@@ -228,15 +213,12 @@ const zcodeCreateWorkflowCausalityGraphDisplaySchema = z
    })
    .strict();
  
@@ -14862,7 +15023,25 @@ index 5b3de01..47adfff 100644
              line: z.number().int().nonnegative(),
              column: z.number().int().nonnegative(),
              code: z.number().int().nonnegative(),
-@@ -273,8 +253,7 @@ const zcodeToolResultObjectSchema = jsonObjectSchema.superRefine((result, contex
+@@ -252,7 +234,7 @@ export const zcodeCreateWorkflowToolResultDisplaySchema = z
+ 
+ const zcodeToolResultObjectSchema = jsonObjectSchema.superRefine((result, context) => {
+   const display = result.display;
+-  if (typeof display !== "object" || display === null || Array.isArray(display)) {
++  if (typeof display !== "object" || display === null || isArray(display)) {
+     return;
+   }
+   const kind = (display as Record<string, unknown>).kind;
+@@ -266,15 +248,15 @@ const zcodeToolResultObjectSchema = jsonObjectSchema.superRefine((result, contex
+   const parsed = schema.safeParse(display);
+   if (parsed.success) return;
+   for (const issue of parsed.error.issues) {
+-    context.addIssue({ ...issue, path: ["display", ...issue.path] });
++    // scriptc 不支持把 any 类型的 issue.path 展开进 (number|string)[] 字面量，先按契约类型收窄。
++    context.addIssue({ ...issue, path: ["display", ...(issue.path as (number | string)[])] });
+   }
+ });
+ 
  export const zcodeProtocolRequestIdSchema = z.union([z.string(), z.number().int()]);
  export type ZCodeProtocolRequestId = z.infer<typeof zcodeProtocolRequestIdSchema>;
  
@@ -14872,7 +15051,7 @@ index 5b3de01..47adfff 100644
      traceparent: nonEmptyString.optional(),
      traceId: nonEmptyString.optional(),
      parentId: nonEmptyString.optional(),
-@@ -283,8 +262,7 @@ export const zcodeProtocolTraceSchema = z
+@@ -283,8 +265,7 @@ export const zcodeProtocolTraceSchema = z
    .strict();
  export type ZCodeProtocolTrace = z.infer<typeof zcodeProtocolTraceSchema>;
  
@@ -14882,7 +15061,7 @@ index 5b3de01..47adfff 100644
      id: zcodeProtocolRequestIdSchema,
      method: nonEmptyString,
      params: z.unknown().optional(),
-@@ -293,8 +271,7 @@ export const zcodeProtocolRequestSchema = z
+@@ -293,8 +274,7 @@ export const zcodeProtocolRequestSchema = z
    .strict();
  export type ZCodeProtocolRequest = z.infer<typeof zcodeProtocolRequestSchema>;
  
@@ -14892,7 +15071,7 @@ index 5b3de01..47adfff 100644
      method: nonEmptyString,
      params: z.unknown().optional(),
      trace: zcodeProtocolTraceSchema.optional(),
-@@ -302,19 +279,16 @@ export const zcodeProtocolNotificationSchema = z
+@@ -302,19 +282,16 @@ export const zcodeProtocolNotificationSchema = z
    .strict();
  export type ZCodeProtocolNotification = z.infer<typeof zcodeProtocolNotificationSchema>;
  
@@ -14915,7 +15094,7 @@ index 5b3de01..47adfff 100644
          code: z.number().int(),
          message: nonEmptyString,
          data: z.unknown().optional(),
-@@ -343,8 +317,7 @@ export const zcodeProtocolNotifications = {
+@@ -343,8 +320,7 @@ export const zcodeProtocolNotifications = {
  } as const;
  
  /** 启动控制面独立于 task stream；数据库身份不可携带路径/凭据。 */
@@ -14925,7 +15104,16 @@ index 5b3de01..47adfff 100644
      schemaVersion: z.literal(1),
      attemptId: z.string().min(1).max(128),
      sequence: z.number().int().positive(),
-@@ -393,16 +366,14 @@ const zcodeMcpTelemetryArchSchema = z.enum([
+@@ -357,7 +333,7 @@ export const zcodeStorageStartupStateSchema = z
+     completed: z.number().int().nonnegative().optional(),
+     total: z.number().int().nonnegative().optional(),
+     errorCode: databaseStartupErrorCodeSchema.optional(),
+-    ...databaseStartupErrorDetailsSchema.shape,
++    ...copyShape(databaseStartupErrorDetailsSchema.shape),
+   })
+   .strict()
+   .superRefine((state, context) => {
+@@ -393,16 +369,14 @@ const zcodeMcpTelemetryArchSchema = z.enum([
    "s390x",
    "x64",
  ]);
@@ -14944,7 +15132,7 @@ index 5b3de01..47adfff 100644
      .regex(
        /^(?:builtin:(?:[A-Za-z0-9._~-]|%[0-9A-F]{2})+(?::(?:[A-Za-z0-9._~-]|%[0-9A-F]{2})+)*|(?:plugin|custom):[a-f0-9]{12})$/,
      ),
-@@ -455,8 +426,7 @@ export type ZCodeMcpTelemetryEvent = z.infer<typeof zcodeMcpTelemetryEventSchema
+@@ -455,8 +429,7 @@ export type ZCodeMcpTelemetryEvent = z.infer<typeof zcodeMcpTelemetryEventSchema
  /** MCP 每五分钟只探测一次，周期由生产者与设备总量过期判据共用。 */
  export const ZCODE_MCP_RESOURCE_SAMPLE_INTERVAL_MS = 5 * 60_000;
  
@@ -14954,7 +15142,7 @@ index 5b3de01..47adfff 100644
      mcpId: zcodeMcpProcessTelemetryBaseShape.mcpId,
      instanceToken: z.string().regex(/^[A-Za-z0-9_-]{8,64}$/),
      sampledAt: z.number().int().nonnegative(),
-@@ -480,8 +450,7 @@ export const BASH_RESOURCE_SAMPLE_INTERVAL_MS = 15_000;
+@@ -480,8 +453,7 @@ export const BASH_RESOURCE_SAMPLE_INTERVAL_MS = 15_000;
  export const BASH_RESOURCE_MAX_SAMPLES = 20;
  
  /** Bash 子进程的有界完成事实；禁止命令、路径与会话标识进入遥测旁路。 */
@@ -14964,7 +15152,7 @@ index 5b3de01..47adfff 100644
      // 同一完成事实可能经多个 Host 转发；随机标识仅供 main 去重，旧 CLI 缺字段仍兼容。
      completionToken: z.string().uuid().optional(),
      platform: zcodeMcpTelemetryPlatformSchema,
-@@ -497,8 +466,7 @@ export const zcodeToolExecResourceSchema = z
+@@ -497,8 +469,7 @@ export const zcodeToolExecResourceSchema = z
    .strict();
  export type ZCodeToolExecResource = z.infer<typeof zcodeToolExecResourceSchema>;
  
@@ -14974,7 +15162,7 @@ index 5b3de01..47adfff 100644
      platform: z.enum([
        "aix",
        "android",
-@@ -527,8 +495,7 @@ export const zcodeProcessResourceSampleSchema = z
+@@ -527,8 +498,7 @@ export const zcodeProcessResourceSampleSchema = z
        "x64",
      ]),
      logicalCpuCount: z.number().int().positive().max(4_096),
@@ -14984,7 +15172,7 @@ index 5b3de01..47adfff 100644
        .int()
        .positive()
        .max(7 * 24 * 60 * 60 * 1_000),
-@@ -540,8 +507,7 @@ export const zcodeProcessResourceSampleSchema = z
+@@ -540,8 +510,7 @@ export const zcodeProcessResourceSampleSchema = z
       * **不递增协议握手版本号**（握手版本是兼容性开关，不是字段版本）。
       */
      heapUsedKb: z.number().finite().nonnegative().max(Number.MAX_SAFE_INTEGER).optional(),
@@ -14994,7 +15182,7 @@ index 5b3de01..47adfff 100644
        .int()
        .nonnegative()
        .max(10 * 365 * 24 * 60)
-@@ -552,8 +518,7 @@ export const zcodeProcessResourceSampleSchema = z
+@@ -552,8 +521,7 @@ export const zcodeProcessResourceSampleSchema = z
       * 与「最大单进程 RSS」。不进 ARMS 属性、不含 pid。收紧字符集是隐私红线的机械保障：
       * 路径、workspace 标识这类内容不可能通过校验。
       */
@@ -15004,7 +15192,7 @@ index 5b3de01..47adfff 100644
        .regex(/^[A-Za-z0-9_-]{8,64}$/)
        .optional(),
    })
-@@ -561,8 +526,7 @@ export const zcodeProcessResourceSampleSchema = z
+@@ -561,8 +529,7 @@ export const zcodeProcessResourceSampleSchema = z
  export type ZCodeProcessResourceSample = z.infer<typeof zcodeProcessResourceSampleSchema>;
  
  export const zcodeProcessChildProcessesParamsSchema = z.object({}).strict();
@@ -15014,7 +15202,7 @@ index 5b3de01..47adfff 100644
      pid: z.number().int().positive(),
      serverName: nonEmptyString,
      mcpSource: z.enum(["builtin", "plugin", "custom"]),
-@@ -570,8 +534,7 @@ export const zcodeProcessChildProcessSchema = z
+@@ -570,8 +537,7 @@ export const zcodeProcessChildProcessSchema = z
      pluginName: nonEmptyString.optional(),
    })
    .strict();
@@ -15024,7 +15212,7 @@ index 5b3de01..47adfff 100644
      processes: z.array(zcodeProcessChildProcessSchema).max(10_000),
    })
    .strict();
-@@ -587,8 +550,7 @@ const zcodeTurnInputSourceSchema = legacyZcodeSyntheticUserMessageSourceSchema;
+@@ -587,8 +553,7 @@ const zcodeTurnInputSourceSchema = legacyZcodeSyntheticUserMessageSourceSchema;
  export const zcodeSessionPersistenceSchema = z.enum(["immediate", "deferred"]);
  export type ZCodeSessionPersistence = z.infer<typeof zcodeSessionPersistenceSchema>;
  export type ZCodeWorkspaceRef = z.infer<typeof zcodeWorkspaceRefSchema>;
@@ -15034,7 +15222,7 @@ index 5b3de01..47adfff 100644
      optionId: nonEmptyString,
      kind: nonEmptyString,
      name: nonEmptyString,
-@@ -597,16 +559,14 @@ export const zcodePermissionOptionSchema = z
+@@ -597,16 +562,14 @@ export const zcodePermissionOptionSchema = z
    })
    .strict();
  
@@ -15053,7 +15241,7 @@ index 5b3de01..47adfff 100644
        type: z.literal("client_credentials"),
        clientId: nonEmptyString,
        clientSecret: nonEmptyString,
-@@ -614,8 +574,7 @@ const zcodeProtocolMcpOAuthSchema = z.union([
+@@ -614,8 +577,7 @@ const zcodeProtocolMcpOAuthSchema = z.union([
        scope: z.string().optional(),
      })
      .strict(),
@@ -15063,7 +15251,7 @@ index 5b3de01..47adfff 100644
        type: z.literal("authorization_code"),
        clientId: nonEmptyString.optional(),
        clientSecret: nonEmptyString.optional(),
-@@ -627,8 +586,7 @@ const zcodeProtocolMcpOAuthSchema = z.union([
+@@ -627,8 +589,7 @@ const zcodeProtocolMcpOAuthSchema = z.union([
  ]);
  
  export const zcodeProtocolMcpServerSchema = z.union([
@@ -15073,7 +15261,7 @@ index 5b3de01..47adfff 100644
        name: nonEmptyString,
        command: nonEmptyString,
        args: z.array(z.string()),
-@@ -638,8 +596,7 @@ export const zcodeProtocolMcpServerSchema = z.union([
+@@ -638,8 +599,7 @@ export const zcodeProtocolMcpServerSchema = z.union([
        timeoutMs: z.number().int().positive().optional(),
      })
      .strict(),
@@ -15083,7 +15271,7 @@ index 5b3de01..47adfff 100644
        name: nonEmptyString,
        type: z.enum(["http", "sse"]),
        url: nonEmptyString,
-@@ -684,8 +641,7 @@ export const MCP_SERVER_FAILURE_KINDS = [
+@@ -684,8 +644,7 @@ export const MCP_SERVER_FAILURE_KINDS = [
  ] as const;
  export const mcpServerFailureKindSchema = z.enum(MCP_SERVER_FAILURE_KINDS);
  export type McpServerFailureKind = z.infer<typeof mcpServerFailureKindSchema>;
@@ -15093,7 +15281,7 @@ index 5b3de01..47adfff 100644
      status: zcodeMcpServerStatusKindSchema,
      transport: z.enum(["stdio", "http", "sse"]),
      toolCount: z.number().int().nonnegative(),
-@@ -694,8 +650,7 @@ export const zcodeMcpServerStatusSnapshotSchema = z
+@@ -694,8 +653,7 @@ export const zcodeMcpServerStatusSnapshotSchema = z
      failureKind: mcpServerFailureKindSchema.optional(),
      serverRequestId: nonEmptyString.optional(),
      protocolEra: z.enum(["legacy", "modern"]).optional(),
@@ -15103,7 +15291,7 @@ index 5b3de01..47adfff 100644
          type: z.literal("oauth_authorization_code"),
          authorizationUrl: nonEmptyString,
          startedAt: nonEmptyString,
-@@ -709,22 +664,19 @@ export type ZCodeMcpServerStatusSnapshot = z.infer<typeof zcodeMcpServerStatusSn
+@@ -709,22 +667,19 @@ export type ZCodeMcpServerStatusSnapshot = z.infer<typeof zcodeMcpServerStatusSn
  export const zcodeMcpListModeSchema = z.enum(["connect", "status"]);
  export type ZCodeMcpListMode = z.infer<typeof zcodeMcpListModeSchema>;
  
@@ -15129,7 +15317,7 @@ index 5b3de01..47adfff 100644
      role: z.enum(["user", "assistant"]),
      content: z.string(),
      timestamp: timestampMsSchema.optional(),
-@@ -733,8 +685,7 @@ export const zcodeSessionImportMessageSchema = z
+@@ -733,8 +688,7 @@ export const zcodeSessionImportMessageSchema = z
  export type ZCodeSessionImportMessage = z.infer<typeof zcodeSessionImportMessageSchema>;
  
  export const zcodeSessionImportHistorySchema = z.discriminatedUnion("source", [
@@ -15139,7 +15327,7 @@ index 5b3de01..47adfff 100644
        source: z.literal("claudeCode"),
        title: z.string().optional(),
        createdAt: timestampMsSchema.optional(),
-@@ -742,14 +693,12 @@ export const zcodeSessionImportHistorySchema = z.discriminatedUnion("source", [
+@@ -742,14 +696,12 @@ export const zcodeSessionImportHistorySchema = z.discriminatedUnion("source", [
        messages: z.array(zcodeSessionImportMessageSchema).min(1),
      })
      .strict(),
@@ -15156,7 +15344,7 @@ index 5b3de01..47adfff 100644
            shareId: z.string().trim().min(1),
            contextId: z.string().trim().min(1).optional(),
            shareUrl: z.string().url().optional(),
-@@ -759,8 +708,7 @@ export const zcodeSessionImportHistorySchema = z.discriminatedUnion("source", [
+@@ -759,8 +711,7 @@ export const zcodeSessionImportHistorySchema = z.discriminatedUnion("source", [
            formatterVersion: z.literal(1),
            markdownSha256: z.string().regex(/^[0-9a-f]{64}$/u),
            installedArtifacts: z.array(
@@ -15166,7 +15354,7 @@ index 5b3de01..47adfff 100644
                  artifactId: z.string().trim().min(1),
                  workspaceRelativePath: z.string().trim().min(1),
                })
-@@ -773,15 +721,13 @@ export const zcodeSessionImportHistorySchema = z.discriminatedUnion("source", [
+@@ -773,15 +724,13 @@ export const zcodeSessionImportHistorySchema = z.discriminatedUnion("source", [
  ]);
  export type ZCodeSessionImportHistory = z.infer<typeof zcodeSessionImportHistorySchema>;
  
@@ -15184,7 +15372,7 @@ index 5b3de01..47adfff 100644
      levels: z.array(zcodeThoughtLevelOptionSchema),
      defaultLevel: nonEmptyString.optional(),
    })
-@@ -794,8 +740,7 @@ export const zcodeModelFormatPropertiesSchema = completeModelPropertiesDataSchem
+@@ -794,8 +743,7 @@ export const zcodeModelFormatPropertiesSchema = completeModelPropertiesDataSchem
  });
  export type ZCodeModelFormatProperties = z.infer<typeof zcodeModelFormatPropertiesSchema>;
  
@@ -15194,7 +15382,7 @@ index 5b3de01..47adfff 100644
      ref: modelSelectionSchema,
      label: nonEmptyString,
      providerLabel: nonEmptyString.optional(),
-@@ -810,22 +755,19 @@ export const zcodeModelOptionSchema = z
+@@ -810,22 +758,19 @@ export const zcodeModelOptionSchema = z
  export type ZCodeModelOption = z.infer<typeof zcodeModelOptionSchema>;
  
  export const zcodeAccountAccessSchema = z.discriminatedUnion("planKind", [
@@ -15220,7 +15408,7 @@ index 5b3de01..47adfff 100644
        type: z.literal("zhipu-account"),
        family: z.enum(["zai", "bigmodel"]),
        planKind: z.literal("team-coding-plan"),
-@@ -838,8 +780,7 @@ export const zcodeAccountAccessSchema = z.discriminatedUnion("planKind", [
+@@ -838,8 +783,7 @@ export const zcodeAccountAccessSchema = z.discriminatedUnion("planKind", [
  export type ZCodeAccountAccess = z.infer<typeof zcodeAccountAccessSchema>;
  
  /** Active Model 固定的账号访问类别；当前商品和 Team scope 由账号服务在请求期解析。 */
@@ -15230,7 +15418,7 @@ index 5b3de01..47adfff 100644
      type: z.literal("zhipu-account"),
      accountType: z.enum(["zai", "bigmodel"]),
      mode: z.enum(["start-plan", "individual-coding-plan", "team-coding-plan", "off-peak"]),
-@@ -852,15 +793,13 @@ export type ZCodeSessionMode = z.infer<typeof zcodeSessionModeSchema>;
+@@ -852,15 +796,13 @@ export type ZCodeSessionMode = z.infer<typeof zcodeSessionModeSchema>;
  export type ZCodeSessionKind = z.infer<typeof zcodeSessionKindSchema>;
  export type ZCodeSessionGoal = z.infer<typeof zcodeSessionGoalSchema>;
  
@@ -15248,7 +15436,7 @@ index 5b3de01..47adfff 100644
      timeUsedSeconds: z.number().int().nonnegative(),
      tokensUsed: z.number().int().nonnegative(),
      tokenBudget: z.number().int().positive().nullable(),
-@@ -876,8 +815,7 @@ export type ZCodeSessionGoalVerificationTimeline = z.infer<
+@@ -876,8 +818,7 @@ export type ZCodeSessionGoalVerificationTimeline = z.infer<
    typeof zcodeSessionGoalVerificationTimelineSchema
  >;
  
@@ -15258,7 +15446,7 @@ index 5b3de01..47adfff 100644
      id: nonEmptyString,
      source: z.enum(["goal_iteration", "session"]),
      goalIteration: z.number().int().positive().optional(),
-@@ -889,31 +827,26 @@ export const zcodeSessionTodoGroupSchema = z
+@@ -889,31 +830,26 @@ export const zcodeSessionTodoGroupSchema = z
    .strict();
  export type ZCodeSessionTodoGroup = z.infer<typeof zcodeSessionTodoGroupSchema>;
  
@@ -15295,7 +15483,7 @@ index 5b3de01..47adfff 100644
          mode: zcodeSessionModeSchema.optional(),
          rulesRevision: z.number().int().nonnegative().optional(),
        })
-@@ -922,8 +855,7 @@ export const zcodeSessionSettingsStateSchema = z
+@@ -922,8 +858,7 @@ export const zcodeSessionSettingsStateSchema = z
    })
    .strict();
  export type ZCodeSessionSettingsState = z.infer<typeof zcodeSessionSettingsStateSchema>;
@@ -15305,7 +15493,7 @@ index 5b3de01..47adfff 100644
      requestId: nonEmptyString,
      toolCallId: nonEmptyString,
      toolName: nonEmptyString,
-@@ -937,8 +869,7 @@ export const zcodePendingPermissionSchema = z
+@@ -937,8 +872,7 @@ export const zcodePendingPermissionSchema = z
    .strict();
  export type ZCodePendingPermission = z.infer<typeof zcodePendingPermissionSchema>;
  
@@ -15315,7 +15503,7 @@ index 5b3de01..47adfff 100644
      toolCallId: nonEmptyString,
      toolName: nonEmptyString,
      status: z.enum(["pending", "running", "completed", "failed", "denied"]),
-@@ -947,8 +878,7 @@ export const zcodeActiveToolCallSchema = z
+@@ -947,8 +881,7 @@ export const zcodeActiveToolCallSchema = z
    .strict();
  export type ZCodeActiveToolCall = z.infer<typeof zcodeActiveToolCallSchema>;
  
@@ -15325,7 +15513,7 @@ index 5b3de01..47adfff 100644
      sessionId: nonEmptyString,
      status: zcodeSessionStatusSchema,
      mode: zcodeSessionModeSchema,
-@@ -961,8 +891,7 @@ export const zcodeSessionProjectionSchema = z
+@@ -961,8 +894,7 @@ export const zcodeSessionProjectionSchema = z
      activeToolCalls: z.array(zcodeActiveToolCallSchema),
      backgroundJobs: z.array(jsonObjectSchema),
      target: zcodeSessionGoalSchema.nullable().optional(),
@@ -15335,7 +15523,7 @@ index 5b3de01..47adfff 100644
          type: nonEmptyString,
          code: nonEmptyString.optional(),
          message: nonEmptyString,
-@@ -975,8 +904,7 @@ export const zcodeSessionProjectionSchema = z
+@@ -975,8 +907,7 @@ export const zcodeSessionProjectionSchema = z
    .strict();
  export type ZCodeSessionProjection = z.infer<typeof zcodeSessionProjectionSchema>;
  export type ZCodeToolState = z.infer<typeof zcodeToolStateSchema>;
@@ -15345,7 +15533,7 @@ index 5b3de01..47adfff 100644
      name: nonEmptyString,
      description: z.string(),
      inputHint: z.string().optional(),
-@@ -1000,8 +928,7 @@ export const zcodeModelStreamingKindSchema = z.enum([
+@@ -1000,8 +931,7 @@ export const zcodeModelStreamingKindSchema = z.enum([
    "tool_input_end",
    "tool_call",
  ]);
@@ -15355,7 +15543,7 @@ index 5b3de01..47adfff 100644
      assistantMessageId: z.string().optional(),
      delta: z.string().optional(),
      done: z.boolean().optional(),
-@@ -1013,10 +940,8 @@ export const zcodeModelStreamingEventPayloadSchema = z
+@@ -1013,10 +943,8 @@ export const zcodeModelStreamingEventPayloadSchema = z
      toolName: z.string().optional(),
    })
    .strict();
@@ -15368,7 +15556,7 @@ index 5b3de01..47adfff 100644
          name: z.literal(ZCODE_PROTOCOL_NAME),
          version: z.literal(ZCODE_PROTOCOL_VERSION),
        })
-@@ -1034,8 +959,7 @@ export const zcodeSessionStateSnapshotSchema = z
+@@ -1034,8 +962,7 @@ export const zcodeSessionStateSnapshotSchema = z
    .strict();
  export type ZCodeSessionStateSnapshot = z.infer<typeof zcodeSessionStateSnapshotSchema>;
  
@@ -15378,7 +15566,7 @@ index 5b3de01..47adfff 100644
      eventId: nonEmptyString,
      sessionId: nonEmptyString,
      turnId: nonEmptyString.optional(),
-@@ -1046,8 +970,7 @@ export const zcodeEventEnvelopeSchema = z
+@@ -1046,8 +973,7 @@ export const zcodeEventEnvelopeSchema = z
    })
    .strict();
  
@@ -15388,7 +15576,7 @@ index 5b3de01..47adfff 100644
      eventId: nonEmptyString,
      sequenceNumber: z.number().int().nonnegative(),
      sessionId: nonEmptyString,
-@@ -1127,8 +1050,7 @@ export const zcodeSessionEventTypeSchema = z.enum([
+@@ -1127,8 +1053,7 @@ export const zcodeSessionEventTypeSchema = z.enum([
  ]);
  export type ZCodeSessionEventType = z.infer<typeof zcodeSessionEventTypeSchema>;
  
@@ -15398,7 +15586,7 @@ index 5b3de01..47adfff 100644
      type: nonEmptyString,
      message: nonEmptyString,
      stack: z.string().optional(),
-@@ -1141,14 +1063,12 @@ export const zcodeProtocolErrorDetailSchema = z
+@@ -1141,14 +1066,12 @@ export const zcodeProtocolErrorDetailSchema = z
      data: z.unknown().optional(),
    })
    .strict();
@@ -15415,7 +15603,7 @@ index 5b3de01..47adfff 100644
      directory: nonEmptyString,
      interruptedToolCount: z.number().int().nonnegative(),
      messageCount: z.number().int().nonnegative(),
-@@ -1158,16 +1078,14 @@ export const zcodeSessionResumedEventPayloadSchema = z
+@@ -1158,16 +1081,14 @@ export const zcodeSessionResumedEventPayloadSchema = z
      resumedTodoCount: z.number().int().nonnegative().optional(),
    })
    .strict();
@@ -15434,7 +15622,7 @@ index 5b3de01..47adfff 100644
      turnNumber: z.number().int().nonnegative(),
      input: z.string(),
      inputId: nonEmptyString.optional(),
-@@ -1189,8 +1107,7 @@ const zcodeTurnSteerSourceSchema = z.enum(["plan_approval_feedback", "workflow_r
+@@ -1189,8 +1110,7 @@ const zcodeTurnSteerSourceSchema = z.enum(["plan_approval_feedback", "workflow_r
  const zcodeTurnSteerCommandKindSchema = z.enum(["sendText", "sendGoalCommand", "compact"]);
  const zcodeTurnSteerDeliverySchema = z.enum(["queue", "guide"]);
  
@@ -15444,7 +15632,7 @@ index 5b3de01..47adfff 100644
      pendingInputId: nonEmptyString,
      inputId: nonEmptyString.optional(),
      queryId: nonEmptyString.optional(),
-@@ -1206,16 +1123,13 @@ export const zcodeTurnSteerQueuedEventPayloadSchema = z
+@@ -1206,16 +1126,13 @@ export const zcodeTurnSteerQueuedEventPayloadSchema = z
      intent: jsonObjectSchema.optional(),
    })
    .strict();
@@ -15464,7 +15652,7 @@ index 5b3de01..47adfff 100644
              pendingInputId: nonEmptyString,
              messageId: nonEmptyString,
              text: z.string(),
-@@ -1228,8 +1142,7 @@ export const zcodeTurnSteerDrainedEventPayloadSchema = z
+@@ -1228,8 +1145,7 @@ export const zcodeTurnSteerDrainedEventPayloadSchema = z
        .optional(),
    })
    .strict();
@@ -15474,7 +15662,7 @@ index 5b3de01..47adfff 100644
      response: z.string(),
      tokenCount: z.number().int().nonnegative(),
      usage: z.unknown().optional(),
-@@ -1238,8 +1151,7 @@ export const zcodeTurnCompletedEventPayloadSchema = z
+@@ -1238,8 +1154,7 @@ export const zcodeTurnCompletedEventPayloadSchema = z
      duration: z.number().nonnegative(),
      // runtime turn.completed 会附带 cacheStats，协议 schema 之前漏掉该字段。
      // strict 校验失败会让桌面端丢掉终态事件，表现为消息已完成但 UI 一直没有回复。
@@ -15484,7 +15672,7 @@ index 5b3de01..47adfff 100644
          totalMessages: z.number().int().nonnegative(),
          cachedMessages: z.number().int().nonnegative(),
          lastCacheHit: z.boolean(),
-@@ -1260,16 +1172,14 @@ export const zcodeTurnCompletedEventPayloadSchema = z
+@@ -1260,16 +1175,14 @@ export const zcodeTurnCompletedEventPayloadSchema = z
      backgroundSubagentResultConsumed: z.boolean().optional(),
    })
    .strict();
@@ -15503,7 +15691,7 @@ index 5b3de01..47adfff 100644
      content: z.string(),
      attachments: z.array(z.unknown()).optional(),
      toolCalls: z.array(z.unknown()).optional(),
-@@ -1277,34 +1187,29 @@ export const zcodeMessageUpsertedEventPayloadSchema = z
+@@ -1277,34 +1190,29 @@ export const zcodeMessageUpsertedEventPayloadSchema = z
      compactBoundary: z.unknown().optional(),
    })
    .strict();
@@ -15543,7 +15731,7 @@ index 5b3de01..47adfff 100644
      toolCallId: nonEmptyString,
      toolName: z.string().optional(),
      parentToolCallId: nonEmptyString.optional(),
-@@ -1368,8 +1273,7 @@ export const zcodeToolUpdatedEventPayloadSchema = z.discriminatedUnion("kind", [
+@@ -1368,8 +1276,7 @@ export const zcodeToolUpdatedEventPayloadSchema = z.discriminatedUnion("kind", [
        error: zcodeProtocolErrorDetailSchema,
      })
      .strict(),
@@ -15553,7 +15741,7 @@ index 5b3de01..47adfff 100644
        kind: z.literal("batch"),
        toolCallIds: z.array(nonEmptyString),
        successCount: z.number().int().nonnegative(),
-@@ -1383,8 +1287,7 @@ export const zcodeToolUpdatedEventPayloadSchema = z.discriminatedUnion("kind", [
+@@ -1383,8 +1290,7 @@ export const zcodeToolUpdatedEventPayloadSchema = z.discriminatedUnion("kind", [
      })
      .strict(),
  ]);
@@ -15563,7 +15751,7 @@ index 5b3de01..47adfff 100644
      requestId: nonEmptyString.optional(),
      toolCallId: nonEmptyString,
      toolName: nonEmptyString,
-@@ -1398,8 +1301,7 @@ export const zcodePermissionRequestedEventPayloadSchema = z
+@@ -1398,8 +1304,7 @@ export const zcodePermissionRequestedEventPayloadSchema = z
      background: z.boolean().optional(),
    })
    .strict();
@@ -15573,7 +15761,7 @@ index 5b3de01..47adfff 100644
      requestId: nonEmptyString.optional(),
      toolCallId: nonEmptyString,
      toolName: nonEmptyString.optional(),
-@@ -1411,23 +1313,20 @@ export const zcodePermissionResolvedEventPayloadSchema = z
+@@ -1411,23 +1316,20 @@ export const zcodePermissionResolvedEventPayloadSchema = z
      background: z.boolean().optional(),
    })
    .strict();
@@ -15600,7 +15788,7 @@ index 5b3de01..47adfff 100644
      reason: z.string().optional(),
    })
    .strict();
-@@ -1437,7 +1336,7 @@ function zcodeSessionEventEnvelopeFor<T extends ZCodeSessionEventType>(
+@@ -1437,7 +1339,7 @@ function zcodeSessionEventEnvelopeFor<T extends ZCodeSessionEventType>(
    payload: z.ZodTypeAny,
  ) {
    return zcodeEventEnvelopeSchema.extend({
@@ -15609,7 +15797,7 @@ index 5b3de01..47adfff 100644
      payload: payload.optional(),
    });
  }
-@@ -1471,18 +1370,15 @@ export const zcodeSessionEventSchema = z.discriminatedUnion("type", [
+@@ -1471,18 +1373,15 @@ export const zcodeSessionEventSchema = z.discriminatedUnion("type", [
  ]);
  export type ZCodeSessionEvent = z.infer<typeof zcodeSessionEventSchema>;
  
@@ -15631,7 +15819,7 @@ index 5b3de01..47adfff 100644
      type: z.literal("state.updated"),
      scope: z.enum(["server", "workspace", "session"]),
      workspace: zcodeWorkspaceRefSchema.optional(),
-@@ -1494,8 +1390,7 @@ export const zcodeStateUpdatedNotificationSchema = z
+@@ -1494,8 +1393,7 @@ export const zcodeStateUpdatedNotificationSchema = z
    .strict();
  export type ZCodeStateUpdatedNotification = z.infer<typeof zcodeStateUpdatedNotificationSchema>;
  
@@ -15641,7 +15829,7 @@ index 5b3de01..47adfff 100644
      sessionId: nonEmptyString,
      deliveryKind: zcodeDeliveryKindSchema,
      afterSeq: z.number().int().nonnegative().optional(),
-@@ -1504,22 +1399,19 @@ export const zcodeSessionSubscribeParamsSchema = z
+@@ -1504,22 +1402,19 @@ export const zcodeSessionSubscribeParamsSchema = z
    .strict();
  export type ZCodeSessionSubscribeParams = z.infer<typeof zcodeSessionSubscribeParamsSchema>;
  
@@ -15667,7 +15855,7 @@ index 5b3de01..47adfff 100644
      childSessionId: nonEmptyString,
      agentId: nonEmptyString.optional(),
      toolCallId: nonEmptyString.optional(),
-@@ -1541,13 +1433,11 @@ export const zcodeSessionEndedSubagentSchema = zcodeSessionSubagentBaseSchema.ex
+@@ -1541,13 +1436,11 @@ export const zcodeSessionEndedSubagentSchema = zcodeSessionSubagentBaseSchema.ex
  });
  export type ZCodeSessionEndedSubagent = z.infer<typeof zcodeSessionEndedSubagentSchema>;
  
@@ -15683,7 +15871,7 @@ index 5b3de01..47adfff 100644
          total: z.number().int().nonnegative(),
          items: z.array(zcodeSessionEndedSubagentSchema),
          nextCursor: nonEmptyString.optional(),
-@@ -1556,8 +1446,7 @@ export const zcodeSessionSubagentsResultSchema = z
+@@ -1556,8 +1449,7 @@ export const zcodeSessionSubagentsResultSchema = z
    })
    .strict();
  export type ZCodeSessionSubagentsResult = z.infer<typeof zcodeSessionSubagentsResultSchema>;
@@ -15693,7 +15881,7 @@ index 5b3de01..47adfff 100644
      sessionId: nonEmptyString.optional(),
      workspace: zcodeWorkspaceRefSchema,
      parentSessionId: nonEmptyString.optional(),
-@@ -1580,8 +1469,7 @@ export const zcodeSessionCreateParamsSchema = z
+@@ -1580,8 +1472,7 @@ export const zcodeSessionCreateParamsSchema = z
    .strict();
  export type ZCodeSessionCreateParams = z.infer<typeof zcodeSessionCreateParamsSchema>;
  
@@ -15703,7 +15891,7 @@ index 5b3de01..47adfff 100644
      sessionId: nonEmptyString,
      workspace: zcodeWorkspaceRefSchema.optional(),
      // 旧 session 尚无 runtime/model_selection entry 时，由同 task 的索引元数据提供迁移 hint。
-@@ -1598,8 +1486,7 @@ export const zcodeSessionResumeParamsSchema = z
+@@ -1598,8 +1489,7 @@ export const zcodeSessionResumeParamsSchema = z
    .strict();
  export type ZCodeSessionResumeParams = z.infer<typeof zcodeSessionResumeParamsSchema>;
  
@@ -15713,7 +15901,7 @@ index 5b3de01..47adfff 100644
      workspace: zcodeWorkspaceRefSchema.optional(),
      // 显式身份查询包含隐藏会话；普通列表仍只返回主任务，避免索引修复激活 runtime。
      sessionIds: z.array(nonEmptyString).min(1).max(64).optional(),
-@@ -1609,8 +1496,7 @@ export const zcodeSessionListParamsSchema = z
+@@ -1609,8 +1499,7 @@ export const zcodeSessionListParamsSchema = z
    .strict();
  export type ZCodeSessionListParams = z.infer<typeof zcodeSessionListParamsSchema>;
  
@@ -15723,7 +15911,7 @@ index 5b3de01..47adfff 100644
      sessionId: nonEmptyString,
      endedCursor: nonEmptyString.optional(),
      endedLimit: z.number().int().positive().max(100).default(20),
-@@ -1618,20 +1504,17 @@ export const zcodeSessionSubagentsParamsSchema = z
+@@ -1618,20 +1507,17 @@ export const zcodeSessionSubagentsParamsSchema = z
    .strict();
  export type ZCodeSessionSubagentsParams = z.infer<typeof zcodeSessionSubagentsParamsSchema>;
  
@@ -15747,7 +15935,7 @@ index 5b3de01..47adfff 100644
      sessionId: nonEmptyString,
      totalTokens: z.number().int().nonnegative(),
      inputTokens: z.number().int().nonnegative(),
-@@ -1646,8 +1529,7 @@ export const zcodeTaskTokenUsageResultSchema = z
+@@ -1646,8 +1532,7 @@ export const zcodeTaskTokenUsageResultSchema = z
    .strict();
  export type ZCodeTaskTokenUsageResult = z.infer<typeof zcodeTaskTokenUsageResultSchema>;
  
@@ -15757,7 +15945,7 @@ index 5b3de01..47adfff 100644
      sessionId: nonEmptyString,
      deliveryKind: zcodeDeliveryKindSchema.optional(),
      messageLimit: z.number().int().positive().optional(),
-@@ -1656,8 +1538,7 @@ export const zcodeSessionReadParamsSchema = z
+@@ -1656,8 +1541,7 @@ export const zcodeSessionReadParamsSchema = z
    .strict();
  export type ZCodeSessionReadParams = z.infer<typeof zcodeSessionReadParamsSchema>;
  
@@ -15767,7 +15955,7 @@ index 5b3de01..47adfff 100644
      sessionId: nonEmptyString,
      afterMessageId: nonEmptyString.optional(),
      limit: z.number().int().positive().optional(),
-@@ -1665,8 +1546,7 @@ export const zcodeSessionMessagesParamsSchema = z
+@@ -1665,8 +1549,7 @@ export const zcodeSessionMessagesParamsSchema = z
    .strict();
  export type ZCodeSessionMessagesParams = z.infer<typeof zcodeSessionMessagesParamsSchema>;
  
@@ -15777,7 +15965,7 @@ index 5b3de01..47adfff 100644
      sessionId: nonEmptyString,
      afterSeq: z.number().int().nonnegative().optional(),
      limit: z.number().int().positive().optional(),
-@@ -1684,8 +1564,7 @@ export type ZCodeSessionRuntimePreferencesScope = z.infer<
+@@ -1684,8 +1567,7 @@ export type ZCodeSessionRuntimePreferencesScope = z.infer<
  
  export const ZCODE_SESSION_RUNTIME_PREFERENCES_REQUEST_TIMEOUT_MS = 15_000;
  
@@ -15787,7 +15975,7 @@ index 5b3de01..47adfff 100644
      sessionId: nonEmptyString,
      scope: zcodeSessionRuntimePreferencesScopeSchema,
    })
-@@ -1700,8 +1579,7 @@ export const DEFAULT_ZCODE_MODEL_CONTEXT_BUDGET_STRATEGY = "preflight-v1" as con
+@@ -1700,8 +1582,7 @@ export const DEFAULT_ZCODE_MODEL_CONTEXT_BUDGET_STRATEGY = "preflight-v1" as con
  export const zcodeModelContextBudgetStrategySchema = z.enum(["legacy", "preflight-v1"]);
  export type ZCodeModelContextBudgetStrategy = z.infer<typeof zcodeModelContextBudgetStrategySchema>;
  
@@ -15797,7 +15985,7 @@ index 5b3de01..47adfff 100644
      nativeSearchEnhancementsEnabled: z.boolean(),
      memoryEnabled: z.boolean().default(false),
      askUserQuestionAutoResolutionEnabled: z.boolean().default(true),
-@@ -1720,16 +1598,14 @@ export type ZCodeSessionRuntimePreferencesResult = z.infer<
+@@ -1720,16 +1601,14 @@ export type ZCodeSessionRuntimePreferencesResult = z.infer<
   * App 在提交 prompt 前只读采集的 IAB 可见状态。该字段只用于 provider-visible
   * ambient context，不进入用户可见 transcript；内容有界，禁止携带页面正文或凭据。
   */
@@ -15816,7 +16004,7 @@ index 5b3de01..47adfff 100644
      sessionId: nonEmptyString,
      modelSelection: modelSelectionSchema.optional(),
      modelExecution: modelExecutionSchema.optional(),
-@@ -1769,8 +1645,7 @@ export const zcodeSessionSendParamsSchema = z
+@@ -1769,8 +1648,7 @@ export const zcodeSessionSendParamsSchema = z
        });
      }
    });
@@ -15826,7 +16014,7 @@ index 5b3de01..47adfff 100644
      sessionId: nonEmptyString,
      accepted: z.literal(true),
      stateRevision: z.number().int().nonnegative(),
-@@ -1779,34 +1654,29 @@ export const zcodeSessionSendResultSchema = z
+@@ -1779,34 +1657,29 @@ export const zcodeSessionSendResultSchema = z
  export type ZCodeSessionSendResult = z.infer<typeof zcodeSessionSendResultSchema>;
  
  export const zcodeSessionHistoryTargetSchema = z.discriminatedUnion("kind", [
@@ -15866,7 +16054,7 @@ index 5b3de01..47adfff 100644
      sessionId: nonEmptyString,
      target: zcodeSessionHistoryTargetSchema.default({
        kind: "latestCheckpoint",
-@@ -1816,8 +1686,7 @@ export const zcodeSessionForkParamsSchema = z
+@@ -1816,8 +1689,7 @@ export const zcodeSessionForkParamsSchema = z
    .strict();
  export type ZCodeSessionForkParams = z.infer<typeof zcodeSessionForkParamsSchema>;
  
@@ -15876,7 +16064,7 @@ index 5b3de01..47adfff 100644
      forkedSessionId: nonEmptyString,
      parentSessionId: nonEmptyString.optional(),
      targetMessageId: nonEmptyString.optional(),
-@@ -1828,8 +1697,7 @@ export const zcodeSessionForkResultSchema = z
+@@ -1828,8 +1700,7 @@ export const zcodeSessionForkResultSchema = z
    .strict();
  export type ZCodeSessionForkResult = z.infer<typeof zcodeSessionForkResultSchema>;
  
@@ -15886,7 +16074,7 @@ index 5b3de01..47adfff 100644
      sessionId: nonEmptyString,
      inputId: nonEmptyString.optional(),
      instructions: z.string().optional(),
-@@ -1838,12 +1706,10 @@ export const zcodeSessionCompactParamsSchema = z
+@@ -1838,12 +1709,10 @@ export const zcodeSessionCompactParamsSchema = z
    .strict();
  export type ZCodeSessionCompactParams = z.infer<typeof zcodeSessionCompactParamsSchema>;
  
@@ -15901,7 +16089,7 @@ index 5b3de01..47adfff 100644
          state: z.enum(["accepted", "already_running"]),
          inputId: nonEmptyString.optional(),
          operationId: nonEmptyString.optional(),
-@@ -1864,8 +1730,7 @@ export const zcodeSessionGoalActionSchema = z.enum([
+@@ -1864,8 +1733,7 @@ export const zcodeSessionGoalActionSchema = z.enum([
  ]);
  export type ZCodeSessionGoalAction = z.infer<typeof zcodeSessionGoalActionSchema>;
  
@@ -15911,7 +16099,7 @@ index 5b3de01..47adfff 100644
      sessionId: nonEmptyString,
      inputId: nonEmptyString.optional(),
      action: zcodeSessionGoalActionSchema,
-@@ -1875,8 +1740,7 @@ export const zcodeSessionGoalParamsSchema = z
+@@ -1875,8 +1743,7 @@ export const zcodeSessionGoalParamsSchema = z
    .strict();
  export type ZCodeSessionGoalParams = z.infer<typeof zcodeSessionGoalParamsSchema>;
  
@@ -15921,7 +16109,7 @@ index 5b3de01..47adfff 100644
      response: z.string(),
      snapshot: zcodeSessionStateSnapshotSchema,
      startedTurn: z.boolean().optional(),
-@@ -1884,8 +1748,7 @@ export const zcodeSessionGoalResultSchema = z
+@@ -1884,8 +1751,7 @@ export const zcodeSessionGoalResultSchema = z
    .strict();
  export type ZCodeSessionGoalResult = z.infer<typeof zcodeSessionGoalResultSchema>;
  
@@ -15931,7 +16119,7 @@ index 5b3de01..47adfff 100644
      sessionId: nonEmptyString,
    })
    .strict();
-@@ -1899,8 +1762,7 @@ const zcodeBackgroundTaskInfoStatusSchema = z.enum([
+@@ -1899,8 +1765,7 @@ const zcodeBackgroundTaskInfoStatusSchema = z.enum([
    "lost",
  ]);
  
@@ -15941,7 +16129,7 @@ index 5b3de01..47adfff 100644
      taskId: nonEmptyString,
      toolCallId: nonEmptyString.optional(),
      toolName: nonEmptyString.optional(),
-@@ -1928,8 +1790,7 @@ export const zcodeBackgroundTaskInfoSchema = z
+@@ -1928,8 +1793,7 @@ export const zcodeBackgroundTaskInfoSchema = z
      terminalId: nonEmptyString.optional(),
    })
    .strict();
@@ -15951,7 +16139,7 @@ index 5b3de01..47adfff 100644
      sessionId: nonEmptyString,
      taskId: nonEmptyString,
    })
-@@ -1938,8 +1799,7 @@ export type ZCodeSessionCancelBackgroundTaskParams = z.infer<
+@@ -1938,8 +1802,7 @@ export type ZCodeSessionCancelBackgroundTaskParams = z.infer<
    typeof zcodeSessionCancelBackgroundTaskParamsSchema
  >;
  
@@ -15961,7 +16149,7 @@ index 5b3de01..47adfff 100644
      cancelled: z.boolean(),
      reason: z.string().optional(),
      snapshot: zcodeBackgroundTaskInfoSchema.optional(),
-@@ -1951,8 +1811,7 @@ export type ZCodeSessionCancelBackgroundTaskResult = z.infer<
+@@ -1951,8 +1814,7 @@ export type ZCodeSessionCancelBackgroundTaskResult = z.infer<
    typeof zcodeSessionCancelBackgroundTaskResultSchema
  >;
  
@@ -15971,7 +16159,7 @@ index 5b3de01..47adfff 100644
      sessionId: nonEmptyString,
      model: modelSelectionSchema,
      expectedRevision: z.number().int().nonnegative().optional(),
-@@ -1961,8 +1820,7 @@ export const zcodeSessionSetModelParamsSchema = z
+@@ -1961,8 +1823,7 @@ export const zcodeSessionSetModelParamsSchema = z
    .strict();
  export type ZCodeSessionSetModelParams = z.infer<typeof zcodeSessionSetModelParamsSchema>;
  
@@ -15981,7 +16169,7 @@ index 5b3de01..47adfff 100644
      sessionId: nonEmptyString,
      thoughtLevel: nonEmptyString.optional(),
      expectedRevision: z.number().int().nonnegative().optional(),
-@@ -1973,8 +1831,7 @@ export type ZCodeSessionSetThoughtLevelParams = z.infer<
+@@ -1973,8 +1834,7 @@ export type ZCodeSessionSetThoughtLevelParams = z.infer<
    typeof zcodeSessionSetThoughtLevelParamsSchema
  >;
  
@@ -15991,7 +16179,7 @@ index 5b3de01..47adfff 100644
      sessionId: nonEmptyString,
      mode: zcodeSessionModeSchema,
      expectedRevision: z.number().int().nonnegative().optional(),
-@@ -1982,24 +1839,20 @@ export const zcodeSessionSetModeParamsSchema = z
+@@ -1982,24 +1842,20 @@ export const zcodeSessionSetModeParamsSchema = z
    .strict();
  export type ZCodeSessionSetModeParams = z.infer<typeof zcodeSessionSetModeParamsSchema>;
  
@@ -16020,7 +16208,7 @@ index 5b3de01..47adfff 100644
      workspace: zcodeWorkspaceRefSchema,
      mode: zcodeSessionModeSchema,
      slashCommands: z.array(zcodeSlashCommandSchema),
-@@ -2007,8 +1860,7 @@ export const zcodeWorkspacePresentationSchema = z
+@@ -2007,8 +1863,7 @@ export const zcodeWorkspacePresentationSchema = z
    .strict();
  export type ZCodeWorkspacePresentation = z.infer<typeof zcodeWorkspacePresentationSchema>;
  const workspaceHookSha256DigestSchema = z.string().regex(/^[a-f0-9]{64}$/u);
@@ -16030,7 +16218,7 @@ index 5b3de01..47adfff 100644
      workspace: zcodeWorkspaceRefSchema,
      bundleDigest: workspaceHookSha256DigestSchema,
      hookDeclarationDigest: workspaceHookSha256DigestSchema,
-@@ -2028,8 +1880,7 @@ export const zcodeWorkspaceHookTrustGrantReasonCodeSchema = z.enum([
+@@ -2028,8 +1883,7 @@ export const zcodeWorkspaceHookTrustGrantReasonCodeSchema = z.enum([
  export type ZCodeWorkspaceHookTrustGrantReasonCode = z.infer<
    typeof zcodeWorkspaceHookTrustGrantReasonCodeSchema
  >;
@@ -16040,7 +16228,7 @@ index 5b3de01..47adfff 100644
      accepted: z.boolean(),
      reasonCode: zcodeWorkspaceHookTrustGrantReasonCodeSchema.optional(),
    })
-@@ -2037,8 +1888,7 @@ export const zcodeWorkspaceHookTrustGrantResultSchema = z
+@@ -2037,8 +1891,7 @@ export const zcodeWorkspaceHookTrustGrantResultSchema = z
  export type ZCodeWorkspaceHookTrustGrantResult = z.infer<
    typeof zcodeWorkspaceHookTrustGrantResultSchema
  >;
@@ -16050,7 +16238,7 @@ index 5b3de01..47adfff 100644
      id: nonEmptyString,
      name: nonEmptyString,
      input: z.unknown(),
-@@ -2047,15 +1897,13 @@ const zcodeWorkspaceModelToolCallSchema = z
+@@ -2047,15 +1900,13 @@ const zcodeWorkspaceModelToolCallSchema = z
  const zcodeWorkspaceModelMessageSchema = z.discriminatedUnion("role", [
    z.object({ role: z.literal("system"), content: z.string() }).strict(),
    z.object({ role: z.literal("user"), content: z.string() }).strict(),
@@ -16068,7 +16256,7 @@ index 5b3de01..47adfff 100644
        role: z.literal("tool"),
        content: z.string(),
        toolCallId: nonEmptyString,
-@@ -2064,16 +1912,14 @@ const zcodeWorkspaceModelMessageSchema = z.discriminatedUnion("role", [
+@@ -2064,16 +1915,14 @@ const zcodeWorkspaceModelMessageSchema = z.discriminatedUnion("role", [
      })
      .strict(),
  ]);
@@ -16087,7 +16275,7 @@ index 5b3de01..47adfff 100644
      workspace: zcodeWorkspaceRefSchema,
      selection: modelSelectionSchema,
      prompt: nonEmptyString.optional(),
-@@ -2087,23 +1933,20 @@ export const zcodeWorkspaceGenerateTextParamsSchema = z
+@@ -2087,23 +1936,20 @@ export const zcodeWorkspaceGenerateTextParamsSchema = z
    .refine((value) => value.prompt !== undefined || value.messages !== undefined, {
      message: "prompt 或 messages 至少需要提供一个",
    });
@@ -16114,7 +16302,7 @@ index 5b3de01..47adfff 100644
              webSearchRequests: z.number().nonnegative().optional(),
              webFetchRequests: z.number().nonnegative().optional(),
            })
-@@ -2122,21 +1965,17 @@ export type ZCodeWorkspaceModelTool = z.infer<typeof zcodeWorkspaceModelToolSche
+@@ -2122,21 +1968,17 @@ export type ZCodeWorkspaceModelTool = z.infer<typeof zcodeWorkspaceModelToolSche
  export type ZCodeWorkspaceGenerateTextResult = z.infer<
    typeof zcodeWorkspaceGenerateTextResultSchema
  >;
@@ -16140,7 +16328,7 @@ index 5b3de01..47adfff 100644
    .strict();
  export type ZCodeProviderTestModelConnectivityParams = z.infer<
    typeof zcodeProviderTestModelConnectivityParamsSchema
-@@ -2145,8 +1984,7 @@ export type ZCodeProviderTestModelConnectivityResult = z.infer<
+@@ -2145,8 +1987,7 @@ export type ZCodeProviderTestModelConnectivityResult = z.infer<
    typeof zcodeProviderTestModelConnectivityResultSchema
  >;
  
@@ -16150,7 +16338,7 @@ index 5b3de01..47adfff 100644
      revision: nonEmptyString,
      basedOnZCodeBuiltinRevision: nonEmptyString,
      // Provider Config 的字段校验由 @zcode/provider 负责；协议层只约束可传输信封。
-@@ -2154,8 +1992,7 @@ export const zcodeProviderUpdateAccountConfigParamsSchema = z
+@@ -2154,8 +1995,7 @@ export const zcodeProviderUpdateAccountConfigParamsSchema = z
      // 账号状态与 Overlay 必须一起传递，否则 Worker 会丢失非当前套餐的执行门禁。
      states: z.record(
        z.string(),
@@ -16160,7 +16348,7 @@ index 5b3de01..47adfff 100644
            availability: z.enum(["available", "pending", "unavailable", "unknown"]),
            entitled: z.boolean(),
            unavailableReason: accountProviderUnavailableReasonSchema.optional(),
-@@ -2167,8 +2004,7 @@ export const zcodeProviderUpdateAccountConfigParamsSchema = z
+@@ -2167,8 +2007,7 @@ export const zcodeProviderUpdateAccountConfigParamsSchema = z
      ),
    })
    .strict();
@@ -16170,7 +16358,7 @@ index 5b3de01..47adfff 100644
      // 收到账号结果不代表配套 Built-in 已到达；应用版本只能读取 Registry 快照。
      receivedRevision: nonEmptyString,
      providerCount: z.number().int().nonnegative(),
-@@ -2178,15 +2014,13 @@ export const zcodeProviderUpdateAccountConfigResultSchema = z
+@@ -2178,15 +2017,13 @@ export const zcodeProviderUpdateAccountConfigResultSchema = z
  export type ZCodeProviderUpdateAccountConfigResult = z.infer<
    typeof zcodeProviderUpdateAccountConfigResultSchema
  >;
@@ -16188,7 +16376,7 @@ index 5b3de01..47adfff 100644
      workspace: zcodeWorkspaceRefSchema,
      preferences: zcodeInteractionPreferencesSchema,
    })
-@@ -2195,8 +2029,7 @@ export type ZCodeWorkspaceUpdateInteractionPreferencesParams = z.infer<
+@@ -2195,8 +2032,7 @@ export type ZCodeWorkspaceUpdateInteractionPreferencesParams = z.infer<
    typeof zcodeWorkspaceUpdateInteractionPreferencesParamsSchema
  >;
  
@@ -16198,7 +16386,7 @@ index 5b3de01..47adfff 100644
      workspace: zcodeWorkspaceRefSchema,
      askUserQuestionAutoResolutionEnabled: z.boolean(),
      snoozedInteractionCount: z.number().int().nonnegative(),
-@@ -2206,15 +2039,13 @@ export type ZCodeWorkspaceUpdateInteractionPreferencesResult = z.infer<
+@@ -2206,15 +2042,13 @@ export type ZCodeWorkspaceUpdateInteractionPreferencesResult = z.infer<
    typeof zcodeWorkspaceUpdateInteractionPreferencesResultSchema
  >;
  
@@ -16216,7 +16404,7 @@ index 5b3de01..47adfff 100644
      workspace: zcodeWorkspaceRefSchema,
      preferences: zcodeModelIoPreferencesSchema,
    })
-@@ -2223,8 +2054,7 @@ export type ZCodeWorkspaceUpdateModelIoPreferencesParams = z.infer<
+@@ -2223,8 +2057,7 @@ export type ZCodeWorkspaceUpdateModelIoPreferencesParams = z.infer<
    typeof zcodeWorkspaceUpdateModelIoPreferencesParamsSchema
  >;
  
@@ -16226,7 +16414,7 @@ index 5b3de01..47adfff 100644
      workspace: zcodeWorkspaceRefSchema,
      fullRetentionEnabled: z.boolean(),
      updatedSessionCount: z.number().int().nonnegative(),
-@@ -2234,8 +2064,7 @@ export type ZCodeWorkspaceUpdateModelIoPreferencesResult = z.infer<
+@@ -2234,8 +2067,7 @@ export type ZCodeWorkspaceUpdateModelIoPreferencesResult = z.infer<
    typeof zcodeWorkspaceUpdateModelIoPreferencesResultSchema
  >;
  
@@ -16236,7 +16424,7 @@ index 5b3de01..47adfff 100644
      workspace: zcodeWorkspaceRefSchema,
      enabled: z.boolean(),
    })
-@@ -2244,8 +2073,7 @@ export type ZCodeWorkspaceUpdateOffPeakToolPolicyParams = z.infer<
+@@ -2244,8 +2076,7 @@ export type ZCodeWorkspaceUpdateOffPeakToolPolicyParams = z.infer<
    typeof zcodeWorkspaceUpdateOffPeakToolPolicyParamsSchema
  >;
  
@@ -16246,7 +16434,7 @@ index 5b3de01..47adfff 100644
      workspace: zcodeWorkspaceRefSchema,
      enabled: z.boolean(),
    })
-@@ -2256,8 +2084,7 @@ export type ZCodeWorkspaceUpdateOffPeakToolPolicyResult = z.infer<
+@@ -2256,8 +2087,7 @@ export type ZCodeWorkspaceUpdateOffPeakToolPolicyResult = z.infer<
  
  // 动态工作流灰度门禁：workspace 级事实，
  // 与 Off-Peak 同一套 host→CLI 同步模式；旧 CLI method-not-found → host 降级忽略。
@@ -16256,7 +16444,7 @@ index 5b3de01..47adfff 100644
      workspace: zcodeWorkspaceRefSchema,
      enabled: z.boolean(),
    })
-@@ -2266,8 +2093,7 @@ export type ZCodeWorkspaceUpdateDynamicWorkflowPolicyParams = z.infer<
+@@ -2266,8 +2096,7 @@ export type ZCodeWorkspaceUpdateDynamicWorkflowPolicyParams = z.infer<
    typeof zcodeWorkspaceUpdateDynamicWorkflowPolicyParamsSchema
  >;
  
@@ -16266,7 +16454,7 @@ index 5b3de01..47adfff 100644
      workspace: zcodeWorkspaceRefSchema,
      enabled: z.boolean(),
    })
-@@ -2276,8 +2102,7 @@ export type ZCodeWorkspaceUpdateDynamicWorkflowPolicyResult = z.infer<
+@@ -2276,8 +2105,7 @@ export type ZCodeWorkspaceUpdateDynamicWorkflowPolicyResult = z.infer<
    typeof zcodeWorkspaceUpdateDynamicWorkflowPolicyResultSchema
  >;
  
@@ -16276,7 +16464,7 @@ index 5b3de01..47adfff 100644
      requestId: nonEmptyString,
      sessionId: nonEmptyString,
      turnId: nonEmptyString.optional(),
-@@ -2293,8 +2118,7 @@ export const zcodePermissionRequestParamsSchema = z
+@@ -2293,8 +2121,7 @@ export const zcodePermissionRequestParamsSchema = z
  export type ZCodePermissionRequestParams = z.infer<typeof zcodePermissionRequestParamsSchema>;
  
  /** Agent 请求 app 枚举当前 workspace/session 可达且已完成握手的 browser backend。 */
@@ -16286,7 +16474,7 @@ index 5b3de01..47adfff 100644
      requestId: nonEmptyString,
      sessionId: nonEmptyString,
      turnId: nonEmptyString.optional(),
-@@ -2312,8 +2136,7 @@ export const zcodeBrowserListResultSchema = browserBackendListResultSchema;
+@@ -2312,8 +2139,7 @@ export const zcodeBrowserListResultSchema = browserBackendListResultSchema;
  export type ZCodeBrowserListResult = z.infer<typeof zcodeBrowserListResultSchema>;
  
  /** Agent 把一条 browser-use 命令发送给 app 执行。 */
@@ -16296,7 +16484,7 @@ index 5b3de01..47adfff 100644
      requestId: nonEmptyString,
      sessionId: nonEmptyString,
      turnId: nonEmptyString.optional(),
-@@ -2335,16 +2158,14 @@ export type ZCodeBrowserExecuteParams = z.infer<typeof zcodeBrowserExecuteParams
+@@ -2335,16 +2161,14 @@ export type ZCodeBrowserExecuteParams = z.infer<typeof zcodeBrowserExecuteParams
  export const zcodeBrowserExecuteResultSchema = browserCommandResultSchema;
  export type ZCodeBrowserExecuteResult = z.infer<typeof zcodeBrowserExecuteResultSchema>;
  
@@ -16315,7 +16503,7 @@ index 5b3de01..47adfff 100644
      question: nonEmptyString,
      header: nonEmptyString,
      options: z.array(zcodeUserInputOptionSchema).min(1),
-@@ -2353,8 +2174,7 @@ export const zcodeUserInputQuestionSchema = z
+@@ -2353,8 +2177,7 @@ export const zcodeUserInputQuestionSchema = z
    .strict();
  export type ZCodeUserInputQuestion = z.infer<typeof zcodeUserInputQuestionSchema>;
  
@@ -16325,7 +16513,7 @@ index 5b3de01..47adfff 100644
      requestId: nonEmptyString,
      sessionId: nonEmptyString,
      turnId: nonEmptyString.optional(),
-@@ -2369,8 +2189,7 @@ export const zcodeUserInputRequestParamsSchema = z
+@@ -2369,8 +2192,7 @@ export const zcodeUserInputRequestParamsSchema = z
    .strict();
  export type ZCodeUserInputRequestParams = z.infer<typeof zcodeUserInputRequestParamsSchema>;
  
@@ -16335,7 +16523,7 @@ index 5b3de01..47adfff 100644
      action: z.enum(["accept", "decline", "cancel"]),
      content: jsonObjectSchema.optional(),
      reason: z.string().optional(),
-@@ -2379,8 +2198,7 @@ export const zcodeUserInputResponseSchema = z
+@@ -2379,8 +2201,7 @@ export const zcodeUserInputResponseSchema = z
  export type ZCodeUserInputResponse = z.infer<typeof zcodeUserInputResponseSchema>;
  
  export const zcodeProviderRuntimeHeadersRequestReasonSchema = z.enum(["model-request"]);
@@ -16345,7 +16533,7 @@ index 5b3de01..47adfff 100644
      requestId: nonEmptyString,
      sessionId: nonEmptyString,
      turnId: nonEmptyString.optional(),
-@@ -2396,8 +2214,7 @@ export type ZCodeProviderRuntimeHeadersRequestParams = z.infer<
+@@ -2396,8 +2217,7 @@ export type ZCodeProviderRuntimeHeadersRequestParams = z.infer<
  >;
  
  /** 请求取消只作用于同 workspace/session 的这一轮凭据刷新。 */
@@ -16355,7 +16543,7 @@ index 5b3de01..47adfff 100644
      requestId: nonEmptyString,
      sessionId: nonEmptyString,
      workspace: zcodeWorkspaceRefSchema,
-@@ -2408,12 +2225,10 @@ export type ZCodeProviderRuntimeHeadersCancelled = z.infer<
+@@ -2408,12 +2228,10 @@ export type ZCodeProviderRuntimeHeadersCancelled = z.infer<
  >;
  
  export const zcodeProviderRuntimeHeadersResponseSchema = z.discriminatedUnion("headersApplied", [
@@ -16370,7 +16558,7 @@ index 5b3de01..47adfff 100644
            apiKey: nonEmptyString.optional(),
            headers: z.record(nonEmptyString, nonEmptyString).optional(),
          })
-@@ -2421,8 +2236,7 @@ export const zcodeProviderRuntimeHeadersResponseSchema = z.discriminatedUnion("h
+@@ -2421,8 +2239,7 @@ export const zcodeProviderRuntimeHeadersResponseSchema = z.discriminatedUnion("h
        errorMessage: nonEmptyString.optional(),
      })
      .strict(),
@@ -16380,7 +16568,7 @@ index 5b3de01..47adfff 100644
        headersApplied: z.literal(false),
        errorMessage: nonEmptyString.optional(),
      })
-@@ -2436,8 +2250,7 @@ export type ZCodeProviderRuntimeHeadersResponse = z.infer<
+@@ -2436,8 +2253,7 @@ export type ZCodeProviderRuntimeHeadersResponse = z.infer<
  // Agent 进程不是用户身份权威：它把 (pluginId, mcpKey, targetOrigin) 报给 host，由 host
  // 解析当前 Coding Plan 凭证并回传本次请求的身份头。请求侧不含任何秘密。
  // 与 interaction/requestProviderRuntimeHeaders 同类：Agent 发起、host 自动响应、零 UI。
@@ -16390,7 +16578,7 @@ index 5b3de01..47adfff 100644
      requestId: nonEmptyString,
      workspace: zcodeWorkspaceRefSchema,
      pluginId: nonEmptyString,
-@@ -2461,14 +2274,12 @@ export const zcodeOfficialMcpAuthFailureReasonSchema = z.enum(
+@@ -2461,14 +2277,12 @@ export const zcodeOfficialMcpAuthFailureReasonSchema = z.enum(
  );
  
  export const zcodeOfficialMcpAuthHeadersResponseSchema = z.discriminatedUnion("ok", [
@@ -16407,7 +16595,7 @@ index 5b3de01..47adfff 100644
        ok: z.literal(false),
        reason: zcodeOfficialMcpAuthFailureReasonSchema,
      })
-@@ -2484,8 +2295,7 @@ export const zcodePluginOptionValueSchema = z.union([z.string(), z.number(), z.b
+@@ -2484,8 +2298,7 @@ export const zcodePluginOptionValueSchema = z.union([z.string(), z.number(), z.b
  export type ZCodePluginOptionValue = z.infer<typeof zcodePluginOptionValueSchema>;
  export const zcodePluginScopeSchema = z.enum(["user", "workspace"]);
  export type ZCodePluginScope = z.infer<typeof zcodePluginScopeSchema>;
@@ -16417,7 +16605,7 @@ index 5b3de01..47adfff 100644
      event: nonEmptyString,
      matcher: z.string().optional(),
      type: z.enum(["command", "process"]),
-@@ -2500,8 +2310,7 @@ export const zcodePluginHookDetailSchema = z
+@@ -2500,8 +2313,7 @@ export const zcodePluginHookDetailSchema = z
      runnable: z.boolean(),
    })
    .strict();
@@ -16427,7 +16615,7 @@ index 5b3de01..47adfff 100644
      default: zcodePluginOptionValueSchema.optional(),
      description: z.string().optional(),
      required: z.boolean().optional(),
-@@ -2517,23 +2326,20 @@ export type ZCodePluginUserConfigOption = z.infer<typeof zcodePluginUserConfigOp
+@@ -2517,23 +2329,20 @@ export type ZCodePluginUserConfigOption = z.infer<typeof zcodePluginUserConfigOp
  export const zcodePluginComponentKindSchema = z.enum(["agent", "command", "skill", "hook", "mcp"]);
  export type ZCodePluginComponentKind = z.infer<typeof zcodePluginComponentKindSchema>;
  
@@ -16454,7 +16642,7 @@ index 5b3de01..47adfff 100644
      id: nonEmptyString,
      name: nonEmptyString,
      description: z.string().optional(),
-@@ -2567,8 +2373,7 @@ export const zcodePluginInfoSchema = z
+@@ -2567,8 +2376,7 @@ export const zcodePluginInfoSchema = z
    .strict();
  export type ZCodePluginInfo = z.infer<typeof zcodePluginInfoSchema>;
  
@@ -16464,7 +16652,7 @@ index 5b3de01..47adfff 100644
      code: z.string(),
      message: z.string(),
      severity: z.enum(["warning", "error"]).optional(),
-@@ -2577,14 +2382,12 @@ export const zcodePluginDiagnosticSchema = z
+@@ -2577,14 +2385,12 @@ export const zcodePluginDiagnosticSchema = z
    .strict();
  export type ZCodePluginDiagnostic = z.infer<typeof zcodePluginDiagnosticSchema>;
  
@@ -16481,7 +16669,7 @@ index 5b3de01..47adfff 100644
      plugins: z.array(zcodePluginInfoSchema),
      diagnostics: z.array(zcodePluginDiagnosticSchema),
    })
-@@ -2596,8 +2399,7 @@ export type ZCodePluginsListResult = z.infer<typeof zcodePluginsListResultSchema
+@@ -2596,8 +2402,7 @@ export type ZCodePluginsListResult = z.infer<typeof zcodePluginsListResultSchema
  // 不带 → workspace 当前 catalog（新建草稿 Picker）。身份与能力字段保持
  // identifiers-only，不携带 rootPath/配置等；可选 icon/displayName(I18n)/description(I18n)
  // 仅供 UI 展示与 Picker 搜索，不参与身份、权限或 runtime reminder。
@@ -16491,7 +16679,7 @@ index 5b3de01..47adfff 100644
      // 仅 referenceCatalogWithCategory 返回；旧入口保持原结构。
      category: nonEmptyString.optional(),
      pluginId: nonEmptyString,
-@@ -2625,8 +2427,7 @@ export type ZCodePluginReferenceCatalogEntry = z.infer<
+@@ -2625,8 +2430,7 @@ export type ZCodePluginReferenceCatalogEntry = z.infer<
    typeof zcodePluginReferenceCatalogEntrySchema
  >;
  
@@ -16501,7 +16689,7 @@ index 5b3de01..47adfff 100644
      workspace: zcodeWorkspaceRefSchema,
      // 已有 Session 的 Picker 必须带 sessionId 才能拿到 session-owned catalog；
      // session 不存在时按协议错误 fail closed，禁止静默回退 workspace authority。
-@@ -2636,8 +2437,7 @@ export const zcodePluginsReferenceCatalogParamsSchema = z
+@@ -2636,8 +2440,7 @@ export const zcodePluginsReferenceCatalogParamsSchema = z
  export type ZCodePluginsReferenceCatalogParams = z.infer<
    typeof zcodePluginsReferenceCatalogParamsSchema
  >;
@@ -16511,7 +16699,7 @@ index 5b3de01..47adfff 100644
      authority: z.enum(["session", "workspace"]),
      plugins: z.array(zcodePluginReferenceCatalogEntrySchema),
    })
-@@ -2650,8 +2450,7 @@ export type ZCodePluginsReferenceCatalogResult = z.infer<
+@@ -2650,8 +2453,7 @@ export type ZCodePluginsReferenceCatalogResult = z.infer<
  // 新草稿读取 workspace 当前目录；已有 Session 读取 AgentRuntime 首次 context
  // 初始化时冻结的发现结果。该协议只承载 Composer 的只读引用投影，不替代 Settings
  // 的 Skill 管理接口，也不持久化 runtime 快照。
@@ -16521,7 +16709,7 @@ index 5b3de01..47adfff 100644
      id: nonEmptyString,
      name: nonEmptyString,
      description: z.string(),
-@@ -2663,8 +2462,7 @@ export const zcodeSkillReferenceCatalogEntrySchema = z
+@@ -2663,8 +2465,7 @@ export const zcodeSkillReferenceCatalogEntrySchema = z
    .strict();
  export type ZCodeSkillReferenceCatalogEntry = z.infer<typeof zcodeSkillReferenceCatalogEntrySchema>;
  
@@ -16531,7 +16719,7 @@ index 5b3de01..47adfff 100644
      workspace: zcodeWorkspaceRefSchema,
      // 带 sessionId 时必须命中该进程内的 resident Session；未知 Session fail closed，
      // 禁止回退到 workspace 当前目录而把新 Skill 泄漏进旧对话。
-@@ -2674,8 +2472,7 @@ export const zcodeSkillsReferenceCatalogParamsSchema = z
+@@ -2674,8 +2475,7 @@ export const zcodeSkillsReferenceCatalogParamsSchema = z
  export type ZCodeSkillsReferenceCatalogParams = z.infer<
    typeof zcodeSkillsReferenceCatalogParamsSchema
  >;
@@ -16541,7 +16729,7 @@ index 5b3de01..47adfff 100644
      authority: z.enum(["session", "workspace"]),
      skills: z.array(zcodeSkillReferenceCatalogEntrySchema),
    })
-@@ -2691,8 +2488,7 @@ export type ZCodeSkillsReferenceCatalogResult = z.infer<
+@@ -2691,8 +2491,7 @@ export type ZCodeSkillsReferenceCatalogResult = z.infer<
  // 而不是 import；两边的 strict 形状由 bootstrap 侧的协议测试互相钉住。
  export const zcodeSavedWorkflowArgTypeSchema = z.enum(["string", "number", "boolean", "json"]);
  export type ZCodeSavedWorkflowArgType = z.infer<typeof zcodeSavedWorkflowArgTypeSchema>;
@@ -16551,7 +16739,7 @@ index 5b3de01..47adfff 100644
      type: zcodeSavedWorkflowArgTypeSchema,
      description: z.string().optional(),
      required: z.boolean().optional(),
-@@ -2709,8 +2505,7 @@ export const zcodeSavedWorkflowArgsDeclarationSchema = z.record(
+@@ -2709,8 +2508,7 @@ export const zcodeSavedWorkflowArgsDeclarationSchema = z.record(
  export type ZCodeSavedWorkflowArgsDeclaration = z.infer<
    typeof zcodeSavedWorkflowArgsDeclarationSchema
  >;
@@ -16561,7 +16749,7 @@ index 5b3de01..47adfff 100644
      description: nonEmptyString,
      whenToUse: nonEmptyString.optional(),
      args: zcodeSavedWorkflowArgsDeclarationSchema.optional(),
-@@ -2720,8 +2515,7 @@ export type ZCodeSavedWorkflowMeta = z.infer<typeof zcodeSavedWorkflowMetaSchema
+@@ -2720,8 +2518,7 @@ export type ZCodeSavedWorkflowMeta = z.infer<typeof zcodeSavedWorkflowMetaSchema
  // 作用域两档：项目档落 `<cwd>/.zcode/workflows/`、全局档落 agent 机器的 `~/.zcode/workflows/`。作用域由文件所在目录推得，frontmatter 不存 scope。
  export const zcodeSavedWorkflowScopeSchema = z.enum(["project", "global"]);
  export type ZCodeSavedWorkflowScope = z.infer<typeof zcodeSavedWorkflowScopeSchema>;
@@ -16571,7 +16759,7 @@ index 5b3de01..47adfff 100644
      name: nonEmptyString,
      description: z.string(),
      whenToUse: z.string().optional(),
-@@ -2731,8 +2525,7 @@ export const zcodeSavedWorkflowEntrySchema = z
+@@ -2731,8 +2528,7 @@ export const zcodeSavedWorkflowEntrySchema = z
    })
    .strict();
  export type ZCodeSavedWorkflowEntry = z.infer<typeof zcodeSavedWorkflowEntrySchema>;
@@ -16581,7 +16769,7 @@ index 5b3de01..47adfff 100644
    .strict();
  export type ZCodeSavedWorkflowInvalidEntry = z.infer<typeof zcodeSavedWorkflowInvalidEntrySchema>;
  /** 名字非法 / 未找到 / frontmatter 坏 / 读错——与 core store 的 resolve 失败四态逐字对应。 */
-@@ -2743,16 +2536,14 @@ export const zcodeSavedWorkflowFailureReasonSchema = z.enum([
+@@ -2743,16 +2539,14 @@ export const zcodeSavedWorkflowFailureReasonSchema = z.enum([
    "read_error",
  ]);
  export type ZCodeSavedWorkflowFailureReason = z.infer<typeof zcodeSavedWorkflowFailureReasonSchema>;
@@ -16600,7 +16788,7 @@ index 5b3de01..47adfff 100644
      workspace: zcodeWorkspaceRefSchema,
      // 缺省即 `project`（本项目档）。给 `global` 时改扫本机 `~/.zcode/workflows/`；此时 `workspace`
      // 仍必填，但只是**载体运行时**——协议处理器对全局档不读它的路径。
-@@ -2760,8 +2551,7 @@ export const zcodeWorkflowsListParamsSchema = z
+@@ -2760,8 +2554,7 @@ export const zcodeWorkflowsListParamsSchema = z
    })
    .strict();
  export type ZCodeWorkflowsListParams = z.infer<typeof zcodeWorkflowsListParamsSchema>;
@@ -16610,7 +16798,7 @@ index 5b3de01..47adfff 100644
      workflows: z.array(zcodeSavedWorkflowEntrySchema),
      invalid: z.array(zcodeSavedWorkflowInvalidEntrySchema),
      // 扫过的目录（本地绝对路径），即使目录还不存在也回：GUI 的文件监听靠它 watch。
-@@ -2770,8 +2560,7 @@ export const zcodeWorkflowsListResultSchema = z
+@@ -2770,8 +2563,7 @@ export const zcodeWorkflowsListResultSchema = z
    .strict();
  export type ZCodeWorkflowsListResult = z.infer<typeof zcodeWorkflowsListResultSchema>;
  
@@ -16620,7 +16808,7 @@ index 5b3de01..47adfff 100644
      workspace: zcodeWorkspaceRefSchema,
      name: nonEmptyString,
      // 缺省 `project`；`global` 时只查本机全局根。`workspace` 语义同 list（全局档只当载体）。
-@@ -2780,8 +2569,7 @@ export const zcodeWorkflowsGetParamsSchema = z
+@@ -2780,8 +2572,7 @@ export const zcodeWorkflowsGetParamsSchema = z
    .strict();
  export type ZCodeWorkflowsGetParams = z.infer<typeof zcodeWorkflowsGetParamsSchema>;
  export const zcodeWorkflowsGetResultSchema = z.union([
@@ -16630,7 +16818,7 @@ index 5b3de01..47adfff 100644
        ok: z.literal(true),
        name: nonEmptyString,
        path: nonEmptyString,
-@@ -2795,8 +2583,7 @@ export const zcodeWorkflowsGetResultSchema = z.union([
+@@ -2795,8 +2586,7 @@ export const zcodeWorkflowsGetResultSchema = z.union([
  ]);
  export type ZCodeWorkflowsGetResult = z.infer<typeof zcodeWorkflowsGetResultSchema>;
  
@@ -16640,7 +16828,7 @@ index 5b3de01..47adfff 100644
      workspace: zcodeWorkspaceRefSchema,
      name: nonEmptyString,
      meta: zcodeSavedWorkflowMetaSchema,
-@@ -2811,8 +2598,7 @@ export const zcodeWorkflowsUpdateMetaResultSchema = z.union([
+@@ -2811,8 +2601,7 @@ export const zcodeWorkflowsUpdateMetaResultSchema = z.union([
  ]);
  export type ZCodeWorkflowsUpdateMetaResult = z.infer<typeof zcodeWorkflowsUpdateMetaResultSchema>;
  
@@ -16650,7 +16838,7 @@ index 5b3de01..47adfff 100644
      workspace: zcodeWorkspaceRefSchema,
      name: nonEmptyString,
      // 缺省 `project`；`global` 时按 scope 选根删除（不再写死 roots[0]）。`workspace` 语义同 list。
-@@ -2827,8 +2613,7 @@ export const zcodeWorkflowsDeleteResultSchema = z.union([
+@@ -2827,8 +2616,7 @@ export const zcodeWorkflowsDeleteResultSchema = z.union([
  export type ZCodeWorkflowsDeleteResult = z.infer<typeof zcodeWorkflowsDeleteResultSchema>;
  
  export const ZCODE_WORKFLOWS_RUNS_MAX_LIMIT = 50;
@@ -16660,7 +16848,7 @@ index 5b3de01..47adfff 100644
      workspace: zcodeWorkspaceRefSchema,
      /** 只要这个名字的 run（`dwf_run.name` 字面等值）；缺省即本项目全部 run。 */
      name: nonEmptyString.optional(),
-@@ -2856,8 +2641,7 @@ export const zcodeSavedWorkflowRunStopReasonSchema = z.enum([
+@@ -2856,8 +2644,7 @@ export const zcodeSavedWorkflowRunStopReasonSchema = z.enum([
    "interrupted",
    "superseded",
  ]);
@@ -16670,7 +16858,7 @@ index 5b3de01..47adfff 100644
      runId: nonEmptyString,
      name: z.string().optional(),
      status: zcodeSavedWorkflowRunStatusSchema,
-@@ -2878,10 +2662,8 @@ export const zcodeSavedWorkflowRunSchema = z
+@@ -2878,10 +2665,8 @@ export const zcodeSavedWorkflowRunSchema = z
      // ⚠ 术语：这里的 artifact 是脚本经 `artifact.*` 发布给用户看的产出，不是脚本的顶层返回值。
      // 只带 chip 画得下的字段（≤ 8 件，取最新版的元数据）；字节与条目经 v4 查询按需读。
      // optional，照上面 `cwd` 的先例：老 CLI 不发，少一个键是退化不是错误。
@@ -16683,7 +16871,7 @@ index 5b3de01..47adfff 100644
              id: nonEmptyString,
              kind: z.enum(["file", "markdown", "chart", "table", "metrics", "board"]),
              title: z.string().optional(),
-@@ -2895,8 +2677,7 @@ export const zcodeSavedWorkflowRunSchema = z
+@@ -2895,8 +2680,7 @@ export const zcodeSavedWorkflowRunSchema = z
    })
    .strict();
  export type ZCodeSavedWorkflowRun = z.infer<typeof zcodeSavedWorkflowRunSchema>;
@@ -16693,7 +16881,7 @@ index 5b3de01..47adfff 100644
      runs: z.array(zcodeSavedWorkflowRunSchema),
      /** 为真时才在场：还有更多 run 没进这一页（多取一条判定，不是 length === limit）。 */
      truncated: z.literal(true).optional(),
-@@ -2908,16 +2689,14 @@ export type ZCodeWorkflowsRunsResult = z.infer<typeof zcodeWorkflowsRunsResultSc
+@@ -2908,16 +2692,14 @@ export type ZCodeWorkflowsRunsResult = z.infer<typeof zcodeWorkflowsRunsResultSc
  // 全局」在该项目开新会话、经 SaveWorkflow 另存），所以没有 `to` 参数。同机同用户，rename 优先、EXDEV
  // 回落 copy+unlink；逐字节搬，不改内容（frontmatter 不存 scope）；`move` 不覆盖——目标已存在即拒绝
  // （覆盖是 SaveWorkflow 经确认窗才有的动作，不变式 7）。`workspace` 既是载体运行时也是目标项目。
@@ -16712,7 +16900,7 @@ index 5b3de01..47adfff 100644
        ok: z.literal(true),
        /** 源落点路径（全局根，搬走前）。 */
        from: nonEmptyString,
-@@ -2925,8 +2704,7 @@ export const zcodeWorkflowsMoveResultSchema = z.union([
+@@ -2925,8 +2707,7 @@ export const zcodeWorkflowsMoveResultSchema = z.union([
        to: nonEmptyString,
      })
      .strict(),
@@ -16722,7 +16910,7 @@ index 5b3de01..47adfff 100644
        ok: z.literal(false),
        // target_exists：目标档已有同名（move 不覆盖）；not_found：源档没有这个名字；
        // read_error / write_error：搬运时的 I/O 失败；invalid_name：名字先验没过。
-@@ -2960,8 +2738,7 @@ export const zcodePluginOperationStateSchema = z.enum([
+@@ -2960,8 +2741,7 @@ export const zcodePluginOperationStateSchema = z.enum([
    "failed",
  ]);
  export type ZCodePluginOperationState = z.infer<typeof zcodePluginOperationStateSchema>;
@@ -16732,7 +16920,7 @@ index 5b3de01..47adfff 100644
      operationId: nonEmptyString,
      state: z.literal("refreshing"),
    })
-@@ -2969,8 +2746,7 @@ export const zcodePluginOperationProgressNotificationSchema = z
+@@ -2969,8 +2749,7 @@ export const zcodePluginOperationProgressNotificationSchema = z
  export type ZCodePluginOperationProgressNotification = z.infer<
    typeof zcodePluginOperationProgressNotificationSchema
  >;
@@ -16742,7 +16930,7 @@ index 5b3de01..47adfff 100644
      workspace: zcodeWorkspaceRefSchema,
      stableId: nonEmptyString,
      operationId: nonEmptyString,
-@@ -2981,8 +2757,7 @@ export const zcodePluginsResolveSuggestedReferenceParamsSchema = z
+@@ -2981,8 +2760,7 @@ export const zcodePluginsResolveSuggestedReferenceParamsSchema = z
  export type ZCodePluginsResolveSuggestedReferenceParams = z.infer<
    typeof zcodePluginsResolveSuggestedReferenceParamsSchema
  >;
@@ -16752,7 +16940,7 @@ index 5b3de01..47adfff 100644
      workspace: zcodeWorkspaceRefSchema,
      pluginId: nonEmptyString,
      enabled: z.boolean(),
-@@ -2990,8 +2765,7 @@ export const zcodePluginsSetEnabledParamsSchema = z
+@@ -2990,8 +2768,7 @@ export const zcodePluginsSetEnabledParamsSchema = z
      scope: zcodePluginScopeSchema.optional(),
    })
    .strict();
@@ -16762,7 +16950,7 @@ index 5b3de01..47adfff 100644
      plugin: zcodePluginInfoSchema,
      enabled: z.boolean(),
    })
-@@ -3001,8 +2775,7 @@ export type ZCodePluginsSetEnabledResult = z.infer<typeof zcodePluginsSetEnabled
+@@ -3001,8 +2778,7 @@ export type ZCodePluginsSetEnabledResult = z.infer<typeof zcodePluginsSetEnabled
  // 商店信息（Store Listing）：目录条目携带的展示性元数据（显示名/icon/分类/作者/链接/hero/
  // 示例提示词），全部可选，UI 缺失时按降级矩阵处理（字母头像/隐藏区块/省略信息行）。
  // i18n 采用 `<字段>I18n` map，locale 解析复用 shared 的 plugin-display-name helper。
@@ -16772,7 +16960,7 @@ index 5b3de01..47adfff 100644
      displayName: z.string().optional(),
      displayNameI18n: z.record(z.string(), z.string()).optional(),
      descriptionI18n: z.record(z.string(), z.string()).optional(),
-@@ -3026,8 +2799,7 @@ export const zcodePluginStoreListingSchema = z
+@@ -3026,8 +2802,7 @@ export const zcodePluginStoreListingSchema = z
    .strict();
  export type ZCodePluginStoreListing = z.infer<typeof zcodePluginStoreListingSchema>;
  
@@ -16782,7 +16970,7 @@ index 5b3de01..47adfff 100644
      stableId: nonEmptyString,
      status: zcodePluginSuggestedReferenceStatusSchema,
      marketplace: nonEmptyString.optional(),
-@@ -3054,8 +2826,7 @@ export type ZCodePluginsResolveSuggestedReferenceResult = z.infer<
+@@ -3054,8 +2829,7 @@ export type ZCodePluginsResolveSuggestedReferenceResult = z.infer<
    typeof zcodePluginsResolveSuggestedReferenceResultSchema
  >;
  
@@ -16792,7 +16980,7 @@ index 5b3de01..47adfff 100644
      id: nonEmptyString,
      name: nonEmptyString,
      source: jsonObjectSchema,
-@@ -3065,8 +2836,7 @@ export const zcodePluginMarketplaceSummarySchema = z
+@@ -3065,8 +2839,7 @@ export const zcodePluginMarketplaceSummarySchema = z
      isOfficial: z.boolean().optional(),
      // 目录顶层 featured 策展名单（商店「公开」分段 Featured 区）。
      featured: z.array(z.string()).optional(),
@@ -16802,7 +16990,7 @@ index 5b3de01..47adfff 100644
          code: z.string(),
          failedAt: z.string(),
          message: z.string(),
-@@ -3077,8 +2847,7 @@ export const zcodePluginMarketplaceSummarySchema = z
+@@ -3077,8 +2850,7 @@ export const zcodePluginMarketplaceSummarySchema = z
    .strict();
  export type ZCodePluginMarketplaceSummary = z.infer<typeof zcodePluginMarketplaceSummarySchema>;
  
@@ -16812,7 +17000,7 @@ index 5b3de01..47adfff 100644
      id: nonEmptyString,
      name: nonEmptyString,
      marketplace: nonEmptyString,
-@@ -3091,8 +2860,7 @@ export const zcodeAvailablePluginSummarySchema = z
+@@ -3091,8 +2863,7 @@ export const zcodeAvailablePluginSummarySchema = z
    .strict();
  export type ZCodeAvailablePluginSummary = z.infer<typeof zcodeAvailablePluginSummarySchema>;
  
@@ -16822,7 +17010,7 @@ index 5b3de01..47adfff 100644
      id: nonEmptyString,
      name: nonEmptyString,
      marketplace: nonEmptyString,
-@@ -3111,21 +2879,18 @@ export const zcodeInstalledPluginSummarySchema = z
+@@ -3111,21 +2882,18 @@ export const zcodeInstalledPluginSummarySchema = z
    .strict();
  export type ZCodeInstalledPluginSummary = z.infer<typeof zcodeInstalledPluginSummarySchema>;
  
@@ -16847,7 +17035,7 @@ index 5b3de01..47adfff 100644
          supported: z.boolean(),
          reason: z.string().optional(),
        })
-@@ -3134,29 +2899,25 @@ export const zcodePluginsOverviewResultSchema = z
+@@ -3134,29 +2902,25 @@ export const zcodePluginsOverviewResultSchema = z
    .strict();
  export type ZCodePluginsOverviewResult = z.infer<typeof zcodePluginsOverviewResultSchema>;
  
@@ -16881,7 +17069,7 @@ index 5b3de01..47adfff 100644
      marketplace: zcodePluginMarketplaceSummarySchema.optional(),
      marketplaces: z.array(zcodePluginMarketplaceSummarySchema).optional(),
      diagnostics: z.array(zcodePluginDiagnosticSchema).optional(),
-@@ -3166,8 +2927,7 @@ export type ZCodePluginsMarketplaceMutationResult = z.infer<
+@@ -3166,8 +2930,7 @@ export type ZCodePluginsMarketplaceMutationResult = z.infer<
    typeof zcodePluginsMarketplaceMutationResultSchema
  >;
  
@@ -16891,7 +17079,7 @@ index 5b3de01..47adfff 100644
      workspace: zcodeWorkspaceRefSchema,
      pluginName: nonEmptyString,
      marketplace: nonEmptyString,
-@@ -3176,8 +2936,7 @@ export const zcodePluginsInstallParamsSchema = z
+@@ -3176,8 +2939,7 @@ export const zcodePluginsInstallParamsSchema = z
      operationId: nonEmptyString.optional(),
    })
    .strict();
@@ -16901,7 +17089,7 @@ index 5b3de01..47adfff 100644
      operationId: nonEmptyString,
    })
    .strict();
-@@ -3185,8 +2944,7 @@ export type ZCodePluginsCancelOperationParams = z.infer<
+@@ -3185,8 +2947,7 @@ export type ZCodePluginsCancelOperationParams = z.infer<
    typeof zcodePluginsCancelOperationParamsSchema
  >;
  
@@ -16911,7 +17099,7 @@ index 5b3de01..47adfff 100644
      operationId: nonEmptyString,
      cancelled: z.boolean(),
    })
-@@ -3194,8 +2952,7 @@ export const zcodePluginsCancelOperationResultSchema = z
+@@ -3194,8 +2955,7 @@ export const zcodePluginsCancelOperationResultSchema = z
  export type ZCodePluginsCancelOperationResult = z.infer<
    typeof zcodePluginsCancelOperationResultSchema
  >;
@@ -16921,7 +17109,7 @@ index 5b3de01..47adfff 100644
      workspace: zcodeWorkspaceRefSchema,
      pluginId: nonEmptyString.optional(),
      pluginName: nonEmptyString.optional(),
-@@ -3203,8 +2960,7 @@ export const zcodePluginsUninstallParamsSchema = z
+@@ -3203,8 +2963,7 @@ export const zcodePluginsUninstallParamsSchema = z
      removeCache: z.boolean().optional(),
    })
    .strict();
@@ -16931,7 +17119,7 @@ index 5b3de01..47adfff 100644
      installedPlugins: z.array(zcodeInstalledPluginSummarySchema),
      dependencyClosure: z.array(z.string()),
      diagnostics: z.array(zcodePluginDiagnosticSchema),
-@@ -3212,29 +2968,25 @@ export const zcodePluginsInstallResultSchema = z
+@@ -3212,29 +2971,25 @@ export const zcodePluginsInstallResultSchema = z
    .strict();
  export type ZCodePluginsInstallResult = z.infer<typeof zcodePluginsInstallResultSchema>;
  
@@ -16965,7 +17153,7 @@ index 5b3de01..47adfff 100644
      pluginId: nonEmptyString,
      diagnostics: z.array(zcodePluginDiagnosticSchema),
    })
-@@ -3243,8 +2995,7 @@ export type ZCodePluginsRestoreBuiltinResult = z.infer<
+@@ -3243,8 +2998,7 @@ export type ZCodePluginsRestoreBuiltinResult = z.infer<
    typeof zcodePluginsRestoreBuiltinResultSchema
  >;
  
@@ -16975,7 +17163,7 @@ index 5b3de01..47adfff 100644
      workspace: zcodeWorkspaceRefSchema,
      pluginId: nonEmptyString,
      options: jsonObjectSchema,
-@@ -3253,16 +3004,14 @@ export const zcodePluginsConfigureParamsSchema = z
+@@ -3253,16 +3007,14 @@ export const zcodePluginsConfigureParamsSchema = z
      dryRun: z.boolean().optional(),
    })
    .strict();
@@ -16994,7 +17182,7 @@ index 5b3de01..47adfff 100644
      workspace: zcodeWorkspaceRefSchema,
      pluginId: nonEmptyString,
      scope: zcodePluginScopeSchema.optional(),
-@@ -3270,20 +3019,17 @@ export const zcodePluginsResetConfigParamsSchema = z
+@@ -3270,20 +3022,17 @@ export const zcodePluginsResetConfigParamsSchema = z
    .strict();
  export type ZCodePluginsResetConfigParams = z.infer<typeof zcodePluginsResetConfigParamsSchema>;
  
@@ -17018,7 +17206,7 @@ index 5b3de01..47adfff 100644
          runnable: z.array(z.string()),
          diagnosticOnly: z.array(z.string()),
          unsupported: z.array(z.string()),
-@@ -3295,20 +3041,17 @@ export type ZCodePluginsValidateResult = z.infer<typeof zcodePluginsValidateResu
+@@ -3295,20 +3044,17 @@ export type ZCodePluginsValidateResult = z.infer<typeof zcodePluginsValidateResu
  
  // plugins/describe：按需枚举单个插件的组件「名称 + 描述」。
  // 已安装插件读本地缓存目录；未安装候选按需解析/临时 clone 源后枚举再清理。
@@ -17042,7 +17230,7 @@ index 5b3de01..47adfff 100644
          author: z.string().optional(),
          authorUrl: z.string().optional(),
          homepage: z.string().optional(),
-@@ -3320,8 +3063,7 @@ export const zcodePluginsDescribeResultSchema = z
+@@ -3320,8 +3066,7 @@ export const zcodePluginsDescribeResultSchema = z
    .strict();
  export type ZCodePluginsDescribeResult = z.infer<typeof zcodePluginsDescribeResultSchema>;
  
@@ -17052,7 +17240,7 @@ index 5b3de01..47adfff 100644
      unit: z.enum(["minute", "hourly", "daily", "weekly", "monthly", "yearly"]),
      interval: z.number().int().positive(),
      hour: z.number().int().min(0).max(23),
-@@ -3346,8 +3088,7 @@ export const zcodeAutomationIntervalUnitSchema = z.enum([
+@@ -3346,8 +3091,7 @@ export const zcodeAutomationIntervalUnitSchema = z.enum([
    "yearly",
  ]);
  
@@ -17062,7 +17250,7 @@ index 5b3de01..47adfff 100644
      automationId: nonEmptyString,
      title: z.string(),
      cronExpr: nonEmptyString,
-@@ -3369,8 +3110,7 @@ export const zcodeAutomationProtocolSchema = z
+@@ -3369,8 +3113,7 @@ export const zcodeAutomationProtocolSchema = z
    .strict();
  export type ZCodeAutomationProtocol = z.infer<typeof zcodeAutomationProtocolSchema>;
  
@@ -17072,7 +17260,7 @@ index 5b3de01..47adfff 100644
      title: z.string().optional(),
      cronExpr: nonEmptyString,
      relativeDelayMinutes: z.number().int().positive().max(525_600).optional(),
-@@ -3407,13 +3147,11 @@ export const zcodeAutomationCreateParamsSchema = z
+@@ -3407,13 +3150,11 @@ export const zcodeAutomationCreateParamsSchema = z
    });
  export type ZCodeAutomationCreateProtocolParams = z.infer<typeof zcodeAutomationCreateParamsSchema>;
  
@@ -17088,7 +17276,7 @@ index 5b3de01..47adfff 100644
      automationId: nonEmptyString,
      title: nonEmptyString.optional(),
      cronExpr: nonEmptyString.optional(),
-@@ -3464,33 +3202,28 @@ export const zcodeAutomationUpdateParamsSchema = z
+@@ -3464,33 +3205,28 @@ export const zcodeAutomationUpdateParamsSchema = z
      },
    );
  export type ZCodeAutomationUpdateProtocolParams = z.infer<typeof zcodeAutomationUpdateParamsSchema>;
@@ -17127,7 +17315,7 @@ index 5b3de01..47adfff 100644
    .strict();
  export type ZCodeAutomationDeleteProtocolParams = z.infer<typeof zcodeAutomationDeleteParamsSchema>;
  export const zcodeAutomationDeleteResultSchema = z.object({ deleted: z.boolean() }).strict();
-@@ -3503,8 +3236,7 @@ export type ZCodeAutomationDeleteProtocolResult = z.infer<typeof zcodeAutomation
+@@ -3503,8 +3239,7 @@ export type ZCodeAutomationDeleteProtocolResult = z.infer<typeof zcodeAutomation
  export const zcodeOffPeakPermissionModeSchema = z.enum(["build", "edit", "plan", "yolo"]);
  export type ZCodeOffPeakProtocolPermissionMode = z.infer<typeof zcodeOffPeakPermissionModeSchema>;
  
@@ -17137,7 +17325,7 @@ index 5b3de01..47adfff 100644
      title: nonEmptyString,
      prompt: nonEmptyString,
      permissionMode: zcodeOffPeakPermissionModeSchema.optional(),
-@@ -3518,8 +3250,7 @@ export type ZCodeOffPeakCreateProtocolParams = z.infer<typeof zcodeOffPeakCreate
+@@ -3518,8 +3253,7 @@ export type ZCodeOffPeakCreateProtocolParams = z.infer<typeof zcodeOffPeakCreate
  
  // 协议侧任务快照：轮尾卡片与 OffPeakList 的最小字段面。
  // 不暴露 serverTicketId（跨边界禁带）。
@@ -17147,7 +17335,7 @@ index 5b3de01..47adfff 100644
      offPeakTaskId: nonEmptyString,
      title: z.string(),
      status: z.enum(["queued", "paused", "running", "completed", "failed", "cancelled"]),
-@@ -3534,8 +3265,7 @@ export type ZCodeOffPeakTaskProtocolSnapshot = z.infer<typeof zcodeOffPeakTaskSn
+@@ -3534,8 +3268,7 @@ export type ZCodeOffPeakTaskProtocolSnapshot = z.infer<typeof zcodeOffPeakTaskSn
  // model 白名单预校失败复用 client_validation 分类 + errorCode "model_not_allowed"，不扩分类枚举。
  export const zcodeOffPeakCreateResultSchema = z.discriminatedUnion("ok", [
    z.object({ ok: z.literal(true), task: zcodeOffPeakTaskSnapshotSchema }).strict(),
@@ -17157,7 +17345,7 @@ index 5b3de01..47adfff 100644
        ok: z.literal(false),
        failureStage: z.enum(["client_validation", "ticket_request", "local_persist"]),
        errorCategory: z.enum([
-@@ -3555,8 +3285,7 @@ export type ZCodeOffPeakCreateProtocolResult = z.infer<typeof zcodeOffPeakCreate
+@@ -3555,8 +3288,7 @@ export type ZCodeOffPeakCreateProtocolResult = z.infer<typeof zcodeOffPeakCreate
  
  export const zcodeOffPeakListParamsSchema = z.object({}).strict();
  export type ZCodeOffPeakListProtocolParams = z.infer<typeof zcodeOffPeakListParamsSchema>;
@@ -17167,7 +17355,7 @@ index 5b3de01..47adfff 100644
    .strict();
  export type ZCodeOffPeakListProtocolResult = z.infer<typeof zcodeOffPeakListResultSchema>;
  
-@@ -3698,21 +3427,17 @@ export type ZCodeProtocolSessionMethodContract =
+@@ -3698,21 +3430,17 @@ export type ZCodeProtocolSessionMethodContract =
  
  /** 仅存储准备子进程的私有控制帧，原始路径不进入业务事件或遥测。 */
  export const zcodeStoragePreparationFrameSchema = z.discriminatedUnion("method", [

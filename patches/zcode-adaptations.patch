@@ -11042,15 +11042,16 @@ index a6e3875..e312968 100644
      rendererInstanceId: boundedIdentifierSchema,
      sequence: z.number().int().nonnegative(),
 diff --git a/packages/shared/src/runtime-tool-runtime.ts b/packages/shared/src/runtime-tool-runtime.ts
-index 94bfc4d..1ec50cf 100644
+index 94bfc4d..ec05b1c 100644
 --- a/packages/shared/src/runtime-tool-runtime.ts
 +++ b/packages/shared/src/runtime-tool-runtime.ts
-@@ -38,25 +38,26 @@ export const RUNTIME_TOOL_RUNTIME: Record<RuntimeToolId, RuntimeToolRuntimeDescr
+@@ -38,27 +38,29 @@ export const RUNTIME_TOOL_RUNTIME: Record<RuntimeToolId, RuntimeToolRuntimeDescr
    },
  };
  
-+// scriptc：对象展开 `...RUNTIME_TOOL_RUNTIME.x` 会把源字段的索引签名类型带回来（SC2002），
-+// 因此这里不展开，逐字段写出；versions 用精确键类型标注，记录形状与字面量一致（版本取值不变）。
++// scriptc：`satisfies Record<RuntimeToolId, RemoteRuntimeToolDescriptor>` 会把目标里
++// `versions: Readonly<Partial<Record<string, string>>>` 的索引签名带进比较（SC2002，固定键字面量
++// 无法 lift 进索引签名）；这里去掉 satisfies，保留 as const 让每个 versions 保持精确键形状。
  export const REMOTE_RUNTIME_TOOL_RUNTIME = {
    bfs: {
 -    ...RUNTIME_TOOL_RUNTIME.bfs,
@@ -11083,8 +11084,11 @@ index 94bfc4d..1ec50cf 100644
 +    resolveEntrySegments: (platform: string) => [resolvePlatformBinaryName("ugrep", platform)],
 +    versions: { linux: "v7.8.4-1" } as { linux: string },
    },
- } as const satisfies Record<RuntimeToolId, RemoteRuntimeToolDescriptor>;
+-} as const satisfies Record<RuntimeToolId, RemoteRuntimeToolDescriptor>;
++} as const;
  
+ export function getRemoteRuntimeToolsForPlatform(platform: string): ResolvedRemoteRuntimeTool[] {
+   // Linux remote 已切到 native-search 三工具，但 Darwin 仍依赖 legacy rg13。
 diff --git a/packages/shared/src/runtimeEnv.ts b/packages/shared/src/runtimeEnv.ts
 index c7a919f..6dce089 100644
 --- a/packages/shared/src/runtimeEnv.ts

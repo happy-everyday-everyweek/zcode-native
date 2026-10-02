@@ -11042,36 +11042,45 @@ index a6e3875..e312968 100644
      rendererInstanceId: boundedIdentifierSchema,
      sequence: z.number().int().nonnegative(),
 diff --git a/packages/shared/src/runtime-tool-runtime.ts b/packages/shared/src/runtime-tool-runtime.ts
-index 94bfc4d..f91c067 100644
+index 94bfc4d..1ec50cf 100644
 --- a/packages/shared/src/runtime-tool-runtime.ts
 +++ b/packages/shared/src/runtime-tool-runtime.ts
-@@ -38,25 +38,20 @@ export const RUNTIME_TOOL_RUNTIME: Record<RuntimeToolId, RuntimeToolRuntimeDescr
+@@ -38,25 +38,26 @@ export const RUNTIME_TOOL_RUNTIME: Record<RuntimeToolId, RuntimeToolRuntimeDescr
    },
  };
  
-+// scriptc 会按 satisfies 目标的索引签名推断 versions，固定键字面量无法 lift；
-+// 这里用内联 as 标注键形状，使记录形状与字面量一致（版本取值不变）。
++// scriptc：对象展开 `...RUNTIME_TOOL_RUNTIME.x` 会把源字段的索引签名类型带回来（SC2002），
++// 因此这里不展开，逐字段写出；versions 用精确键类型标注，记录形状与字面量一致（版本取值不变）。
  export const REMOTE_RUNTIME_TOOL_RUNTIME = {
    bfs: {
-     ...RUNTIME_TOOL_RUNTIME.bfs,
+-    ...RUNTIME_TOOL_RUNTIME.bfs,
 -    versions: {
 -      linux: "v4.1.1-2",
 -    },
++    binaryEnvVar: "ZCODE_BFS_BINARY",
++    bundledResourceDir: "bfs",
++    resolveEntrySegments: (platform: string) => [resolvePlatformBinaryName("bfs", platform)],
 +    versions: { linux: "v4.1.1-2" } as { linux: string },
    },
    ripgrep: {
-     ...RUNTIME_TOOL_RUNTIME.ripgrep,
+-    ...RUNTIME_TOOL_RUNTIME.ripgrep,
 -    versions: {
 -      darwin: "v13.0.0-10",
 -      linux: "v14.1.1-1",
 -    },
++    binaryEnvVar: "ZCODE_RG_BINARY",
++    bundledResourceDir: "ripgrep",
++    resolveEntrySegments: (platform: string) => [resolvePlatformBinaryName("rg", platform)],
 +    versions: { darwin: "v13.0.0-10", linux: "v14.1.1-1" } as { darwin: string; linux: string },
    },
    ugrep: {
-     ...RUNTIME_TOOL_RUNTIME.ugrep,
+-    ...RUNTIME_TOOL_RUNTIME.ugrep,
 -    versions: {
 -      linux: "v7.8.4-1",
 -    },
++    binaryEnvVar: "ZCODE_UGREP_BINARY",
++    bundledResourceDir: "ugrep",
++    resolveEntrySegments: (platform: string) => [resolvePlatformBinaryName("ugrep", platform)],
 +    versions: { linux: "v7.8.4-1" } as { linux: string },
    },
  } as const satisfies Record<RuntimeToolId, RemoteRuntimeToolDescriptor>;
@@ -12000,7 +12009,7 @@ index 7d89774..bcc0ef5 100644
          field: z.enum(["beforeContent", "afterContent"]),
          refId: z.string(),
 diff --git a/packages/shared/src/validationAppSettings.ts b/packages/shared/src/validationAppSettings.ts
-index 3cb58a1..491f18d 100644
+index 3cb58a1..8320c58 100644
 --- a/packages/shared/src/validationAppSettings.ts
 +++ b/packages/shared/src/validationAppSettings.ts
 @@ -1,4 +1,5 @@
@@ -12186,7 +12195,7 @@ index 3cb58a1..491f18d 100644
    // SSH 部署固定使用完整 active 资源集；旧 setting.json 里的 resourcePackages 是历史裁剪，
    // 在配置入口清掉，避免后续重连或 tab 恢复继续读取。
    return nextTarget;
-@@ -279,137 +282,142 @@ function migrateLegacyWorkspaceSession(value: unknown): unknown {
+@@ -279,137 +282,147 @@ function migrateLegacyWorkspaceSession(value: unknown): unknown {
      return value;
    }
  
@@ -12202,11 +12211,11 @@ index 3cb58a1..491f18d 100644
 +  // scriptc 不支持在索引签名记录上做对象展开；omitKey 复制整份记录并去掉迁移结束
 +  // 必然删除的两个旧字段，结果与原来的 `{ ...raw }` + delete 一致。
 +  const migrated = omitKey(omitKey(raw, "lastOpenTabs"), "remoteWorkspaceHistory");
-+  // scriptc 的类型谓词与 Array.isArray 都不会在条件表达式里收窄 unknown，直接传
-+  // unknown 会被当成 any[] 报错；先擦除成 any 再按数组取用，对 JSON 解析值行为一致。
-+  const rawLastWorkspaceSession: any = raw.lastWorkspaceSession;
-+  const lastWorkspaceSession: any[] = isArray(rawLastWorkspaceSession)
-+    ? rawLastWorkspaceSession
++  // scriptc：类型谓词与 Array.isArray 都不会在条件表达式里收窄 unknown，只擦除单个字段
++  // 不够（容器仍是 unknown）；这里把整份 raw 擦成 any 再取数组，对 JSON 解析值行为一致。
++  const rawAny: any = raw;
++  const lastWorkspaceSession: any[] = isArray(rawAny.lastWorkspaceSession)
++    ? rawAny.lastWorkspaceSession
      : [];
  
    const hasLegacyRemoteEntries = lastWorkspaceSession.some((entry) => {
@@ -12220,10 +12229,9 @@ index 3cb58a1..491f18d 100644
  
 -  const legacyRemoteHistory = Array.isArray(raw.remoteWorkspaceHistory)
 -    ? raw.remoteWorkspaceHistory
-+  // 同上：unknown 先擦除成 any，避免 isArray 未收窄时报 any[] 参数类型错误。
-+  const rawRemoteWorkspaceHistory: any = raw.remoteWorkspaceHistory;
-+  const legacyRemoteHistory: any[] = isArray(rawRemoteWorkspaceHistory)
-+    ? rawRemoteWorkspaceHistory
++  // 同上：整份 raw 已擦成 any，直接取数组即可，避免 isArray 未收窄时的 any[] 参数类型错误。
++  const legacyRemoteHistory: any[] = isArray(rawAny.remoteWorkspaceHistory)
++    ? rawAny.remoteWorkspaceHistory
      : [];
 -  const legacyRemoteHistoryById = new Map(
 -    legacyRemoteHistory.flatMap((entry) => {
@@ -12296,13 +12304,16 @@ index 3cb58a1..491f18d 100644
 +
 +        if (typeof rawEntry.historyId === "string") {
 +          const historyId = rawEntry.historyId;
-+          const legacyRemoteEntry = legacyRemoteHistoryEntries.find(
-+            (candidate) => candidate.id === historyId,
-+          );
-+          if (!legacyRemoteEntry) {
-+            continue;
++          // scriptc：元素带 any 的数组上调用 .find 会走动态引擎（SC2011），
++          // 这里用显式循环做同样的按 id 查找。
++          let legacyRemoteEntry: LegacyRemoteWorkspaceHistoryEntry | undefined = undefined;
++          for (const candidate of legacyRemoteHistoryEntries) {
++            if (candidate.id === historyId) {
++              legacyRemoteEntry = candidate;
++              break;
++            }
            }
- 
+-
 -          const rawEntry = entry as Record<string, unknown>;
 -          if (rawEntry.kind === "local" && typeof rawEntry.workspacePath === "string") {
 -            return [
@@ -12313,18 +12324,10 @@ index 3cb58a1..491f18d 100644
 -                  rawEntry.workspacePurpose === "conversation" ? "conversation" : "project",
 -              },
 -            ];
-+          const merged: Record<string, unknown> = {
-+            kind: "remote",
-+            workspacePath: legacyRemoteEntry.workspacePath,
-+            target: stripHistoricalRemoteResourcePackages(legacyRemoteEntry.target),
-+            lastOpenedAt: legacyRemoteEntry.lastOpenedAt,
-+            lastConnectionStatus: legacyRemoteEntry.lastConnectionStatus,
-+          };
-+          // 条件展开在 scriptc 里不支持，改为按字段写回。
-+          if (legacyRemoteEntry.localWorkspacePath) {
-+            merged.localWorkspacePath = legacyRemoteEntry.localWorkspacePath;
++          if (!legacyRemoteEntry) {
++            continue;
            }
--
+ 
 -          if (rawEntry.kind === "remote") {
 -            if (typeof rawEntry.workspacePath === "string" && rawEntry.target) {
 -              return [
@@ -12358,8 +12361,16 @@ index 3cb58a1..491f18d 100644
 -                  ]
 -                : [];
 -            }
-+          if (legacyRemoteEntry.workspaceIdentity) {
-+            merged.workspaceIdentity = legacyRemoteEntry.workspaceIdentity;
++          const merged: Record<string, unknown> = {
++            kind: "remote",
++            workspacePath: legacyRemoteEntry.workspacePath,
++            target: stripHistoricalRemoteResourcePackages(legacyRemoteEntry.target),
++            lastOpenedAt: legacyRemoteEntry.lastOpenedAt,
++            lastConnectionStatus: legacyRemoteEntry.lastConnectionStatus,
++          };
++          // 条件展开在 scriptc 里不支持，改为按字段写回。
++          if (legacyRemoteEntry.localWorkspacePath) {
++            merged.localWorkspacePath = legacyRemoteEntry.localWorkspacePath;
            }
 -
 -          return [];
@@ -12391,6 +12402,9 @@ index 3cb58a1..491f18d 100644
 -      (entry) => !existingLocalWorkspacePaths.has(entry.workspacePath),
 -    ),
 -  ];
++          if (legacyRemoteEntry.workspaceIdentity) {
++            merged.workspaceIdentity = legacyRemoteEntry.workspaceIdentity;
++          }
 +          if (legacyRemoteEntry.lastConnectionError) {
 +            merged.lastConnectionError = legacyRemoteEntry.lastConnectionError;
 +          }
@@ -12442,7 +12456,7 @@ index 3cb58a1..491f18d 100644
      migrated.lastWorkspaceSession = nextWorkspaceSession;
    }
    delete migrated.lastOpenTabs;
-@@ -527,8 +535,7 @@ export const appSettingsPatchSchema = z.object({
+@@ -527,8 +540,7 @@ export const appSettingsPatchSchema = z.object({
    providerFamilyDomainUpdatedAt: z.number().int().nonnegative().optional(),
    providerFamilyDomainMigrated: z.boolean().optional(),
    nativeSearchEnhancementsEnabled: z.boolean().optional(),
@@ -12452,7 +12466,7 @@ index 3cb58a1..491f18d 100644
        "office",
        "developer",
        "independent",
-@@ -554,8 +561,7 @@ export const appSettingsPatchSchema = z.object({
+@@ -554,8 +566,7 @@ export const appSettingsPatchSchema = z.object({
    pendingPostUpdateReleaseNotes: postUpdateReleaseNotesPayloadSchema.optional(),
    receivePreviewUpdates: z.boolean().optional(),
    autoDownloadAndInstallUpdates: z.boolean().optional(),

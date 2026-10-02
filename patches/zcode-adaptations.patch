@@ -1265,6 +1265,21 @@ index f125336..bef8d0b 100644
      trigger: z.enum([MicrocompactTrigger.TimeBased, MicrocompactTrigger.TokenPressure]),
      strategy: z.enum([MicrocompactStrategy.LocalToolResultClear]),
      preMicrocompactTokenCount: z.number().int().nonnegative(),
+diff --git a/apps/zcode-cli/packages/contracts/src/events/event-reducer-helpers.ts b/apps/zcode-cli/packages/contracts/src/events/event-reducer-helpers.ts
+index 8b61463..c539c8f 100644
+--- a/apps/zcode-cli/packages/contracts/src/events/event-reducer-helpers.ts
++++ b/apps/zcode-cli/packages/contracts/src/events/event-reducer-helpers.ts
+@@ -22,7 +22,9 @@ import type {
+   StreamingToolLedgerPayload,
+ } from "./stream-recovery.events.js";
+ 
+-export const initialSessionProjection = {
++// ZCode Android port: 显式标注对象字面量，否则 scriptc 把 Date 字段当动态对象构造，
++// 报 SC1090「Date 不能跨入 any-typed code」。
++export const initialSessionProjection: Omit<SessionProjection, "id"> = {
+   createdAt: new Date(),
+   updatedAt: new Date(),
+   mode: "build" as CollaborationMode,
 diff --git a/apps/zcode-cli/packages/contracts/src/events/session.events.ts b/apps/zcode-cli/packages/contracts/src/events/session.events.ts
 index 655c088..06998e6 100644
 --- a/apps/zcode-cli/packages/contracts/src/events/session.events.ts
@@ -1353,10 +1368,37 @@ index 0ecadd8..f964578 100644
        reason: nonEmptyStringSchema.optional(),
        policyRevision: nonEmptyStringSchema,
 diff --git a/apps/zcode-cli/packages/contracts/src/hooks/workspace-hook-trust.ts b/apps/zcode-cli/packages/contracts/src/hooks/workspace-hook-trust.ts
-index 9ea064b..d3884cf 100644
+index 9ea064b..8112a54 100644
 --- a/apps/zcode-cli/packages/contracts/src/hooks/workspace-hook-trust.ts
 +++ b/apps/zcode-cli/packages/contracts/src/hooks/workspace-hook-trust.ts
-@@ -134,8 +134,7 @@ const sha256DigestSchema = z.string().regex(/^[a-f0-9]{64}$/u);
+@@ -129,13 +129,34 @@ export const WORKSPACE_HOOK_STATE_ADMISSION_MAP = {
+   }
+ >;
+ 
++// ZCode Android port: scriptc 不支持用字面量联合 key 索引记录（SC1090），
++// 改为显式 switch 分发；行为与查表一致。
++function admissionForTrustState(trustState: string) {
++  switch (trustState) {
++    case "trusted_persistent":
++      return WORKSPACE_HOOK_STATE_ADMISSION_MAP.trusted_persistent;
++    case "blocked_untrusted":
++      return WORKSPACE_HOOK_STATE_ADMISSION_MAP.blocked_untrusted;
++    case "blocked_policy":
++      return WORKSPACE_HOOK_STATE_ADMISSION_MAP.blocked_policy;
++    case "revoked":
++      return WORKSPACE_HOOK_STATE_ADMISSION_MAP.revoked;
++    case "stale_digest":
++      return WORKSPACE_HOOK_STATE_ADMISSION_MAP.stale_digest;
++    case "pending_trust":
++      return WORKSPACE_HOOK_STATE_ADMISSION_MAP.pending_trust;
++    case "not_applicable":
++    default:
++      return WORKSPACE_HOOK_STATE_ADMISSION_MAP.not_applicable;
++  }
++}
++
+ const nonEmptyStringSchema = z.string().trim().min(1);
+ const sha256DigestSchema = z.string().regex(/^[a-f0-9]{64}$/u);
  const positiveIntegerSchema = z.number().int().positive();
  const nonnegativeIntegerSchema = z.number().int().nonnegative();
  
@@ -1366,7 +1408,16 @@ index 9ea064b..d3884cf 100644
      reviewItemId: nonEmptyStringSchema,
      sourceRootEnabled: z.boolean(),
      declarationEnabled: z.boolean(),
-@@ -217,16 +216,14 @@ const canonicalEntryBaseShape = {
+@@ -153,7 +174,7 @@ export const workspaceHookEffectiveStateSchema = z
+   })
+   .strict()
+   .superRefine((state, context) => {
+-    const expected = WORKSPACE_HOOK_STATE_ADMISSION_MAP[state.trustState];
++    const expected = admissionForTrustState(state.trustState);
+     if (state.admissionClass !== expected.admissionClass) {
+       context.addIssue({
+         code: z.ZodIssueCode.custom,
+@@ -217,16 +238,14 @@ const canonicalEntryBaseShape = {
  } as const;
  
  export const canonicalWorkspaceHookEntrySchema = z.discriminatedUnion("type", [
@@ -1385,7 +1436,7 @@ index 9ea064b..d3884cf 100644
        ...canonicalEntryBaseShape,
        type: z.literal("process"),
        args: z.array(z.string()).optional(),
-@@ -235,22 +232,19 @@ export const canonicalWorkspaceHookEntrySchema = z.discriminatedUnion("type", [
+@@ -235,22 +254,19 @@ export const canonicalWorkspaceHookEntrySchema = z.discriminatedUnion("type", [
  ]);
  export type CanonicalWorkspaceHookEntry = z.infer<typeof canonicalWorkspaceHookEntrySchema>;
  
@@ -1411,7 +1462,7 @@ index 9ea064b..d3884cf 100644
                enabled: z.boolean().optional(),
                timeoutMs: z.number().finite().positive().optional(),
                maxOutputBytes: z.number().finite().positive().optional(),
-@@ -272,8 +266,7 @@ export function createWorkspaceHookBundleSnapshot(value: unknown): WorkspaceHook
+@@ -272,8 +288,7 @@ export function createWorkspaceHookBundleSnapshot(value: unknown): WorkspaceHook
    return deepFreeze(workspaceHookBundleSnapshotSchema.parse(value)) as WorkspaceHookBundleSnapshot;
  }
  
@@ -1421,7 +1472,7 @@ index 9ea064b..d3884cf 100644
      reviewFlowId: nonEmptyStringSchema,
      generation: positiveIntegerSchema,
      interactionId: nonEmptyStringSchema,
-@@ -311,14 +304,13 @@ export const workspaceHookReviewFlowStateSchema = z
+@@ -311,14 +326,13 @@ export const workspaceHookReviewFlowStateSchema = z
    });
  export type WorkspaceHookReviewFlowState = z.infer<typeof workspaceHookReviewFlowStateSchema>;
  
@@ -1931,7 +1982,7 @@ index 16c40f7..c044a51 100644
      structuredPatch: z.array(EditDiffHunkSchema),
      summary: z.string(),
 diff --git a/apps/zcode-cli/packages/contracts/src/tools/ask-user-question.ts b/apps/zcode-cli/packages/contracts/src/tools/ask-user-question.ts
-index 3949c85..a088b3f 100644
+index 3949c85..9238da1 100644
 --- a/apps/zcode-cli/packages/contracts/src/tools/ask-user-question.ts
 +++ b/apps/zcode-cli/packages/contracts/src/tools/ask-user-question.ts
 @@ -14,20 +14,16 @@ const HTML_PREVIEW_TAG_PATTERN = /<\/?\s*[a-z][a-z0-9:-]*(?:\s[^<>]*)?>/i;
@@ -1992,7 +2043,24 @@ index 3949c85..a088b3f 100644
        .default(false)
        .describe(
          "Set to true to allow the user to select multiple options instead of just one. Use when choices are not mutually exclusive.",
-@@ -90,10 +81,8 @@ export const AskUserQuestionSchema = z
+@@ -70,8 +61,14 @@ export const AskUserQuestionSchema = z
+   })
+   .strict()
+   .superRefine((question, context) => {
+-    const labels = question.options.map((option) => option.label);
+-    if (labels.length !== new Set(labels).size) {
++    const labels: string[] = question.options.map((option) => option.label);
++    // ZCode Android port: scriptc 只支持 Set<string>（Set<unknown>.size 无 lowering），
++    // 先声明再逐个 add。
++    const uniqueLabels = new Set<string>();
++    for (const label of labels) {
++      uniqueLabels.add(label);
++    }
++    if (labels.length !== uniqueLabels.size) {
+       context.addIssue({
+         code: z.ZodIssueCode.custom,
+         message: "Option labels must be unique within each question",
+@@ -90,10 +87,8 @@ export const AskUserQuestionSchema = z
  
  export type AskUserQuestion = z.infer<typeof AskUserQuestionSchema>;
  
@@ -2005,7 +2073,7 @@ index 3949c85..a088b3f 100644
        .optional()
        .describe("The preview content of the selected option, if the question used previews."),
      notes: z.string().optional().describe("Free-text notes the user added to their selection."),
-@@ -102,10 +91,8 @@ export const AskUserQuestionAnnotationSchema = z
+@@ -102,10 +97,8 @@ export const AskUserQuestionAnnotationSchema = z
  
  export type AskUserQuestionAnnotation = z.infer<typeof AskUserQuestionAnnotationSchema>;
  
@@ -2018,7 +2086,7 @@ index 3949c85..a088b3f 100644
        .optional()
        .describe(
          'Optional identifier for the source of this question (e.g., "remember" for /remember command). Used for analytics tracking.',
-@@ -113,19 +100,15 @@ const AskUserQuestionMetadataSchema = z
+@@ -113,19 +106,15 @@ const AskUserQuestionMetadataSchema = z
    })
    .strict();
  
@@ -2042,17 +2110,33 @@ index 3949c85..a088b3f 100644
        .optional()
        .describe(
          "Optional per-question annotations from the user (e.g., notes on preview selections). Keyed by question text.",
-@@ -160,7 +143,8 @@ export const AskUserQuestionAnsweredInputSchema = AskUserQuestionInputSchema.sup
+@@ -136,8 +125,12 @@ export const AskUserQuestionInputSchema = z
+   })
+   .strict()
+   .superRefine((input, context) => {
+-    const questions = input.questions.map((question) => question.question);
+-    if (questions.length !== new Set(questions).size) {
++    const questions: string[] = input.questions.map((question) => question.question);
++    const uniqueQuestions = new Set<string>();
++    for (const question of questions) {
++      uniqueQuestions.add(question);
++    }
++    if (questions.length !== uniqueQuestions.size) {
+       context.addIssue({
+         code: z.ZodIssueCode.custom,
+         message: "Question texts must be unique",
+@@ -160,7 +153,9 @@ export const AskUserQuestionAnsweredInputSchema = AskUserQuestionInputSchema.sup
        });
        return;
      }
 -    for (const [question, answer] of Object.entries(input.answers)) {
-+    for (const [question, answerValue] of Object.entries(input.answers)) {
++    // ZCode Android port: answers 是 any，Object.entries 需要值类型具体的 Record 才能 lowering。
++    for (const [question, answerValue] of Object.entries(input.answers as Record<string, string>)) {
 +      const answer = answerValue as string;
        if (answer.trim().length === 0) {
          context.addIssue({
            code: z.ZodIssueCode.custom,
-@@ -172,12 +156,10 @@ export const AskUserQuestionAnsweredInputSchema = AskUserQuestionInputSchema.sup
+@@ -172,12 +167,10 @@ export const AskUserQuestionAnsweredInputSchema = AskUserQuestionInputSchema.sup
    },
  );
  
@@ -5386,6 +5470,156 @@ index 461d678..4934bd4 100644
  ): ReadFileStateEntry | undefined {
    if (!readFileState) return undefined;
  
+diff --git a/apps/zcode-cli/packages/core/src/workflow/expert/graph-artifacts.ts b/apps/zcode-cli/packages/core/src/workflow/expert/graph-artifacts.ts
+index abd7b0b..7ead897 100644
+--- a/apps/zcode-cli/packages/core/src/workflow/expert/graph-artifacts.ts
++++ b/apps/zcode-cli/packages/core/src/workflow/expert/graph-artifacts.ts
+@@ -33,13 +33,16 @@ export async function seedGraphFromPhaseArtifact(
+     phase: targetPhase,
+     timestamp: ctx.timestamp(),
+   });
++  // 修复依据：applyWorkflowGraphSeed 返回值里的泛型快照在 scriptc 里退化成 unknown，
++  // 显式收窄成契约类型后，runId 与图记录字段访问才有具体类型。
++  const appliedSnapshot = applied.snapshot as ExpertWorkflowRunSnapshot;
+   if (!applied.changed) {
+     return snapshot;
+   }
+ 
+-  await ctx.store.writeSnapshot(applied.snapshot, { signal });
+-  await appendGraphSeedRecords(ctx, applied.snapshot, applied, definition.phase, signal);
+-  await ctx.appendEvent(applied.snapshot.runId, "graph_expanded", {
++  await ctx.store.writeSnapshot(appliedSnapshot, { signal });
++  await appendGraphSeedRecords(ctx, appliedSnapshot, applied, definition.phase, signal);
++  await ctx.appendEvent(appliedSnapshot.runId, "graph_expanded", {
+     message: `Workflow graph seeded from ${definition.title}.`,
+     payload: {
+       collectionIds: applied.addedCollections.map((collection) => collection.collectionId),
+@@ -51,7 +54,7 @@ export async function seedGraphFromPhaseArtifact(
+     phase: definition.phase,
+     signal,
+   });
+-  return applied.snapshot;
++  return appliedSnapshot;
+ }
+ 
+ export async function updateNodePromptsFromPhaseArtifact(
+@@ -79,9 +82,11 @@ export async function updateNodePromptsFromPhaseArtifact(
+     return snapshot;
+   }
+ 
+-  await ctx.store.writeSnapshot(applied.snapshot, { signal });
++  // 修复依据：applyWorkflowNodePromptUpdates 的泛型快照同样在 scriptc 里退化成 unknown。
++  const appliedSnapshot = applied.snapshot as ExpertWorkflowRunSnapshot;
++  await ctx.store.writeSnapshot(appliedSnapshot, { signal });
+   await ctx.store.appendGraphRecord(
+-    applied.snapshot.runId,
++    appliedSnapshot.runId,
+     {
+       nodeIds: applied.updatedNodes.map((node) => node.id),
+       payload: {
+@@ -90,13 +95,13 @@ export async function updateNodePromptsFromPhaseArtifact(
+       },
+       phase: definition.phase,
+       recordType: "op",
+-      runId: applied.snapshot.runId,
++      runId: appliedSnapshot.runId,
+       timestamp: ctx.timestamp(),
+       type: "node_prompts_updated",
+     },
+     { signal },
+   );
+-  await ctx.appendEvent(applied.snapshot.runId, "graph_updated", {
++  await ctx.appendEvent(appliedSnapshot.runId, "graph_updated", {
+     message: `Workflow node prompts updated from ${definition.title}.`,
+     payload: {
+       nodeIds: applied.updatedNodes.map((node) => node.id),
+@@ -106,7 +111,7 @@ export async function updateNodePromptsFromPhaseArtifact(
+     phase: definition.phase,
+     signal,
+   });
+-  return applied.snapshot;
++  return appliedSnapshot;
+ }
+ 
+ async function appendGraphSeedRecords(
+diff --git a/apps/zcode-cli/packages/core/src/workflow/expert/retry-state.ts b/apps/zcode-cli/packages/core/src/workflow/expert/retry-state.ts
+index e9a8ead..64077b9 100644
+--- a/apps/zcode-cli/packages/core/src/workflow/expert/retry-state.ts
++++ b/apps/zcode-cli/packages/core/src/workflow/expert/retry-state.ts
+@@ -31,8 +31,11 @@ export function prepareSnapshotForRetry(
+     nodeIds: nodeScope.size > 0 ? nodeScope : undefined,
+     timestamp,
+   });
++  // 修复依据：泛型返回值的 snapshot 在 scriptc 里退化成 unknown（不代入 TSnapshot），
++  // 显式收窄成契约类型后，图、阶段与会话链接的字段访问才有具体类型。
++  const repairedSnapshot = resumeRepair.snapshot as ExpertWorkflowRunSnapshot;
+   const nodeChanges = [...resumeRepair.nodeChanges];
+-  const resetNodes = resumeRepair.snapshot.graph.nodes.map((node) => {
++  const resetNodes = repairedSnapshot.graph.nodes.map((node) => {
+     if (!nodeScope.has(node.id) || (node.status !== "failed" && node.status !== "active")) {
+       return node;
+     }
+@@ -47,7 +50,7 @@ export function prepareSnapshotForRetry(
+       status: "pending" as const,
+     };
+   });
+-  const resetPhases = resumeRepair.snapshot.phases.map((entry) => {
++  const resetPhases = repairedSnapshot.phases.map((entry) => {
+     if (
+       phase &&
+       entry.phase === phase &&
+@@ -65,19 +68,19 @@ export function prepareSnapshotForRetry(
+   return {
+     nodeChanges: dedupeWorkflowNodeChanges(nodeChanges),
+     snapshot: {
+-      ...resumeRepair.snapshot,
++      ...repairedSnapshot,
+       failure: undefined,
+       graph: {
+-        collections: resumeRepair.snapshot.graph.collections,
+-        edges: resumeRepair.snapshot.graph.edges,
++        collections: repairedSnapshot.graph.collections,
++        edges: repairedSnapshot.graph.edges,
+         nodes: resetNodes,
+       },
+       pauseReason: undefined,
+       phases: resetPhases,
+       recoveryActions: [],
+       sessionLinks: deriveWorkflowSessionLinks({
+-        activities: resumeRepair.snapshot.activities,
+-        runId: resumeRepair.snapshot.runId,
++        activities: repairedSnapshot.activities,
++        runId: repairedSnapshot.runId,
+       }),
+       status: "running",
+       updatedAt: timestamp,
+diff --git a/apps/zcode-cli/packages/core/src/workflow/expert/run-loop.ts b/apps/zcode-cli/packages/core/src/workflow/expert/run-loop.ts
+index 8e54ba7..fb36e55 100644
+--- a/apps/zcode-cli/packages/core/src/workflow/expert/run-loop.ts
++++ b/apps/zcode-cli/packages/core/src/workflow/expert/run-loop.ts
+@@ -95,7 +95,9 @@ export async function continueRun(
+         reason: errorMessage,
+         timestamp: ctx.timestamp(),
+       });
+-      const cancelled = cancelRepair.snapshot;
++      // 修复依据：cancelWorkflowSnapshot 的泛型快照在 scriptc 里不代入 TSnapshot，
++      // snapshot 退化成 unknown；显式收窄成契约类型后再读 runId/status/traceId。
++      const cancelled = cancelRepair.snapshot as ExpertWorkflowRunSnapshot;
+       await ctx.store.writeSnapshot(cancelled);
+       await ctx.appendLifecycleGraphChanges(cancelled, cancelRepair.nodeChanges);
+       await ctx.appendEvent(cancelled.runId, "run_cancelled", {
+diff --git a/apps/zcode-cli/packages/core/src/workflow/expert/runtime.ts b/apps/zcode-cli/packages/core/src/workflow/expert/runtime.ts
+index a4e66d5..275aa4f 100644
+--- a/apps/zcode-cli/packages/core/src/workflow/expert/runtime.ts
++++ b/apps/zcode-cli/packages/core/src/workflow/expert/runtime.ts
+@@ -5,6 +5,7 @@ import { ExpertWorkflowRuntimeContext, lifecyclePayload } from "./runtime-contex
+ import { prepareSnapshotForRetry } from "./retry-state.js";
+ import { continueRun } from "./run-loop.js";
+ import type {
++  ExpertWorkflowRunSnapshot,
+   ExpertWorkflowCommandResult,
+   ExpertWorkflowEventsOptions,
+   ExpertWorkflowListOptions,
 diff --git a/apps/zcode-cli/packages/core/src/workflow/lifecycle.ts b/apps/zcode-cli/packages/core/src/workflow/lifecycle.ts
 index f326ae8..82a3f4e 100644
 --- a/apps/zcode-cli/packages/core/src/workflow/lifecycle.ts
@@ -5576,10 +5810,18 @@ index f326ae8..82a3f4e 100644
 +  return [...new Set(values.filter((value: any) => value.length > 0))];
  }
 diff --git a/apps/zcode-cli/packages/core/src/workflow/scheduler.ts b/apps/zcode-cli/packages/core/src/workflow/scheduler.ts
-index 0fb8dac..c817819 100644
+index 0fb8dac..a051c39 100644
 --- a/apps/zcode-cli/packages/core/src/workflow/scheduler.ts
 +++ b/apps/zcode-cli/packages/core/src/workflow/scheduler.ts
-@@ -49,7 +49,7 @@ export class WorkflowGraphScheduler {
+@@ -15,6 +15,7 @@ import type {
+   WorkflowGraphSchedulerRunResult,
+   WorkflowSchedulerNodePromise,
+ } from "./scheduler/types.js";
++import type { WorkflowRunSnapshot } from "@zcode/contracts";
+ 
+ export { deriveWorkflowRunSchedulerState, deriveWorkflowSchedulerState } from "@zcode/contracts";
+ export type { WorkflowSchedulerDerivedNode, WorkflowSchedulerState } from "@zcode/contracts";
+@@ -49,7 +50,7 @@ export class WorkflowGraphScheduler {
    }
  
    async run(options: WorkflowGraphSchedulerRunOptions): Promise<WorkflowGraphSchedulerRunResult> {
@@ -5588,6 +5830,17 @@ index 0fb8dac..c817819 100644
        options.executableNodeIds ?? options.snapshot.graph.nodes.map((node) => node.id),
      );
      const resumeRepair = reconcileWorkflowSnapshotForResume(options.snapshot, {
+@@ -57,7 +58,9 @@ export class WorkflowGraphScheduler {
+       resetPhases: false,
+       timestamp: this.eventLog.timestamp(),
+     });
+-    let snapshot = resumeRepair.snapshot;
++    // 修复依据：reconcileWorkflowSnapshotForResume 是泛型函数，scriptc 不会代入类型参数，
++    // 返回值里的 snapshot 会退化成 unknown，后续读策略/图字段全部报错。这里按契约类型显式收窄。
++    let snapshot = resumeRepair.snapshot as WorkflowRunSnapshot;
+     if (resumeRepair.changed) {
+       await this.writeSnapshot(snapshot, { signal: options.abortSignal });
+     }
 diff --git a/apps/zcode-cli/packages/core/tsconfig.json b/apps/zcode-cli/packages/core/tsconfig.json
 index 0d5e854..8290f0d 100644
 --- a/apps/zcode-cli/packages/core/tsconfig.json

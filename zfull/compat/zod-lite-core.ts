@@ -315,7 +315,8 @@ export class ZBase {
   _litMap: Record<string, string> | undefined = undefined;
 
   get shape(): any {
-    return this._shapeObjs;
+    // agent-c P2：动态返回口只接受 JSON 可表示值；先取记录视图再交给 any 调用点。
+    return this._shapeObjs as Record<string, unknown>;
   }
 
   _parse(input: any, ctx: ParseCtx): unknown {
@@ -687,7 +688,7 @@ export class ZodType<O = any> extends ZBase {
   }
 
   transform(fn: (value: any, ctx: RefinementCtx) => any): ZodType<any> {
-    const w = new ZodType<any>();
+    const w = new ZodType<Record<string, any>>();
     w._wrap = "transform";
     w._innerIdx = registerSchema(this);
     w._fn = makeFn(fn);
@@ -695,7 +696,7 @@ export class ZodType<O = any> extends ZBase {
   }
 
   pipe(target: ZBase): ZodType<any> {
-    const w = new ZodType<any>();
+    const w = new ZodType<Record<string, any>>();
     w._wrap = "pipe";
     w._innerIdx = registerSchema(this);
     w._objIdx = registerSchema(target);
@@ -931,7 +932,7 @@ export class ZodType<O = any> extends ZBase {
   }
 
   extend(shape: ZodRawShape): ZodType<any> {
-    const w = new ZodType<any>();
+    const w = new ZodType<Record<string, any>>();
     copyState(this, w);
     w._shapeIdxs = mergeShape(this._shapeIdxs, shapeIdxsOf(shape));
     w._litMap = mergeLit(this._litMap, litMapOf(shape));
@@ -1960,7 +1961,7 @@ export function boolean(): ZodType<boolean> {
 }
 
 export function literal(value: string | number | boolean): ZodType<any> {
-  const w = new ZodType<any>();
+  const w = new ZodType<Record<string, any>>();
   w._wrap = "literal";
   w._value = primOf(value);
   w._litVal = litDisplay(value);
@@ -1969,7 +1970,7 @@ export function literal(value: string | number | boolean): ZodType<any> {
 }
 
 function enumOf(values: readonly string[]): ZodType<any> {
-  const w = new ZodType<any>();
+  const w = new ZodType<Record<string, any>>();
   w._wrap = "enum";
   w._discVals = strArrOf(values);
   w._msg = enumMessage(w._discVals);
@@ -1979,7 +1980,7 @@ function enumOf(values: readonly string[]): ZodType<any> {
 export { enumOf as enum };
 
 export function array(element: ZBase): ZodType<any[]> {
-  const w = new ZodType<any[]>();
+  const w = new ZodType<Record<string, any>[]>();
   w._wrap = "array";
   w._innerIdx = registerSchema(element);
   return w;
@@ -2027,7 +2028,7 @@ export function partialRecord(keyType: ZBase, valueType?: ZBase): ZodType<Record
 }
 
 export function union(options: readonly ZBase[]): ZodType<any> {
-  const w = new ZodType<any>();
+  const w = new ZodType<Record<string, any>>();
   w._wrap = "union";
   const idxs: number[] = [];
   for (let i = 0; i < options.length; i++) {
@@ -2040,7 +2041,7 @@ export function union(options: readonly ZBase[]): ZodType<any> {
 }
 
 export function discriminatedUnion(discriminator: string, options: readonly ZBase[]): ZodType<any> {
-  const w = new ZodType<any>();
+  const w = new ZodType<Record<string, any>>();
   w._wrap = "du";
   w._disc = discriminator;
   const idxs2: number[] = [];
@@ -2058,7 +2059,7 @@ export function discriminatedUnion(discriminator: string, options: readonly ZBas
 }
 
 export function unknown(): ZodType<any> {
-  const w = new ZodType<any>();
+  const w = new ZodType<Record<string, any>>();
   w._wrap = "unknown";
   return w;
 }
@@ -2087,7 +2088,7 @@ export function uuid(): ZodType<string> {
 }
 
 export function preprocess(fn: (value: any) => unknown, schema: ZBase): ZodType<any> {
-  const w = new ZodType<any>();
+  const w = new ZodType<Record<string, any>>();
   w._wrap = "preprocess";
   w._innerIdx = registerSchema(schema);
   w._fn = preFnOf(fn);

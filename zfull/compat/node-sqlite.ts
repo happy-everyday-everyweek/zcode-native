@@ -13,7 +13,9 @@ export class DatabaseSync {
   /** 与 node:sqlite 的 DatabaseSync 同名成员，保持调用点类型可编译。 */
   isTransaction: boolean = false;
 
-  constructor(path?: any) {
+  // agent-c P1：与 node:sqlite 真实 API 对齐，接受 options 第二参；
+  // sqlite-session-store 用 { timeout } 保证并发启动不在 migration prelude 抛 database is locked。
+  constructor(path?: any, options?: any) {
     throw new Error("node:sqlite is not available in the native build");
   }
   prepare(sql: any): any {

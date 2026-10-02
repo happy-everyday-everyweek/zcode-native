@@ -10101,6 +10101,46 @@ index 2d75ead..a10f3c6 100644
 +  }
 +  return copied;
  }
+diff --git a/packages/shared/src/conversation-preview-artifacts.ts b/packages/shared/src/conversation-preview-artifacts.ts
+index 5a6be36..ca72ea3 100644
+--- a/packages/shared/src/conversation-preview-artifacts.ts
++++ b/packages/shared/src/conversation-preview-artifacts.ts
+@@ -47,7 +47,7 @@ interface PreviewFileTypeDefinition {
+   artifactType: ConversationPreviewArtifactType;
+ }
+ 
+-const PREVIEW_FILE_TYPES: readonly PreviewFileTypeDefinition[] = [
++const PREVIEW_FILE_TYPES: PreviewFileTypeDefinition[] = [
+   {
+     extensions: [".md"],
+     kind: "markdown",
+@@ -84,16 +84,18 @@ const PREVIEW_FILE_TYPES: readonly PreviewFileTypeDefinition[] = [
+     mimeType: "application/pdf",
+     artifactType: "pdf",
+   },
+-  ...MEDIA_PREVIEW_FORMATS.map(
+-    ({ extension, kind, mediaType }): PreviewFileTypeDefinition => ({
+-      extensions: [extension],
+-      kind,
+-      mimeType: mediaType,
+-      artifactType: kind,
+-    }),
+-  ),
+ ];
+ 
++// scriptc 不支持把 `.map(...)` 的调用结果展开进数组字面量；改为按 MEDIA_PREVIEW_FORMATS 顺序逐条追加，条目不变。
++for (const format of MEDIA_PREVIEW_FORMATS) {
++  PREVIEW_FILE_TYPES.push({
++    extensions: [format.extension],
++    kind: format.kind,
++    mimeType: format.mediaType,
++    artifactType: format.kind,
++  });
++}
++
+ export const CONVERSATION_PREVIEW_CARD_CANDIDATE_LIMIT = 15;
+ export const CONVERSATION_PREVIEW_CARD_VISIBLE_LIMIT = 10;
+ 
 diff --git a/packages/shared/src/conversation-share.ts b/packages/shared/src/conversation-share.ts
 index 6c210a6..3e6e5f3 100644
 --- a/packages/shared/src/conversation-share.ts
@@ -10190,12 +10230,16 @@ index 6c210a6..3e6e5f3 100644
      client_request_id: z.string().trim().min(1),
    })
 diff --git a/packages/shared/src/database-startup.ts b/packages/shared/src/database-startup.ts
-index 9bbfb1f..ec2095b 100644
+index 9bbfb1f..5bc28a2 100644
 --- a/packages/shared/src/database-startup.ts
 +++ b/packages/shared/src/database-startup.ts
-@@ -75,8 +75,7 @@ export const databaseStartupErrorDetailsSchema = z.object({
+@@ -74,9 +74,11 @@ export const databaseStartupErrorDetailsSchema = z.object({
+   systemCode: z.string().max(64).optional(),
    migrationId: z.string().max(128).optional(),
  });
++// scriptc 不支持展开 any 类型的 `.shape`；先绑定为值类型记录，再在状态 schema 中逐字段写回。
++const databaseStartupErrorDetailShape: Record<string, any> =
++  databaseStartupErrorDetailsSchema.shape;
  
 -export const startupDiskSummarySchema = z
 -  .object({
@@ -10203,7 +10247,7 @@ index 9bbfb1f..ec2095b 100644
      scopeId: z.string().max(128),
      observedAvailableDropPeakBytes: z.number().finite().nonnegative().nullable(),
      minAvailableBytes: z.number().finite().nonnegative().nullable(),
-@@ -96,8 +95,7 @@ export const databaseStartupPhaseSchema = z.enum([
+@@ -96,8 +98,7 @@ export const databaseStartupPhaseSchema = z.enum([
  export const databaseMigrationIdSchema = z.string().regex(/^[a-zA-Z_0-9-]{1,128}$/);
  
  /** 需求种类与真实执行/提交分开；预检发现需求不意味着当前执行者运行过 SQL。 */
@@ -10213,7 +10257,7 @@ index 9bbfb1f..ec2095b 100644
      kind: z.enum(["none", "initialize", "upgrade"]),
      executedCount: z.number().int().nonnegative(),
      committedCount: z.number().int().nonnegative(),
-@@ -114,8 +112,7 @@ export const databaseMigrationFactsSchema = z
+@@ -114,8 +115,7 @@ export const databaseMigrationFactsSchema = z
    });
  export type DatabaseMigrationFacts = z.infer<typeof databaseMigrationFactsSchema>;
  
@@ -10223,7 +10267,7 @@ index 9bbfb1f..ec2095b 100644
      schemaVersion: z.literal(1),
      startupId: z.string().min(1).max(128),
      attemptId: z.string().min(1).max(128),
-@@ -123,15 +120,12 @@ export const databaseStartupStateSchema = z
+@@ -123,15 +123,12 @@ export const databaseStartupStateSchema = z
      startedAt: z.number().finite().nonnegative(),
      updatedAt: z.number().finite().nonnegative(),
      phase: databaseStartupPhaseSchema,
@@ -10242,7 +10286,16 @@ index 9bbfb1f..ec2095b 100644
              databaseId: z.string().min(1).max(128),
              databaseKind: z.enum(["tasks-index", "session"]),
              lastAppliedMigrationId: databaseMigrationIdSchema.nullable().optional(),
-@@ -148,8 +142,7 @@ export const databaseStartupStateSchema = z
+@@ -142,14 +139,15 @@ export const databaseStartupStateSchema = z
+     finalDatabase: z.boolean().optional(),
+     failedPhase: databaseStartupPhaseSchema.optional(),
+     errorCode: databaseStartupErrorCodeSchema.optional(),
+-    ...databaseStartupErrorDetailsSchema.shape,
++    sqliteCode: databaseStartupErrorDetailShape.sqliteCode,
++    systemCode: databaseStartupErrorDetailShape.systemCode,
++    migrationId: databaseStartupErrorDetailShape.migrationId,
+     disk: z.array(startupDiskSummarySchema).max(8),
+   })
    .strict();
  export type DatabaseStartupState = z.infer<typeof databaseStartupStateSchema>;
  /** 本地端口和启动快照必须来自同一 Host；此 ID 不承担工作区或任务身份。 */
@@ -10388,7 +10441,7 @@ index 0a07bcd..9b925b8 100644
  
  export function resolveIntranetMachineHost(env: IntranetEnv = readProcessEnv()) {
 diff --git a/packages/shared/src/localTtft.ts b/packages/shared/src/localTtft.ts
-index 27d7065..282306e 100644
+index 27d7065..a8506e2 100644
 --- a/packages/shared/src/localTtft.ts
 +++ b/packages/shared/src/localTtft.ts
 @@ -1,4 +1,5 @@
@@ -10397,7 +10450,7 @@ index 27d7065..282306e 100644
  
  export const LOCAL_TTFT_STAGES = [
    "renderer_prepare",
-@@ -22,10 +23,15 @@ export const LOCAL_TTFT_PREPARATION_STAGES = [
+@@ -22,10 +23,21 @@ export const LOCAL_TTFT_PREPARATION_STAGES = [
    "request_assembly",
  ] as const;
  const diagnosticTime = z.number().finite().nonnegative();
@@ -10406,9 +10459,15 @@ index 27d7065..282306e 100644
 +export const localTtftDetailSchema = z.object({
      id: z.string().min(1).max(128),
 -    stage: z.enum([...LOCAL_TTFT_PREPARATION_STAGES, "attempt", "retry_wait", "user_confirmation"]),
-+    // scriptc 不能把 readonly 元组展开进 string[] 字面量，按 readonly string[] 收窄后再展开。
++    // scriptc 只支持同元素类型的数组展开；这里按 LOCAL_TTFT_PREPARATION_STAGES 的顺序显式列出取值。
 +    stage: z.enum([
-+      ...(LOCAL_TTFT_PREPARATION_STAGES as readonly string[]),
++      "context",
++      "hooks",
++      "persistence",
++      "compaction",
++      "mcp",
++      "tools",
++      "request_assembly",
 +      "attempt",
 +      "retry_wait",
 +      "user_confirmation",
@@ -10416,7 +10475,7 @@ index 27d7065..282306e 100644
      start: diagnosticTime,
      end: diagnosticTime.optional(),
      outcome: z.enum(["completed", "failed", "cancelled", "first_output"]).optional(),
-@@ -43,12 +49,10 @@ export const LOCAL_TTFT_CLOCK_MAX_ERROR_MS = 10;
+@@ -43,12 +55,10 @@ export const LOCAL_TTFT_CLOCK_MAX_ERROR_MS = 10;
  export const LOCAL_TTFT_CLOCK_TTL_MS = 60_000;
  const time = z.number().finite().nonnegative();
  const identifier = z.string().min(1).max(128);
@@ -10431,7 +10490,7 @@ index 27d7065..282306e 100644
    .strict();
  export type LocalTtftClock = z.infer<typeof localTtftClockSchema>;
  export interface LocalTtftCalibration {
-@@ -80,9 +84,8 @@ export function calibrateLocalTtftClock(
+@@ -80,9 +90,8 @@ export function calibrateLocalTtftClock(
  }
  export const localTtftOutputKindSchema = z.enum(["text", "reasoning", "tool"]);
  export type LocalTtftOutputKind = z.infer<typeof localTtftOutputKindSchema>;
@@ -10443,7 +10502,7 @@ index 27d7065..282306e 100644
      instanceId: identifier,
      commandId: identifier,
      sessionId: identifier.optional(),
-@@ -110,8 +113,7 @@ export const localTtftFactsSchema = z
+@@ -110,8 +119,7 @@ export const localTtftFactsSchema = z
    })
    .strict();
  export type LocalTtftFacts = z.infer<typeof localTtftFactsSchema>;
@@ -10453,7 +10512,7 @@ index 27d7065..282306e 100644
      stage: z.enum(LOCAL_TTFT_STAGES),
      start: time,
      end: time,
-@@ -119,8 +121,7 @@ export const localTtftIntervalSchema = z
+@@ -119,8 +127,7 @@ export const localTtftIntervalSchema = z
    })
    .strict()
    .refine((interval) => interval.end >= interval.start);
@@ -10463,7 +10522,7 @@ index 27d7065..282306e 100644
      version: z.literal(1),
      observationId: z.string().uuid(),
      commandId: identifier.optional(),
-@@ -163,8 +164,7 @@ export const localTtftRecordSchema = z
+@@ -163,8 +170,7 @@ export const localTtftRecordSchema = z
      truncated: z.boolean().optional(),
      sendMode: z.enum(["idle", "queued", "guided"]).optional(),
      visibility: z.enum(["foreground", "background", "background_returned"]).optional(),
@@ -10473,7 +10532,7 @@ index 27d7065..282306e 100644
        .max(32)
        .optional(),
      userWaitMs: time.optional(),
-@@ -177,8 +177,7 @@ export const localTtftRecordSchema = z
+@@ -177,8 +183,7 @@ export const localTtftRecordSchema = z
    .strict()
    .refine((record) => record.end >= record.start);
  export type LocalTtftRecord = z.infer<typeof localTtftRecordSchema>;
@@ -10483,7 +10542,7 @@ index 27d7065..282306e 100644
      version: z.literal(1),
      rendererInstanceId: identifier,
      sequence: z.number().int().nonnegative(),
-@@ -188,5 +187,5 @@ export const localTtftBatchSchema = z
+@@ -188,5 +193,5 @@ export const localTtftBatchSchema = z
    .strict();
  export type LocalTtftBatch = z.infer<typeof localTtftBatchSchema>;
  export function localTtftNow(): number {
@@ -11108,7 +11167,7 @@ index e4d7535..6a80136 100644
          totalInputTokens: count,
          totalCacheReadTokens: count,
 diff --git a/packages/shared/src/sessionCreateTelemetry.ts b/packages/shared/src/sessionCreateTelemetry.ts
-index 86aa6c8..b3983af 100644
+index 86aa6c8..d52a1b4 100644
 --- a/packages/shared/src/sessionCreateTelemetry.ts
 +++ b/packages/shared/src/sessionCreateTelemetry.ts
 @@ -4,22 +4,19 @@ export type SessionCreateSource = "group" | "project" | "session";
@@ -11137,6 +11196,25 @@ index 86aa6c8..b3983af 100644
          create_source: z.enum(["group", "project", "session"]),
          client_kind: z.literal("mobile"),
          workspace_kind: z.enum(["local", "remote"]),
+@@ -33,10 +30,14 @@ export type MobileSessionCreateTelemetry = z.infer<typeof sessionCreateTelemetry
+ 
+ /** 自动化由执行 Host 报告；手机不得冒充无人值守派发来源。 */
+ export const automationSessionCreateTelemetrySchema = sessionCreateTelemetrySchema.extend({
+-  eventExtraDetail: sessionCreateTelemetrySchema.shape.eventExtraDetail.extend({
+-    create_source: z.enum(["automation_idle", "automation_scheduled"]),
+-    client_kind: z.literal("desktop"),
+-  }),
++  // scriptc 不能读取 `.shape` 上的 schema 再调用 extend；这里直接组合同样的字段，仅覆盖两项。
++  eventExtraDetail: z.object({
++      create_source: z.enum(["automation_idle", "automation_scheduled"]),
++      client_kind: z.literal("desktop"),
++      workspace_kind: z.enum(["local", "remote"]),
++      remote_kind: z.enum(["", "ssh", "wsl", "docker", "server"]),
++    })
++    .strict(),
+ });
+ export type AutomationSessionCreateTelemetry = z.infer<
+   typeof automationSessionCreateTelemetrySchema
 diff --git a/packages/shared/src/subagent-state-migration.ts b/packages/shared/src/subagent-state-migration.ts
 index 5d035c5..723a6c3 100644
 --- a/packages/shared/src/subagent-state-migration.ts

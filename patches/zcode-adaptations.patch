@@ -6109,7 +6109,7 @@ index 107bbf2..5e3fd7d 100644
 +  };
  }
 diff --git a/packages/provider/src/registry.ts b/packages/provider/src/registry.ts
-index 4b92e76..8d630a4 100644
+index 4b92e76..68abd99 100644
 --- a/packages/provider/src/registry.ts
 +++ b/packages/provider/src/registry.ts
 @@ -94,7 +94,7 @@ export class ProviderRegistry {
@@ -6121,7 +6121,7 @@ index 4b92e76..8d630a4 100644
      for (const listener of this.#listeners) listener(event);
    }
  
-@@ -152,7 +152,7 @@ export function validateModelSelectionOptions(
+@@ -152,15 +152,14 @@ export function validateModelSelectionOptions(
        providerId: selection.providerId,
        modelId: selection.modelId,
        reasoningLevel,
@@ -6130,21 +6130,18 @@ index 4b92e76..8d630a4 100644
      };
    }
    return { ok: true };
-@@ -160,7 +160,7 @@ export function validateModelSelectionOptions(
+ }
  
  function freezeView(revision: number, providers: readonly Provider[]): ProviderRegistryView {
-   const frozenProviders = providers.map((provider) =>
+-  const frozenProviders = providers.map((provider) =>
 -    Object.freeze({
-+    {
++  const frozenProviders = providers.map((provider) => ({
        providerId: provider.providerId,
        // 名称与模板已从 config 外移；冻结时漏拷贝会让所有 Selection View 丢失元数据。
        providerName: provider.providerName,
-@@ -171,7 +171,7 @@ function freezeView(revision: number, providers: readonly Provider[]): ProviderR
-           Object.freeze({ modelId: model.modelId, config: model.config }),
-         ),
+@@ -173,5 +172,5 @@ function freezeView(revision: number, providers: readonly Provider[]): ProviderR
        ),
--    }),
-+    },
+     }),
    );
 -  return Object.freeze({ revision, providers: Object.freeze(frozenProviders) });
 +  return { revision, providers: Object.freeze(frozenProviders) };
@@ -7836,6 +7833,19 @@ index 00553a5..5bc122d 100644
        configs: z.object({ pluginStoreOrder: z.unknown().optional() }).nullish(),
      })
      .nullish(),
+diff --git a/packages/shared/src/config-schema.ts b/packages/shared/src/config-schema.ts
+index 2d75ead..996b61d 100644
+--- a/packages/shared/src/config-schema.ts
++++ b/packages/shared/src/config-schema.ts
+@@ -1,7 +1,7 @@
+ import type { z } from "zod";
+ 
+ /** 每个字段保持原 schema，只派生覆盖所需的缺省/null；嵌套结构由调用方显式派生。 */
+-export function sparseShape<T extends Record<string, z.ZodType>>(shape: T) {
++export function sparseShape<T extends Record<string, any>>(shape: T) {
+   return Object.fromEntries(
+     Object.entries(shape).map(([key, schema]) => [key, schema.nullable().optional()]),
+   ) as { [K in keyof T]: z.ZodOptional<z.ZodNullable<T[K]>> };
 diff --git a/packages/shared/src/conversation-share.ts b/packages/shared/src/conversation-share.ts
 index 6c210a6..3e6e5f3 100644
 --- a/packages/shared/src/conversation-share.ts

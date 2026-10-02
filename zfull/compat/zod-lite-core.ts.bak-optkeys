@@ -26,13 +26,11 @@ export interface ZodIssue {
   options?: string[];
   format?: string;
   pattern?: string;
-  params?: any;
 }
 
 export interface RefineOpts {
   message?: string;
   path?: (string | number)[];
-  params?: any;
 }
 
 export interface IssueInput {
@@ -51,7 +49,6 @@ export interface IssueInput {
   keys?: string[];
   format?: string;
   pattern?: string;
-  params?: any;
   prefix?: string;
   suffix?: string;
   note?: string;
@@ -79,7 +76,7 @@ export type ZodEffects<T extends ZodType = ZodType, O = T["_output"], I = unknow
 export type ZodTransform = ZodType<unknown>;
 export type ZodPipe<A extends ZodType = ZodType, B extends ZodType = ZodType> = ZodType<B["_output"]>;
 export type ZodNonOptional<T extends ZodType = ZodType> = ZodType<T["_output"]>;
-export type ZodObject<T extends ZodRawShape = ZodRawShape> = ZodType<any>;
+export type ZodObject<T extends ZodRawShape = ZodRawShape> = ZodType<ShapeOut<T>>;
 export type ZodArray<T extends ZodType = ZodType> = ZodType<T["_output"][]>;
 export type ZodRecord<V extends ZodType = ZodType> = ZodType<Record<string, V["_output"]>>;
 export type ZodUnion<T extends readonly ZodType[] = readonly ZodType[]> = ZodType<T[number]["_output"]>;
@@ -141,17 +138,11 @@ export type SafeParseResultOf<T extends ZodType> = SafeParseSuccessOf<T> | SafeP
 
 // ---------- internal helpers ----------
 
-/** Array.isArray 在 scriptc 下无 lowering，用自实现的判定替代。 */
-function isArrayLike(v: any): boolean {
-  return typeof v === "object" && v !== null && typeof v.length === "number" && typeof v.slice === "function";
+function isDateLikeValue(v: unknown): boolean {
+  return Object.prototype.toString.call(v) === "[object Date]";
 }
 
-function isDateLikeValue(v: any): boolean {
-  if (v === null || typeof v !== "object") return false;
-  return typeof (v as any).getTime === "function";
-}
-
-function parsedType(v: any): string {
+function parsedType(v: unknown): string {
   const t = typeof v;
   if (t === "number") {
     const n: number = v as number;
@@ -163,12 +154,12 @@ function parsedType(v: any): string {
   if (t === "function") return "function";
   if (t === "undefined") return "undefined";
   if (v === null) return "null";
-  if (isArrayLike(v)) return "array";
+  if (Array.isArray(v)) return "array";
   if (isDateLikeValue(v)) return "Date";
   return "object";
 }
 
-function failType(ctx: ParseCtx, expected: string, input: any): void {
+function failType(ctx: ParseCtx, expected: string, input: unknown): void {
   const r = parsedType(input);
   const message = "Invalid input: expected " + expected + ", received " + r;
   const path = ctx.path.slice();
@@ -203,12 +194,12 @@ function childCtx(parent: ParseCtx, key: string | number): ParseCtx {
   return c;
 }
 
-function isRecord(v: any): v is Record<string, unknown> {
-  return typeof v === "object" && v !== null && !isArrayLike(v);
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null && !Array.isArray(v);
 }
 
 // Returns ok=true if schema parsed without producing issues.
-function attempt(schema: ZBase, input: any, ctx: ParseCtx): { ok: boolean; value: unknown } {
+function attempt(schema: ZBase, input: unknown, ctx: ParseCtx): { ok: boolean; value: unknown } {
   const sub: ZodIssue[] = [];
   const subCtx: ParseCtx = { path: ctx.path, issues: sub };
   const value = schema._parse(input, subCtx);
@@ -262,7 +253,7 @@ export class ZodError extends Error {
         cursor = next as Record<string, unknown>;
       }
       const bucket = cursor._errors;
-      if (isArrayLike(bucket)) {
+      if (Array.isArray(bucket)) {
         (bucket as string[]).push(issue.message);
       } else {
         cursor._errors = [issue.message];
@@ -296,7 +287,7 @@ class ZBase {
   _description?: string;
   _wrap: string = "";
   _innerIdx: number = -1;
-  _fn: ((value: any, ctx: RefinementCtx) => unknown) | undefined = undefined;
+  _fn: ((value: unknown, ctx: RefinementCtx) => unknown) | undefined = undefined;
   _value: string | number | boolean | null = null;
   _objIdx: number = -1;
   _msg: string | undefined = undefined;
@@ -313,11 +304,9 @@ class ZBase {
   _litVal: string = "";
   _litMap: Record<string, string> | undefined = undefined;
 
-  get shape(): Record<string, ZodType<any>> {
-    return castTo<Record<string, ZodType<any>>>(this._shapeObjs);
-  }
+  get shape(): Record<string, ZodType<unknown>> { return castTo<Record<string, ZodType<unknown>>>(this._shapeObjs); }
 
-  _parse(input: any, ctx: ParseCtx): unknown {
+  _parse(input: unknown, ctx: ParseCtx): unknown {
     const w = this._wrap;
     if (w === "") {
       return input;
@@ -607,7 +596,7 @@ export class ZodType<O = unknown> extends ZBase {
   get _input(): O {
     throw new Error("phantom");
   }
-  parse(input: any): O {
+  parse(input: unknown): O {
     const r = this.safeParse(input);
     if (r.success) {
       return r.data;
@@ -615,7 +604,7 @@ export class ZodType<O = unknown> extends ZBase {
     throw r.error;
   }
 
-  safeParse(input: any): SafeParseResult<any> {
+  safeParse(input: unknown): SafeParseResult<O> {
     const issues: ZodIssue[] = [];
     const ctx: ParseCtx = { path: [], issues: issues };
     const value = this._parse(input, ctx);
@@ -623,7 +612,7 @@ export class ZodType<O = unknown> extends ZBase {
       const e: SafeParseError<O> = { success: false, error: new ZodError(issues) };
       return e;
     }
-    return okOf(value);
+    return okOf<O>(value);
   }
 
 
@@ -669,33 +658,33 @@ export class ZodType<O = unknown> extends ZBase {
     return this;
   }
 
-  refine(fn: (value: any, ctx: RefinementCtx) => unknown, message?: string | RefineOpts): ZodType<O> {
+  refine(fn: (value: O, ctx: RefinementCtx) => unknown, message?: string | RefineOpts): ZodType<O> {
     const w = new ZodType<O>();
     w._wrap = "refine";
     w._innerIdx = registerSchema(this);
-    w._fn = makeFn(fn);
+    w._fn = makeFn<O>(fn);
     w._msg = refineMsg(message);
     return w;
   }
 
-  superRefine(fn: (value: any, ctx: RefinementCtx) => unknown): ZodType<O> {
+  superRefine(fn: (value: O, ctx: RefinementCtx) => unknown): ZodType<O> {
     const w = new ZodType<O>();
     w._wrap = "superRefine";
     w._innerIdx = registerSchema(this);
-    w._fn = makeFn(fn);
+    w._fn = makeFn<O>(fn);
     return w;
   }
 
-  transform(fn: (value: any, ctx: RefinementCtx) => any): ZodType<any> {
-    const w = new ZodType<any>();
+  transform<U>(fn: (value: O, ctx: RefinementCtx) => U): ZodType<U> {
+    const w = new ZodType<U>();
     w._wrap = "transform";
     w._innerIdx = registerSchema(this);
-    w._fn = makeFn(fn);
+    w._fn = makeFn<O>(fn);
     return w;
   }
 
-  pipe(target: ZBase): ZodType<any> {
-    const w = new ZodType<any>();
+  pipe<T extends ZodType>(target: T): ZodType<T["_output"]> {
+    const w = new ZodType<T["_output"]>();
     w._wrap = "pipe";
     w._innerIdx = registerSchema(this);
     w._objIdx = registerSchema(target);
@@ -873,22 +862,6 @@ export class ZodType<O = unknown> extends ZBase {
     return w;
   }
 
-  extract(values: string[]): ZodType<any> {
-    const w = this.cloneSelf();
-    const keep: string[] = [];
-    for (let i = 0; i < w._discVals.length; i++) {
-      const v = w._discVals[i];
-      let hit = false;
-      for (let j = 0; j < values.length; j++) {
-        if (values[j] === v) hit = true;
-      }
-      if (hit) keep.push(v);
-    }
-    w._discVals = keep;
-    w._msg = enumMessage(keep);
-    return castTo<ZodType<any>>(w);
-  }
-
   keyof(): ZodType<string> {
     return keyofNode(this);
   }
@@ -923,14 +896,14 @@ export class ZodType<O = unknown> extends ZBase {
     return w;
   }
 
-  catchall(schema: ZBase): ZodType<O> {
+  catchall<T extends ZodType>(schema: T): ZodType<O> {
     const w = this.cloneSelf();
     w._unk = "catchall";
     w._innerIdx = registerSchema(schema);
     return w;
   }
 
-  extend(shape: ZodRawShape): ZodType<any> {
+  extend<T extends ZodRawShape>(shape: T): ZodType<any> {
     const w = new ZodType<any>();
     copyState(this, w);
     w._shapeIdxs = mergeShape(this._shapeIdxs, shapeIdxsOf(shape));
@@ -939,7 +912,7 @@ export class ZodType<O = unknown> extends ZBase {
     return w;
   }
 
-  merge(other: ZBase): ZodType<O> {
+  merge<T extends ZodType>(other: T): ZodType<O> {
     const w = new ZodType<O>();
     copyState(this, w);
     const o = other;
@@ -965,7 +938,7 @@ function wrapIdx(src: ZBase, kind: string): ZBase {
   return w;
 }
 
-function extendNode(src: ZBase, shape: ZodRawShape): ZBase {
+function extendNode<T extends Record<string, ZBase>>(src: ZBase, shape: T): ZBase {
   const w = new ZBase();
   copyState(src, w);
   w._shapeIdxs = mergeShape(src._shapeIdxs, shapeIdxsOf(shape));
@@ -973,8 +946,6 @@ function extendNode(src: ZBase, shape: ZodRawShape): ZBase {
   w._shapeObjs = mergeObjs(src._shapeObjs, copyShapeObjs(shape));
   return w;
 }
-
-export const ZodObject: any = object;
 
 const SCHEMA_MAP = new Map<number, ZBase>();
 let SCHEMA_COUNT = 0;
@@ -1068,7 +1039,7 @@ function keysOfMap(m: Record<string, boolean>): string[] {
 }
 
 function keysList(k: any): string[] {
-  if (k !== null && k !== undefined && typeof k.length === "number") {
+  if (Array.isArray(k)) {
     const arr: readonly string[] = k;
     return strArrOf(arr);
   }
@@ -1184,32 +1155,32 @@ function mergeLit(a: Record<string, string> | undefined, b: Record<string, strin
   return out;
 }
 
-function coerceStr(v: any): unknown {
+function coerceStr(v: unknown): unknown {
   if (typeof v === "string") return v;
   if (typeof v === "number") return String(v);
   if (typeof v === "boolean") return v ? "true" : "false";
   return v;
 }
 
-function coerceNum(v: any): unknown {
+function coerceNum(v: unknown): unknown {
   if (typeof v === "number") return v;
-  if (typeof v === "string") return parseFloat(v);
+  if (typeof v === "string") return Number(v);
   if (typeof v === "boolean") return v ? 1 : 0;
   return v;
 }
 
-function coerceBool(v: any): unknown {
+function coerceBool(v: unknown): unknown {
   if (typeof v === "boolean") return v;
   if (typeof v === "string") return v.length > 0;
   if (typeof v === "number") return v !== 0;
   return v;
 }
 
-function coerceDate(v: any): unknown {
+function coerceDate(v: unknown): unknown {
   return v;
 }
 
-function coerceIf(s: ZBase, input: any): unknown {
+function coerceIf(s: ZBase, input: unknown): unknown {
   if (s._disc !== "coerce") return input;
   const kind = s._wrap;
   if (kind === "string") return coerceStr(input);
@@ -1219,7 +1190,7 @@ function coerceIf(s: ZBase, input: any): unknown {
   return input;
 }
 
-function sameLiteral(lit: string | number | boolean | null, input: any): boolean {
+function sameLiteral(lit: string | number | boolean | null, input: unknown): boolean {
   if (typeof lit === "string") {
     if (typeof input === "string") return input === lit;
     return false;
@@ -1245,11 +1216,11 @@ function discValAny(v: unknown, disc: string): string {
   return discValOf(b, disc);
 }
 
-function regOne(x: ZBase): number {
+function regOne<X extends ZBase>(x: X): number {
   return registerSchema(x);
 }
 
-function regAll(arr: readonly ZBase[]): number[] {
+function regAll<T extends readonly ZodType[]>(arr: T): number[] {
   const out: number[] = [];
   for (const e of arr) {
     out.push(regOne(e));
@@ -1257,11 +1228,11 @@ function regAll(arr: readonly ZBase[]): number[] {
   return out;
 }
 
-function discValOfT(opt: ZBase, disc: string): string {
+function discValOfT<X extends ZBase>(opt: X, disc: string): string {
   return discValOf(opt, disc);
 }
 
-function discValsAll(arr: readonly ZBase[], disc: string): string[] {
+function discValsAll<T extends readonly ZodType[]>(arr: T, disc: string): string[] {
   const out: string[] = [];
   for (const e of arr) {
     out.push(discValOfT(e, disc));
@@ -1277,7 +1248,7 @@ function discValOf(opt: ZBase, disc: string): string {
   return "";
 }
 
-function primOf(v: any): string | number | boolean | null {
+function primOf(v: unknown): string | number | boolean | null {
   return v as string | number | boolean | null;
 }
 
@@ -1285,17 +1256,17 @@ function castTo<X>(v: unknown): X {
   return v as X;
 }
 
-function okOf(value: any): SafeParseResult<any> {
-  const ok: SafeParseSuccess<any> = { success: true, data: value };
+function okOf<X>(value: unknown): SafeParseResult<X> {
+  const ok: SafeParseSuccess<X> = { success: true, data: castTo<X>(value) };
   return ok;
 }
 
-function makeFn(f: (v: any, ctx: RefinementCtx) => unknown): (value: any, ctx: RefinementCtx) => unknown {
-  return (value: any, ctx: RefinementCtx): unknown => f(value, ctx);
+function makeFn<A>(f: (v: A, ctx: RefinementCtx) => unknown): (value: unknown, ctx: RefinementCtx) => unknown {
+  return (value: unknown, ctx: RefinementCtx): unknown => f(castTo<A>(value), ctx);
 }
 
-function preFnOf(f: (value: any) => unknown): (value: any, ctx: RefinementCtx) => unknown {
-  return (value: any, ctx: RefinementCtx): unknown => f(value);
+function preFnOf(f: (value: unknown) => unknown): (value: unknown, ctx: RefinementCtx) => unknown {
+  return (value: unknown, ctx: RefinementCtx): unknown => f(value);
 }
 
 function schemaAt(i: number): ZBase {
@@ -1342,12 +1313,12 @@ function makeRefineCtx(ctx: ParseCtx): RefinementCtx {
   return rctx;
 }
 
-function runArrayParse(elementIdx: number, checks: ArrCheck[], input: any, ctx: ParseCtx): unknown {
-  if (!isArrayLike(input)) {
+function runArrayParse(elementIdx: number, checks: ArrCheck[], input: unknown, ctx: ParseCtx): unknown {
+  if (!Array.isArray(input)) {
     failType(ctx, "array", input);
     return undefined;
   }
-  const arr: any[] = input;
+  const arr = input as unknown[];
   const len = arr.length;
   for (const check of checks) {
     const kind = check.kind;
@@ -1511,7 +1482,7 @@ interface ArrCheck {
 
 
 
-function runStringParse(s: ZBase, input: any, ctx: ParseCtx): unknown {
+function runStringParse(s: ZBase, input: unknown, ctx: ParseCtx): unknown {
     if (typeof input !== "string") {
       failType(ctx, "string", input);
       return undefined;
@@ -1659,7 +1630,7 @@ function runStringParse(s: ZBase, input: any, ctx: ParseCtx): unknown {
     }
     return v;
   }
-function runNumberParse(s: ZBase, input: any, ctx: ParseCtx): unknown {
+function runNumberParse(s: ZBase, input: unknown, ctx: ParseCtx): unknown {
     if (typeof input !== "number" || input !== input) {
       failType(ctx, "number", input);
       return undefined;
@@ -1763,31 +1734,31 @@ function runNumberParse(s: ZBase, input: any, ctx: ParseCtx): unknown {
     }
     return v;
   }
-function runBooleanParse(s: ZBase, input: any, ctx: ParseCtx): unknown {
+function runBooleanParse(s: ZBase, input: unknown, ctx: ParseCtx): unknown {
   if (typeof input !== "boolean") {
     failType(ctx, "boolean", input);
     return undefined;
   }
   return input;
 }
-function runUnknownParse(s: ZBase, input: any, ctx: ParseCtx): unknown {
+function runUnknownParse(s: ZBase, input: unknown, ctx: ParseCtx): unknown {
   return input;
 }
-function runNeverParse(s: ZBase, input: any, ctx: ParseCtx): unknown {
+function runNeverParse(s: ZBase, input: unknown, ctx: ParseCtx): unknown {
   failIssue(ctx, () => {
     const issue: ZodIssue = { expected: "never", code: "invalid_type", path: ctx.path.slice(), message: "Invalid input: expected never, received " + parsedType(input) };
     return issue;
   });
   return undefined;
 }
-function runUndefinedParse(s: ZBase, input: any, ctx: ParseCtx): unknown {
+function runUndefinedParse(s: ZBase, input: unknown, ctx: ParseCtx): unknown {
   if (input !== undefined) {
     failType(ctx, "undefined", input);
     return undefined;
   }
   return undefined;
 }
-function runDateParse(s: ZBase, input: any, ctx: ParseCtx): unknown {
+function runDateParse(s: ZBase, input: unknown, ctx: ParseCtx): unknown {
   if (!isDateLikeValue(input)) {
     failType(ctx, "date", input);
     return undefined;
@@ -1959,8 +1930,8 @@ export function boolean(): ZodType<boolean> {
   return w;
 }
 
-export function literal(value: string | number | boolean): ZodType<any> {
-  const w = new ZodType<any>();
+export function literal<T extends string | number | boolean>(value: T): ZodType<T> {
+  const w = new ZodType<T>();
   w._wrap = "literal";
   w._value = primOf(value);
   w._litVal = litDisplay(value);
@@ -1968,8 +1939,8 @@ export function literal(value: string | number | boolean): ZodType<any> {
   return w;
 }
 
-function enumOf(values: readonly string[]): ZodType<any> {
-  const w = new ZodType<any>();
+function enumOf<T extends readonly string[], O = T[number]>(values: T): ZodType<O> {
+  const w = new ZodType<O>();
   w._wrap = "enum";
   w._discVals = strArrOf(values);
   w._msg = enumMessage(w._discVals);
@@ -1978,15 +1949,15 @@ function enumOf(values: readonly string[]): ZodType<any> {
 
 export { enumOf as enum };
 
-export function array(element: ZBase): ZodType<any[]> {
+export function array<T extends ZodType>(element: T): ZodType<any[]> {
   const w = new ZodType<any[]>();
   w._wrap = "array";
   w._innerIdx = registerSchema(element);
   return w;
 }
 
-export function object(shape: ZodRawShape): ZodType<any> {
-  const w = new ZodType<unknown>();
+export function object<T extends ZodRawShape, O = ShapeOut<T>>(shape: T): ZodType<any> {
+  const w = new ZodType<O>();
   w._wrap = "object";
   w._shapeIdxs = shapeIdxsOf(shape);
   w._litMap = litMapOf(shape);
@@ -1994,8 +1965,8 @@ export function object(shape: ZodRawShape): ZodType<any> {
   return castTo<ZodType<any>>(w);
 }
 
-export function strictObject(shape: ZodRawShape): ZodType<any> {
-  const w = new ZodType<unknown>();
+export function strictObject<T extends ZodRawShape, O = ShapeOut<T>>(shape: T): ZodType<any> {
+  const w = new ZodType<O>();
   w._wrap = "object";
   w._unk = "strict";
   w._shapeIdxs = shapeIdxsOf(shape);
@@ -2004,7 +1975,7 @@ export function strictObject(shape: ZodRawShape): ZodType<any> {
   return castTo<ZodType<any>>(w);
 }
 
-export function record(keyType: ZBase, valueType?: ZBase): ZodType<Record<string, any>> {
+export function record<A extends ZodType, B extends ZodType = A>(keyType: A, valueType?: B): ZodType<Record<string, any>> {
   const w = new ZodType<Record<string, any>>();
   w._wrap = "record";
   if (valueType !== undefined) {
@@ -2015,7 +1986,7 @@ export function record(keyType: ZBase, valueType?: ZBase): ZodType<Record<string
   return w;
 }
 
-export function partialRecord(keyType: ZBase, valueType?: ZBase): ZodType<Record<string, any>> {
+export function partialRecord<A extends ZodType, B extends ZodType = A>(keyType: A, valueType?: B): ZodType<Record<string, any>> {
   const w = new ZodType<Record<string, any>>();
   w._wrap = "partialRecord";
   if (valueType !== undefined) {
@@ -2026,7 +1997,7 @@ export function partialRecord(keyType: ZBase, valueType?: ZBase): ZodType<Record
   return w;
 }
 
-export function union(options: readonly ZBase[]): ZodType<any> {
+export function union<T extends readonly ZodType[]>(options: T): ZodType<any> {
   const w = new ZodType<any>();
   w._wrap = "union";
   const idxs: number[] = [];
@@ -2039,7 +2010,7 @@ export function union(options: readonly ZBase[]): ZodType<any> {
   return w;
 }
 
-export function discriminatedUnion(discriminator: string, options: readonly ZBase[]): ZodType<any> {
+export function discriminatedUnion<D extends string, T extends readonly ZodType[]>(discriminator: D, options: T): ZodType<any> {
   const w = new ZodType<any>();
   w._wrap = "du";
   w._disc = discriminator;
@@ -2086,8 +2057,8 @@ export function uuid(): ZodType<string> {
   return string().uuid();
 }
 
-export function preprocess(fn: (value: any) => unknown, schema: ZBase): ZodType<any> {
-  const w = new ZodType<any>();
+export function preprocess<U extends ZodType, O = U["_output"]>(fn: (value: unknown) => unknown, schema: U): ZodType<O> {
+  const w = new ZodType<O>();
   w._wrap = "preprocess";
   w._innerIdx = registerSchema(schema);
   w._fn = preFnOf(fn);
@@ -2117,5 +2088,5 @@ export const coerce = {
   },
 };
 
-export type infer<T extends ZodType> = any;
+export type infer<T extends ZodType> = T["_output"];
 export type output<T extends ZodType> = T["_output"];

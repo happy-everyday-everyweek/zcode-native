@@ -10230,24 +10230,21 @@ index 6c210a6..3e6e5f3 100644
      client_request_id: z.string().trim().min(1),
    })
 diff --git a/packages/shared/src/database-startup.ts b/packages/shared/src/database-startup.ts
-index 9bbfb1f..5bc28a2 100644
+index 9bbfb1f..9c65510 100644
 --- a/packages/shared/src/database-startup.ts
 +++ b/packages/shared/src/database-startup.ts
-@@ -74,9 +74,11 @@ export const databaseStartupErrorDetailsSchema = z.object({
+@@ -74,9 +74,7 @@ export const databaseStartupErrorDetailsSchema = z.object({
    systemCode: z.string().max(64).optional(),
    migrationId: z.string().max(128).optional(),
  });
-+// scriptc 不支持展开 any 类型的 `.shape`；先绑定为值类型记录，再在状态 schema 中逐字段写回。
-+const databaseStartupErrorDetailShape: Record<string, any> =
-+  databaseStartupErrorDetailsSchema.shape;
- 
+-
 -export const startupDiskSummarySchema = z
 -  .object({
 +export const startupDiskSummarySchema = z.object({
      scopeId: z.string().max(128),
      observedAvailableDropPeakBytes: z.number().finite().nonnegative().nullable(),
      minAvailableBytes: z.number().finite().nonnegative().nullable(),
-@@ -96,8 +98,7 @@ export const databaseStartupPhaseSchema = z.enum([
+@@ -96,8 +94,7 @@ export const databaseStartupPhaseSchema = z.enum([
  export const databaseMigrationIdSchema = z.string().regex(/^[a-zA-Z_0-9-]{1,128}$/);
  
  /** 需求种类与真实执行/提交分开；预检发现需求不意味着当前执行者运行过 SQL。 */
@@ -10257,7 +10254,7 @@ index 9bbfb1f..5bc28a2 100644
      kind: z.enum(["none", "initialize", "upgrade"]),
      executedCount: z.number().int().nonnegative(),
      committedCount: z.number().int().nonnegative(),
-@@ -114,8 +115,7 @@ export const databaseMigrationFactsSchema = z
+@@ -114,8 +111,7 @@ export const databaseMigrationFactsSchema = z
    });
  export type DatabaseMigrationFacts = z.infer<typeof databaseMigrationFactsSchema>;
  
@@ -10267,7 +10264,7 @@ index 9bbfb1f..5bc28a2 100644
      schemaVersion: z.literal(1),
      startupId: z.string().min(1).max(128),
      attemptId: z.string().min(1).max(128),
-@@ -123,15 +123,12 @@ export const databaseStartupStateSchema = z
+@@ -123,15 +119,12 @@ export const databaseStartupStateSchema = z
      startedAt: z.number().finite().nonnegative(),
      updatedAt: z.number().finite().nonnegative(),
      phase: databaseStartupPhaseSchema,
@@ -10286,14 +10283,16 @@ index 9bbfb1f..5bc28a2 100644
              databaseId: z.string().min(1).max(128),
              databaseKind: z.enum(["tasks-index", "session"]),
              lastAppliedMigrationId: databaseMigrationIdSchema.nullable().optional(),
-@@ -142,14 +139,15 @@ export const databaseStartupStateSchema = z
+@@ -142,14 +135,17 @@ export const databaseStartupStateSchema = z
      finalDatabase: z.boolean().optional(),
      failedPhase: databaseStartupPhaseSchema.optional(),
      errorCode: databaseStartupErrorCodeSchema.optional(),
 -    ...databaseStartupErrorDetailsSchema.shape,
-+    sqliteCode: databaseStartupErrorDetailShape.sqliteCode,
-+    systemCode: databaseStartupErrorDetailShape.systemCode,
-+    migrationId: databaseStartupErrorDetailShape.migrationId,
++    // scriptc 无法把 `databaseStartupErrorDetailsSchema.shape` 展开成 schema 槽位，
++    // 这里按该 schema 的声明逐字段重写，校验与可选性保持一致。
++    sqliteCode: z.number().int().optional(),
++    systemCode: z.string().max(64).optional(),
++    migrationId: z.string().max(128).optional(),
      disk: z.array(startupDiskSummarySchema).max(8),
    })
    .strict();
@@ -11043,29 +11042,22 @@ index a6e3875..e312968 100644
      rendererInstanceId: boundedIdentifierSchema,
      sequence: z.number().int().nonnegative(),
 diff --git a/packages/shared/src/runtime-tool-runtime.ts b/packages/shared/src/runtime-tool-runtime.ts
-index 94bfc4d..6ce6498 100644
+index 94bfc4d..f91c067 100644
 --- a/packages/shared/src/runtime-tool-runtime.ts
 +++ b/packages/shared/src/runtime-tool-runtime.ts
-@@ -38,25 +38,27 @@ export const RUNTIME_TOOL_RUNTIME: Record<RuntimeToolId, RuntimeToolRuntimeDescr
+@@ -38,25 +38,20 @@ export const RUNTIME_TOOL_RUNTIME: Record<RuntimeToolId, RuntimeToolRuntimeDescr
    },
  };
  
 +// scriptc 会按 satisfies 目标的索引签名推断 versions，固定键字面量无法 lift；
-+// 这里用显式键类型标注，使形状与字面量一致（版本取值不变）。
-+const REMOTE_BFS_VERSIONS: { linux: string } = { linux: "v4.1.1-2" };
-+const REMOTE_RIPGREP_VERSIONS: { darwin: string; linux: string } = {
-+  darwin: "v13.0.0-10",
-+  linux: "v14.1.1-1",
-+};
-+const REMOTE_UGREP_VERSIONS: { linux: string } = { linux: "v7.8.4-1" };
-+
++// 这里用内联 as 标注键形状，使记录形状与字面量一致（版本取值不变）。
  export const REMOTE_RUNTIME_TOOL_RUNTIME = {
    bfs: {
      ...RUNTIME_TOOL_RUNTIME.bfs,
 -    versions: {
 -      linux: "v4.1.1-2",
 -    },
-+    versions: REMOTE_BFS_VERSIONS,
++    versions: { linux: "v4.1.1-2" } as { linux: string },
    },
    ripgrep: {
      ...RUNTIME_TOOL_RUNTIME.ripgrep,
@@ -11073,14 +11065,14 @@ index 94bfc4d..6ce6498 100644
 -      darwin: "v13.0.0-10",
 -      linux: "v14.1.1-1",
 -    },
-+    versions: REMOTE_RIPGREP_VERSIONS,
++    versions: { darwin: "v13.0.0-10", linux: "v14.1.1-1" } as { darwin: string; linux: string },
    },
    ugrep: {
      ...RUNTIME_TOOL_RUNTIME.ugrep,
 -    versions: {
 -      linux: "v7.8.4-1",
 -    },
-+    versions: REMOTE_UGREP_VERSIONS,
++    versions: { linux: "v7.8.4-1" } as { linux: string },
    },
  } as const satisfies Record<RuntimeToolId, RemoteRuntimeToolDescriptor>;
  
@@ -13128,7 +13120,7 @@ index e490b14..66300f2 100644
  export type ControllerUnsubscribeParams = z.infer<typeof controllerUnsubscribeParamsSchema>;
  
 diff --git a/packages/shared/src/zcode-protocol-v4/core.ts b/packages/shared/src/zcode-protocol-v4/core.ts
-index 69712cc..e2e4778 100644
+index 69712cc..0343048 100644
 --- a/packages/shared/src/zcode-protocol-v4/core.ts
 +++ b/packages/shared/src/zcode-protocol-v4/core.ts
 @@ -7,8 +7,7 @@ import { VIDEO_INPUT_MAX_BYTES } from "../zcode-media-policy.js";
@@ -13141,6 +13133,26 @@ index 69712cc..e2e4778 100644
      rowId: z.number().int().nonnegative(),
      entityId: z.string().trim().min(1),
    })
+@@ -43,7 +42,7 @@ export const DELIVERY_PROFILES = {
+     },
+     streamOutputCapBytes: 262144,
+     toolProgress: false,
+-  },
++  } as DeliveryProfile,
+   replayable: {
+     desktopOnlyRows: false,
+     flushWindowMs: 150,
+@@ -55,8 +54,8 @@ export const DELIVERY_PROFILES = {
+     },
+     streamOutputCapBytes: 0,
+     toolProgress: true,
+-  },
+-} as const satisfies Record<string, DeliveryProfile>;
++  } as DeliveryProfile,
++} as const;
+ 
+ export type DeliveryProfileName = keyof typeof DELIVERY_PROFILES;
+ 
 diff --git a/packages/shared/src/zcode-protocol-v4/create-workflow-display.ts b/packages/shared/src/zcode-protocol-v4/create-workflow-display.ts
 index b63d07c..7c9f457 100644
 --- a/packages/shared/src/zcode-protocol-v4/create-workflow-display.ts

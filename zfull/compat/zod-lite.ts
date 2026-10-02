@@ -1,10 +1,8 @@
 // zod-lite.ts — aggregation entry for the "zod" path alias.
-// `z` 的值走类静态成员（scriptc 不支持命名空间对象当值做成员访问），
-// 类型走同名 namespace（class 与 namespace 可合并，const 不行）。
 export * from "./zod-lite-core.js";
 
 import {
-  ZodFirstPartyTypeKind, ZodIssueCode, ZodObject, ZodError, array, boolean, coerce, date,
+  ZodFirstPartyTypeKind, ZodIssueCode, ZodObject, ZodError, ZBase, array, boolean, coerce, date,
   discriminatedUnion, enum as enumOf, literal, never, number, object, partialRecord,
   preprocess, record, strictObject, string, undefined as undefinedFactory, union, unknown, uuid,
   zodToJsonSchemaInternal,
@@ -14,34 +12,36 @@ import type {
   ZodType as ZodTypeT, ZodError as ZodErrorT, ZodIssue as ZodIssueT,
   RefinementCtx as RefinementCtxT, SafeParseSuccess as SafeParseSuccessT,
   SafeParseError as SafeParseErrorT, SafeParseResult as SafeParseResultT,
+  ZodRawShape as ZodRawShapeT,
 } from "./zod-lite-core.js";
+
+export type ZodRawShape = ZodRawShapeT;
 
 export class z {
   static ZodFirstPartyTypeKind: any = ZodFirstPartyTypeKind;
   static ZodIssueCode: any = ZodIssueCode;
-  static ZodObject: (...args: any[]) => any = ZodObject;
+  static ZodObject: (shape: ZodRawShapeT) => ZodTypeT<any> = ZodObject;
   static ZodError: any = ZodError;
-  static array: (...args: any[]) => any = array;
-  static boolean: (...args: any[]) => any = boolean;
-  // coerce 是对象（{string(), number(), boolean(), date()}），不是函数，不能标函数类型。
   static coerce: any = coerce;
-  static date: (...args: any[]) => any = date;
-  static discriminatedUnion: (...args: any[]) => any = discriminatedUnion;
-  static enum: (...args: any[]) => any = enumOf;
-  static literal: (...args: any[]) => any = literal;
-  static never: (...args: any[]) => any = never;
-  static number: (...args: any[]) => any = number;
-  static object: (...args: any[]) => any = object;
-  static partialRecord: (...args: any[]) => any = partialRecord;
-  static preprocess: (...args: any[]) => any = preprocess;
-  static record: (...args: any[]) => any = record;
-  static strictObject: (...args: any[]) => any = strictObject;
-  static string: (...args: any[]) => any = string;
-  static undefined: (...args: any[]) => any = undefinedFactory;
-  static union: (...args: any[]) => any = union;
-  static unknown: (...args: any[]) => any = unknown;
-  static uuid: (...args: any[]) => any = uuid;
-  static zodToJsonSchemaInternal: (...args: any[]) => any = zodToJsonSchemaInternal;
+  static array: (element: ZBase) => ZodTypeT<any[]> = array;
+  static boolean: () => ZodTypeT<boolean> = boolean;
+  static date: () => ZodTypeT<unknown> = date;
+  static discriminatedUnion: (discriminator: string, options: readonly ZBase[]) => ZodTypeT<any> = discriminatedUnion;
+  static enum: (values: readonly string[]) => ZodTypeT<any> = enumOf;
+  static literal: (value: string | number | boolean) => ZodTypeT<any> = literal;
+  static never: () => ZodTypeT<never> = never;
+  static number: () => ZodTypeT<number> = number;
+  static object: (shape: ZodRawShape) => ZodTypeT<any> = object;
+  static partialRecord: (keyType: ZBase, valueType?: ZBase) => ZodTypeT<Record<string, any>> = partialRecord;
+  static preprocess: (fn: (value: any) => unknown, schema: ZBase) => ZodTypeT<any> = preprocess;
+  static record: (keyType: ZBase, valueType?: ZBase) => ZodTypeT<Record<string, any>> = record;
+  static strictObject: (shape: ZodRawShape) => ZodTypeT<any> = strictObject;
+  static string: () => ZodTypeT<string> = string;
+  static undefined: () => ZodTypeT<unknown> = undefinedFactory;
+  static union: (options: readonly ZBase[]) => ZodTypeT<any> = union;
+  static unknown: () => ZodTypeT<any> = unknown;
+  static uuid: () => ZodTypeT<string> = uuid;
+  static zodToJsonSchemaInternal: (schema: ZBase) => Record<string, unknown> = zodToJsonSchemaInternal;
 }
 
 export namespace z {

@@ -125,7 +125,7 @@ export const ZodFirstPartyTypeKind = {
   ZodReadonly: "ZodReadonly",
 };
 
-export type ZodRawShape = Record<string, any>;
+export type ZodRawShape = Record<string, ZBase>;
 export type OutOf1<T extends ZodType> = T["_output"];
 export type ShapeOut<T extends ZodRawShape> = { [K in keyof T]: unknown };
 
@@ -292,7 +292,7 @@ export class ZodError extends Error {
 
 // ---------- base type ----------
 
-class ZBase {
+export class ZBase {
   _description?: string;
   _wrap: string = "";
   _innerIdx: number = -1;
@@ -615,15 +615,14 @@ export class ZodType<O = any> extends ZBase {
     throw r.error;
   }
 
-  safeParse(input: any): SafeParseResult<any> {
+  safeParse(input: any): SafeParseResult<O> {
     const issues: ZodIssue[] = [];
     const ctx: ParseCtx = { path: [], issues: issues };
     const value = this._parse(input, ctx);
     if (issues.length > 0) {
-      const e: SafeParseError<O> = { success: false, error: new ZodError(issues) };
-      return e;
+      return { success: false, error: new ZodError(issues) };
     }
-    return okOf(value);
+    return { success: true, data: value as O };
   }
 
 
@@ -974,7 +973,7 @@ function extendNode(src: ZBase, shape: ZodRawShape): ZBase {
   return w;
 }
 
-export const ZodObject: any = object;
+export const ZodObject: (shape: ZodRawShape) => ZodType<any> = object;
 
 const SCHEMA_MAP = new Map<number, ZBase>();
 let SCHEMA_COUNT = 0;

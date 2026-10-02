@@ -208,6 +208,12 @@
       "node:vm": [
         "./compat/node-vm.ts"
       ],
+      "node:sqlite": [
+        "./compat/node-sqlite.ts"
+      ],
+      "@zcode/node-sqlite": [
+        "./compat/node-sqlite.ts"
+      ],
       "@zcode/node-vm": [
         "./compat/node-vm.ts"
       ],

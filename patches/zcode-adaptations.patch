@@ -710,6 +710,20 @@ index b8e0eb1..00ba6d7 100644
 -  });
 +  };
  }
+diff --git a/apps/zcode-cli/packages/bootstrap/src/app/script-workflow-utils.ts b/apps/zcode-cli/packages/bootstrap/src/app/script-workflow-utils.ts
+index 1c6ac8e..d43b56f 100644
+--- a/apps/zcode-cli/packages/bootstrap/src/app/script-workflow-utils.ts
++++ b/apps/zcode-cli/packages/bootstrap/src/app/script-workflow-utils.ts
+@@ -42,7 +42,8 @@ export class WorkflowLimiter {
+ }
+ 
+ export function buildAgentPrompt(input: WorkflowAgentCallInput): string {
+-  const blocks = [];
++  // scriptc 对空数组字面量推断为 never[]，push 会报 SC0001；显式给出元素类型。
++  const blocks: string[] = [];
+   if (input.opts?.instructions) blocks.push(input.opts.instructions);
+   if (input.opts?.skills?.length) {
+     blocks.push(`Use these skills if they are available: ${input.opts.skills.join(", ")}`);
 diff --git a/apps/zcode-cli/packages/bootstrap/src/app/standalone-account-provider-runtime.ts b/apps/zcode-cli/packages/bootstrap/src/app/standalone-account-provider-runtime.ts
 index d3bd8df..4eb7892 100644
 --- a/apps/zcode-cli/packages/bootstrap/src/app/standalone-account-provider-runtime.ts
@@ -737,6 +751,44 @@ index d3bd8df..4eb7892 100644
      );
  }
  
+diff --git a/apps/zcode-cli/packages/bootstrap/src/app/workspace-hook-review-controller.ts b/apps/zcode-cli/packages/bootstrap/src/app/workspace-hook-review-controller.ts
+index 0e95e73..ec51801 100644
+--- a/apps/zcode-cli/packages/bootstrap/src/app/workspace-hook-review-controller.ts
++++ b/apps/zcode-cli/packages/bootstrap/src/app/workspace-hook-review-controller.ts
+@@ -401,7 +401,9 @@ export class WorkspaceHookReviewController {
+           reasonCode: "workspace_hooks_snapshot_mismatch" as const,
+         };
+       }
+-      const digests = [...new Set(target.hookDeclarationDigests)];
++      // scriptc 把 z.infer 的 target 降级成 any，`new Set(any)` 摊平后元素变 unknown；
++      // 这里按协议声明断言成 string[]，避免 digests 被推成 unknown[]（SC0001）。
++      const digests: string[] = [...new Set(target.hookDeclarationDigests as string[])];
+       const entries = snapshot.hooks.filter((entry) =>
+         digests.includes(entry.hookDeclarationDigest),
+       );
+diff --git a/apps/zcode-cli/packages/bootstrap/src/app/workspace-hook-review-mutation.ts b/apps/zcode-cli/packages/bootstrap/src/app/workspace-hook-review-mutation.ts
+index 18452e1..f16a79c 100644
+--- a/apps/zcode-cli/packages/bootstrap/src/app/workspace-hook-review-mutation.ts
++++ b/apps/zcode-cli/packages/bootstrap/src/app/workspace-hook-review-mutation.ts
+@@ -7,6 +7,7 @@ import { digestSummary, workspaceIdentitySummary } from "@zcode/core";
+ import {
+   buildWorkspaceHookBundleSnapshot,
+   readWorkspaceHookProjectSources,
++  type WorkspaceHookBundleSnapshotData,
+   type WorkspaceHookRuntimeRoot,
+ } from "@zcode/shared/workspace-hook-discovery";
+ import {
+@@ -58,7 +59,9 @@ export function createWorkspaceHookReviewMutationPort(
+ 
+         await writeWorkspaceHookConfiguredToggle({
+           configPath: editableConfigPath,
+-          snapshot: current,
++          // scriptc 把 contracts 的 `Readonly<z.infer<…>>` 降级成 Readonly<any>（属性全丢），
++          // 而这里的参数是手写的 WorkspaceHookBundleSnapshotData；按真实结构断言。
++          snapshot: current as WorkspaceHookBundleSnapshotData,
+           reviewItemId: input.reviewItemId,
+           enabled: input.enabled,
+         });
 diff --git a/apps/zcode-cli/packages/bootstrap/src/app/workspace-hook-review-request.ts b/apps/zcode-cli/packages/bootstrap/src/app/workspace-hook-review-request.ts
 index 3da5c63..372523c 100644
 --- a/apps/zcode-cli/packages/bootstrap/src/app/workspace-hook-review-request.ts
@@ -832,7 +884,7 @@ index 3d81295..4124fc2 100644
 +  return cachedNativeHandlers;
 +}
 diff --git a/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/product-projection.ts b/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/product-projection.ts
-index b965640..7fddf9f 100644
+index b965640..cd4f017 100644
 --- a/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/product-projection.ts
 +++ b/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/product-projection.ts
 @@ -148,6 +148,7 @@ import {
@@ -881,6 +933,21 @@ index b965640..7fddf9f 100644
        previousExecutions.map((candidate) => [candidate.hookRunId, candidate]),
      );
      byRunId.set(execution.hookRunId, execution);
+@@ -3872,10 +3873,10 @@ export class ProductProjection {
+         case "workflowRun.updated":
+         case "workflowRun.removed":
+           break;
+-        default: {
+-          const exhaustiveDelta: never = delta;
+-          return exhaustiveDelta;
+-        }
++        // scriptc 把 z.infer 的 ConversationDelta 降级成 any，`const x: never = delta`
++        // 穷尽断言报 SC0001；未知 op 与 subagent 行投影无关，按原语义不触发 materialize。
++        default:
++          return false;
+       }
+     }
+     return false;
 @@ -3959,7 +3960,7 @@ export class ProductProjection {
      for (const [childSessionId, row] of latestRowByChildId) {
        if (row.status !== "running") continue;
@@ -890,6 +957,20 @@ index b965640..7fddf9f 100644
        running.push({
          childSessionId,
          agentId: row.entityId,
+@@ -4037,10 +4038,9 @@ export class ProductProjection {
+         case "row.removed":
+           if (prospective.rowId >= delta.fromRowId) prospective = null;
+           break;
+-        default: {
+-          const exhaustiveDelta: never = delta;
+-          return exhaustiveDelta;
+-        }
++        // 未知 op 改不了这一行的 prospective 形态（原 never 穷尽断言在 scriptc 下不可编译）。
++        default:
++          break;
+       }
+     }
+     return prospective?.kind === "subagent" ? prospective : null;
 diff --git a/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/v4-gateway.ts b/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/v4-gateway.ts
 index 6585dbd..af88b20 100644
 --- a/apps/zcode-cli/packages/bootstrap/src/zcode-protocol-v4/v4-gateway.ts

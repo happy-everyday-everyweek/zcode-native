@@ -1,17 +1,22 @@
 name: agent-fanout
 
 # 在 GHA 上跑云端 zcode Agent：一次 dispatch 把一批文件分派给 N 个并行 runner。
-# 每个 runner 只改一个文件（在 job 内可选用 compile-entry 做单入口校验），最后把 patch 作为
-# artifact 交回，由 collect job 汇总成一个提交推上去。
+# 每个 runner 只改一个文件（在 job 内用 compile-entry 做单入口校验），把 patch 作为 artifact
+# 交回，由 collect job 汇总成一个提交推上去。
+#
+# 关键事实（2026-10-03 实测）：本仓库**不含** ZCode 源码树，源码是 runner 里
+#   git clone zai-org/ZCode@v3.14.3 + 打 patches/zcode-adaptations.patch 得到的，
+# 因此 ZCode 的改动只能通过重新生成 patches/zcode-adaptations.patch 才能落库。
+# 文件路径一律按 ZCode 内相对路径给出（例如 packages/server/src/http.ts）。
 #
 # 一次性准备（已在本机完成）：
 #   * release 资产 zcode-runtime-v3.14.3/zcode-runtime-3.14.3.tar.gz（~63MB，公开可下载）
-#   * secret ZCODE_PROVIDER_CONFIG_B64（~3KB，base64 后的 provider_config.json）
+#   * secret ZCODE_PROVIDER_CONFIG_B64（~3KB，provider_config.json）
 #
 # 用法：
 #   curl -X POST -H "Authorization: Bearer <PAT>" \
 #     https://api.github.com/repos/<owner>/<repo>/actions/workflows/agent-fanout.yml/dispatches \
-#     -d '{"ref":"main","inputs":{"files":"[\"path/a.ts\"]","entry_map":"{\"path/a.ts\":\"server\"}","max_parallel":"2"}}'
+#     -d '{"ref":"main","inputs":{"files":"[\"packages/server/src/http.ts\"]","entry_map":"{\"packages/server/src/http.ts\":\"server\"}","max_parallel":"4"}}'
 
 on:
   workflow_dispatch:
@@ -21,7 +26,7 @@ on:
         required: false
         default: 'main'
       files:
-        description: '要修的文件 JSON 数组'
+        description: '要修的 ZCode 相对路径 JSON 数组'
         required: true
       entry_map:
         description: '文件→入口名 的 JSON（用于 job 内单入口校验，可留空 {}）'
@@ -39,10 +44,13 @@ on:
 permissions:
   contents: write
 
+env:
+  ZCODE_TAG: v3.14.3
+
 jobs:
   fix:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       max-parallel: ${{ fromJSON(inputs.max_parallel) }}
@@ -57,6 +65,31 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+
+      - name: Clone ZCode 并打改编补丁（与 build.yml 一致）
+        run: |
+          git clone --depth 1 --branch "$ZCODE_TAG" https://github.com/zai-org/ZCode.git ZCode
+          cd ZCode
+          git config user.name "gha-agent"
+          git config user.email "gha-agent@users.noreply.github.com"
+          git apply ../patches/zcode-adaptations.patch
+          test -f "${{ matrix.file }}" && echo "target file present: ${{ matrix.file }}"
+          cd ..
+
+      - name: 安装 scriptc + 工作区依赖（校验步骤需要）
+        run: |
+          mkdir -p scriptc-try
+          cd scriptc-try
+          npm init -y >/dev/null 2>&1 || true
+          npm install scriptc@0.1.7 --no-audit --no-fund
+          cd ..
+          npm i -g pnpm@10.33.2 >/dev/null 2>&1 || true
+          cd ZCode
+          pnpm install --ignore-scripts --no-frozen-lockfile
+          cd ..
+          mkdir -p zfull/node_modules/@types
+          ln -sfn "$PWD/ZCode/node_modules/@types/node" zfull/node_modules/@types/node
+          ln -sfn "$PWD/ZCode/node_modules/undici-types" zfull/node_modules/undici-types
 
       - name: 下载并解开 zcode 运行时
         env:
@@ -81,20 +114,11 @@ jobs:
         run: python3 ci/gha-agent.py prompt "${{ matrix.file }}"
 
       - name: 跑 Agent（只允许改这一个文件）
-        env:
-          ZCODE_ENTRY: ${{ fromJSON(inputs.entry_map)[matrix.file] }}
         run: |
-          node "$HOME/.zcode/runtime/zcode/bin/zcode.mjs" -p "$(cat agent-prompt.txt)" --no-color 2>&1 | tail -100
-          echo "---- changed files ----"
-          git status --porcelain
+          node "$HOME/.zcode/runtime/zcode/bin/zcode.mjs" -p "$(cat agent-prompt.txt)" --no-color 2>&1 | tail -120
+          echo "---- changed files in ZCode ----"
+          git -C ZCode status --porcelain
         continue-on-error: true
-
-      - name: 安装 scriptc（与 CI 同版本，用于单入口校验）
-        run: |
-          mkdir -p scriptc-try
-          cd scriptc-try
-          npm install scriptc@0.1.7 --no-audit --no-fund
-          ls node_modules/.bin/scriptc
 
       - name: 编译校验（只编该文件所属入口）
         env:
@@ -104,10 +128,12 @@ jobs:
           python3 ci/gha-agent.py verify "$ZCODE_ENTRY" "${{ matrix.file }}" || echo "(校验失败：该文件仍有错误，或见上方输出)"
         continue-on-error: true
 
-      - name: 导出 patch
+      - name: 导出 patch（ZCode 是独立 clone，补丁要从它自己取）
         run: |
-          git diff -- "${{ matrix.file }}" > fix.patch
+          git -C ZCode add -A -- "${{ matrix.file }}"
+          git -C ZCode diff --cached -- "${{ matrix.file }}" > fix.patch
           wc -c fix.patch
+          head -20 fix.patch
 
       - uses: actions/upload-artifact@v4
         with:
@@ -127,17 +153,33 @@ jobs:
         with:
           path: fixes
           pattern: fix-*
-      - name: 汇总并推送一个提交
+
+      - name: 在 ZCode clone 上汇总改动并重新生成改编补丁
         run: |
+          git clone --depth 1 --branch "$ZCODE_TAG" https://github.com/zai-org/ZCode.git ZCode
+          cd ZCode
+          git config user.name  "gha-agent"
+          git config user.email "gha-agent@users.noreply.github.com"
+          git apply ../patches/zcode-adaptations.patch
+          cd ..
           shopt -s nullglob
           n=0
           for p in fixes/*/fix.patch; do
-            if git apply --whitespace=nowarn "$p" 2>/dev/null; then n=$((n+1)); echo "applied $p"; else echo "skip $p"; fi
+            if [ -s "$p" ] && git -C ZCode apply --whitespace=nowarn "$p" 2>/dev/null; then
+              n=$((n+1)); echo "applied $p"
+            else
+              echo "skip $p"
+            fi
           done
           echo "patches applied: $n"
-          git config user.name  "gha-agent"
-          git config user.email "gha-agent@users.noreply.github.com"
+          if [ "$n" -eq 0 ]; then echo "no fix applied; nothing to push"; exit 0; fi
+          # ZCode 不在本仓库里，唯一能落库的形态就是这份改编补丁（diff 对 upstream tag 取）
+          cd ZCode
           git add -A
-          git diff --cached --stat | tail -30
-          git commit -m "fix(port): agent fanout batch" || echo "no changes"
+          git diff --cached > ../patches/zcode-adaptations.patch
+          cd ..
+          wc -c patches/zcode-adaptations.patch
+          git add patches/zcode-adaptations.patch
+          git diff --cached --stat | tail -5
+          git commit -m "fix(port): agent fanout batch ($n files)" || echo "no changes"
           git push

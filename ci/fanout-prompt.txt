@@ -1,0 +1,36 @@
+You are fixing one TypeScript file so that the scriptc compiler (which compiles this
+TypeScript to aarch64 native code) stops reporting errors in it.
+
+Target file (repo-root-relative, already cloned in the working directory): {file}
+Edit ONLY that file. Never change an exported type declaration. Do not add new exports.
+Do not run the compiler (it is slow here) and do not run git.
+
+The file belongs to a large TypeScript monorepo that is being ported to scriptc. These
+rules are already experimentally verified in this port; use them:
+
+- `Object.keys` only has a lowering when called on a GENERIC record parameter. Write a
+  file-local helper `function recordKeys<T>(rec: Record<string, T>): string[] { return
+  Object.keys(rec); }` and at the call site first bind the value to a
+  `Record<string, unknown>`, then pass that binding. `Object.keys(x)` directly on
+  `Record<string, any>` fails with SC2020, and on an `any` value it triggers an internal
+  compiler error.
+- `new Set(values)` is unsupported. Use `const s = new Set<string>();` plus `.has()` /
+  `.add()` in a loop.
+- Object spread `...source` where the source is typed `any` is unsupported. Replace it
+  with an explicit key loop that copies keys in a deterministic order (table keys first
+  in schema order, then remaining keys in arrival order).
+- `Array.isArray` does not narrow `unknown` in a conditional expression: erase the whole
+  container to `any` first, or use the local `isArray` helper.
+- Avoid: `Object.fromEntries` (crashes the checker), `process`, `for...in`,
+  `Function.prototype.call` on compiled functions, `in` on an `any` receiver,
+  `.find` on arrays whose element type is `any`, `satisfies Record<string, T>`.
+- An `any` value can NEVER become a class instance. If the diagnostic says an `any`
+  value is used where a class (e.g. `ZBase`, `ZodType`, `ZodObject`) is expected, fix the
+  *interface or the declared type* so the value is no longer `any`, instead of casting the
+  expression.
+- `Record<string, ZodType<any>>` is treated as a different instantiation from
+  `Record<string, ZodType>` by this compiler. Spell the record type exactly as the value
+  you pass in does, otherwise you get SC2002 "record shapes must match exactly".
+- Never leave the file with unbalanced braces.
+
+Report: which lines you changed, and the before/after text for each change.

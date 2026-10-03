@@ -51,17 +51,18 @@ def prepare() -> int:
 
 
 def prompt(file: str) -> int:
-    tpl = ROOT / "zcheck" / "fanout-prompt.txt"
+    tpl = ROOT / "ci" / "fanout-prompt.txt"
     base = tpl.read_text(encoding="utf-8") if tpl.is_file() else DEFAULT_PROMPT
     out = pathlib.Path("agent-prompt.txt")
-    out.write_text(base.format(file=file), encoding="utf-8")
+    # 用 replace 而不是 format：模板里含代码示例的大括号，format 会把它们当占位符。
+    out.write_text(base.replace("{file}", "ZCode/" + file), encoding="utf-8")
     print("prompt bytes:", out.stat().st_size, "->", out)
     return 0
 
 
 def verify(entry: str, file: str) -> int:
     r = subprocess.run(
-        ["node", "zcheck/compile-entry.mjs", entry, "--file", file],
+        ["node", str(ROOT / "ci" / "compile-entry.mjs"), entry, "--file", file],
         capture_output=True,
         text=True,
     )

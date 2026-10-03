@@ -10867,24 +10867,21 @@ index b498b20..cfaf733 100644
      file.version === 1 ? { ...file, version: 2 as const, decisions: [] } : file,
    );
 diff --git a/packages/shared/src/pluginStoreOrder.ts b/packages/shared/src/pluginStoreOrder.ts
-index 388cdc2..89ca4cc 100644
+index 388cdc2..aa8b0b7 100644
 --- a/packages/shared/src/pluginStoreOrder.ts
 +++ b/packages/shared/src/pluginStoreOrder.ts
-@@ -1,6 +1,21 @@
+@@ -1,6 +1,18 @@
  import { z } from "zod";
  
 -const orderList = z.array(z.string().trim().min(1)).transform((items) => [...new Set(items)]);
 +const orderList = z.array(z.string().trim().min(1)).transform((items) => {
++  // scriptc 不支持展开参数，改用增量去重：new Set 加 has/add 是被支持的用法，
++  // 复杂度仍是 O(n)，去重顺序与首次出现序一致。
++  const seen = new Set<string>();
 +  const out: string[] = [];
 +  for (const item of items) {
-+    let exists = false;
-+    for (const seen of out) {
-+      if (seen === item) {
-+        exists = true;
-+        break;
-+      }
-+    }
-+    if (!exists) {
++    if (!seen.has(item)) {
++      seen.add(item);
 +      out.push(item);
 +    }
 +  }

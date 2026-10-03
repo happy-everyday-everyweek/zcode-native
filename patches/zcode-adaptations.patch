@@ -14965,7 +14965,7 @@ index 3985ded..5350a6b 100644
      .max(WORKFLOW_RUNS_LIMITS.maxSubagentModelLength)
      .nullable()
 diff --git a/packages/shared/src/zcode-protocol-v4/workflow-runs-delta.ts b/packages/shared/src/zcode-protocol-v4/workflow-runs-delta.ts
-index 8e1d764..28919ff 100644
+index 8e1d764..1278c64 100644
 --- a/packages/shared/src/zcode-protocol-v4/workflow-runs-delta.ts
 +++ b/packages/shared/src/zcode-protocol-v4/workflow-runs-delta.ts
 @@ -42,26 +42,56 @@ import {
@@ -15038,7 +15038,7 @@ index 8e1d764..28919ff 100644
  
  /** 两张实例表的去重键。`\0` 分隔的理由与 reducer 的派生 actor 状态逐字相同：("a",12) 与 ("a1",2) 不能撞车。 */
  export function workflowRunEntryKey(entry: { siteId: string; ordinal: number }): string {
-@@ -72,23 +102,31 @@ export function workflowRunEntryKey(entry: { siteId: string; ordinal: number }):
+@@ -72,21 +102,33 @@ export function workflowRunEntryKey(entry: { siteId: string; ordinal: number }):
   * 按规范键序重建一个 run 对象（浅重建：嵌套值原样搬运引用，它们本来就来自同一份事实）。
   *
   * `undefined` 值的键按缺席处理，与 `JSON.stringify` 的语义对齐——协议线上只有「键在场」与
@@ -15062,9 +15062,14 @@ index 8e1d764..28919ff 100644
 +    const value = readWorkflowRunField(source, key);
      if (value !== undefined) canonical[key] = value;
    }
-   return canonical as unknown as WorkflowRunState;
- }
- 
+-  return canonical as unknown as WorkflowRunState;
++  // 表外键按原序缀在尾部（基线语义：本模块没有资格替调用方丢数据）。scriptc 不能用
++  // Object.keys 枚举动态键，但允许把 any 源展开进索引签名记录：已存在的键保持原位、
++  // 新键按源顺序追加，等价于基线的「表内按 schema 序 + 表外按到达序」。
++  const merged: Record<string, unknown> = { ...canonical, ...source };
++  return merged as unknown as WorkflowRunState;
++}
++
 +/**
 + * 从 run 对象按字符串键读一个字段。
 + *
@@ -15073,11 +15078,9 @@ index 8e1d764..28919ff 100644
 + */
 +function readWorkflowRunField(source: any, key: string): unknown {
 +  return source[key];
-+}
-+
+ }
+ 
  /**
-  * JSON 值的结构相等。reducer 的幂等判据（原来是整条 run 的 `JSON.stringify` 比对，每事件
-  * O(N) 字节）与 diff 的「这个键/条目变了吗」共用这一份，两处判据不会再各说各话。
 diff --git a/packages/shared/src/zcode-protocol-v4/workflow-runs.ts b/packages/shared/src/zcode-protocol-v4/workflow-runs.ts
 index cd27ebe..1239d45 100644
 --- a/packages/shared/src/zcode-protocol-v4/workflow-runs.ts

@@ -7261,6 +7261,30 @@ index 5ae36c6..67222ed 100644
    }
  
    deletePersonalProvider(providerId: ProviderId): Promise<ProviderConfigLayerSnapshot> {
+diff --git a/packages/provider/src/config/manual-model-config.ts b/packages/provider/src/config/manual-model-config.ts
+index b924248..a01c16c 100644
+--- a/packages/provider/src/config/manual-model-config.ts
++++ b/packages/provider/src/config/manual-model-config.ts
+@@ -40,7 +40,9 @@ export function clearManualModelConfig(input: z.infer<typeof modelConfigDataSche
+   );
+ }
+ 
+-function omitSchemaFields(schema: z.ZodObject, input: unknown): unknown {
++// scriptc：compat 里 `instanceof z.ZodObject` 会把值收窄成 `{}`，与形参类型不兼容（SC0001）。
++// 这两个是文件内非导出辅助，参数改为 any 不改变任何导出签名。
++function omitSchemaFields(schema: any, input: unknown): unknown {
+   if (!input || typeof input !== "object" || Array.isArray(input)) return input;
+   return Object.fromEntries(
+     Object.entries(input).flatMap(([key, value]) => {
+@@ -55,7 +57,7 @@ function omitSchemaFields(schema: z.ZodObject, input: unknown): unknown {
+   );
+ }
+ 
+-function pickSchemaFields(schema: z.ZodObject, input: unknown): unknown {
++function pickSchemaFields(schema: any, input: unknown): unknown {
+   if (!input || typeof input !== "object" || Array.isArray(input)) return input;
+   const source = input as Record<string, unknown>;
+   return Object.fromEntries(
 diff --git a/packages/provider/src/config/model-config.ts b/packages/provider/src/config/model-config.ts
 index beb7e9a..f191141 100644
 --- a/packages/provider/src/config/model-config.ts

@@ -6728,6 +6728,28 @@ index b8f8225..26a3e46 100644
  
  const runtimeRequire = createRequire(import.meta.url);
  const GENERATED_SOURCE_ASSIGNMENT = /const source\s*=\s*/;
+diff --git a/packages/desktop/src/main/desktopRuntimeEnv.ts b/packages/desktop/src/main/desktopRuntimeEnv.ts
+index e444d70..ab92f6b 100644
+--- a/packages/desktop/src/main/desktopRuntimeEnv.ts
++++ b/packages/desktop/src/main/desktopRuntimeEnv.ts
+@@ -245,7 +245,7 @@ function resolveEnvValue(envName: string, localEnv: LocalRuntimeEnv = {}): strin
+ export function resolveZCodeEndpointEnvBaseOrigin(
+   localEnv: LocalRuntimeEnv = {},
+ ): string | undefined {
+-  const buildEnv = readProductEndpointEnv();
++  const buildEnv = readProductEndpointEnv(process.env);
+   // main 进程临时验证更新服务时不会重新写 .env，命令行传入的 endpoint 必须优先于本地文件。
+   return (
+     process.env["ZCODE_BASE_URL"]?.trim() ||
+@@ -270,7 +270,7 @@ function readDefinedProcessEnv(): Record<string, string> {
+ 
+ function applySelectedZCodeEnvLinks(env: Record<string, string>): Record<string, string> {
+   const endpointEnv = {
+-    ...readProductEndpointEnv(),
++    ...readProductEndpointEnv(process.env),
+     ...env,
+     ZCODE_ENV,
+   };
 diff --git a/packages/model-option-map/src/compiler.ts b/packages/model-option-map/src/compiler.ts
 index 3303783..c285e64 100644
 --- a/packages/model-option-map/src/compiler.ts
@@ -17883,10 +17905,10 @@ index 93f5258..8e5506e 100644
 -  ] as const;
 +  ];
 diff --git a/packages/shared/src/zcodeEndpoint.ts b/packages/shared/src/zcodeEndpoint.ts
-index 8369d0a..70df594 100644
+index 8369d0a..5b7cd61 100644
 --- a/packages/shared/src/zcodeEndpoint.ts
 +++ b/packages/shared/src/zcodeEndpoint.ts
-@@ -20,15 +20,28 @@ export function pickProductEndpointEnv(
+@@ -20,15 +20,30 @@ export function pickProductEndpointEnv(
      "ZAI_OAUTH_CLIENT_ID",
      "ZAI_OAUTH_APP_ID",
    ];
@@ -17904,15 +17926,18 @@ index 8369d0a..70df594 100644
 +  }
 +  return picked;
  }
- export function readProductEndpointEnv(): Record<string, string | undefined> {
+-export function readProductEndpointEnv(): Record<string, string | undefined> {
 -  return {
 -    ...(typeof __ZCODE_ENDPOINT_ENV__ === "undefined" ? {} : __ZCODE_ENDPOINT_ENV__),
 -    ...pickProductEndpointEnv(typeof process === "undefined" ? {} : process.env),
 -  };
-+  // scriptc 没有 process 的 lowering，不能兜底读取 process.env；Node 调用方需要运行时
-+  // 环境变量时显式传入 env（见上方注释）。这里传空记录，只保留构建期注入值。
-+  const localEnv: Record<string, string | undefined> = {};
-+  const productEnv: Record<string, string | undefined> = pickProductEndpointEnv(localEnv);
++export function readProductEndpointEnv(
++  env: Record<string, string | undefined> = {},
++): Record<string, string | undefined> {
++  // scriptc 没有 `process` 的 lowering，因此这里不能兜底读 process.env（基线实现里的
++  // `typeof process === "undefined" ? {} : process.env`）；Node 侧调用方（desktop main、
++  // CLI）需要运行时环境变量时显式传 `process.env`，语义与基线一致。
++  const productEnv: Record<string, string | undefined> = pickProductEndpointEnv(env);
 +  if (typeof __ZCODE_ENDPOINT_ENV__ === "undefined") {
 +    return productEnv;
 +  }
@@ -17922,7 +17947,7 @@ index 8369d0a..70df594 100644
  }
  
  export interface ZCodeEndpointUrls {
-@@ -289,8 +302,5 @@ export function rewriteZCodeEndpointUrl(input: string | URL, endpointOrigin: str
+@@ -289,8 +304,5 @@ export function rewriteZCodeEndpointUrl(input: string | URL, endpointOrigin: str
    }
  
    const target = new URL(targetOrigin);

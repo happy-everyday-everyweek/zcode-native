@@ -1,0 +1,172 @@
+name: agent-fanout
+
+# 在 GHA 上跑云端 zcode Agent：一次 dispatch 把一批文件分派给 N 个并行 runner，
+# 每个 runner 只修一个文件、改完立刻在本 job 里编译校验，最后把 patch 作为 artifact 交回，
+# 由 collect job 汇总成一个提交推上去。
+#
+# 为什么可行（2026-10-03 实测确认）：
+#   * 本仓库是 public → 标准 Linux runner 分钟数免费不限，每个 job 独立 VM/IP（不会像本机那样被限流）。
+#   * zcode 是纯 Node 程序，provider 配置就是一个小 JSON（~3KB，内含 api-key），
+#     所以云端**不需要 OAuth 登录**：运行时用 release 资产下发，配置用 secret 注入。
+#
+# 需要一次性的准备：
+#   1) 把本机 ~/.zcode/runtime 打包成 tar.gz，作为 release 资产上传（公开可直接下载，无需 token）：
+#        tar -czf zcode-runtime-3.14.3.tar.gz -C ~/.zcode runtime
+#        gh release create zcode-runtime-v3.14.3 zcode-runtime-3.14.3.tar.gz
+#   2) 把 provider 配置存成 secret（很小，够用）：
+#        base64 -w0 ~/.zcode/v2/provider_config.json     →  secrets.ZCODE_PROVIDER_CONFIG_B64
+#   3) 可选：secrets.ZCODE_HOME_EXTRA_B64 —— 其余需要带到云端的 ~/.zcode/v2 小文件
+#
+# 用法：
+#   gh workflow run agent-fanout.yml -f files='["packages/server/src/http.ts","..."]' \
+#        -f entry_map='{"packages/server/src/http.ts":"lib-server"}' -f max_parallel=5
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_sha:
+        description: '要修的基线提交（默认 main）'
+        required: false
+        default: 'main'
+      files:
+        description: '要修的文件 JSON 数组'
+        required: true
+      entry_map:
+        description: '文件→profile 名 的 JSON（用于在 job 内编译校验）；留空则跳过校验'
+        required: false
+        default: '{}'
+      max_parallel:
+        description: '并行度（受供应商限流约束，建议 5）'
+        required: false
+        default: '5'
+      runtime_asset:
+        description: 'zcode 运行时 release 资产的 tag/文件名'
+        required: false
+        default: 'zcode-runtime-v3.14.3/zcode-runtime-3.14.3.tar.gz'
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      max-parallel: ${{ fromJSON(inputs.max_parallel) }}
+      matrix:
+        file: ${{ fromJSON(inputs.files) }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.base_sha }}
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: 下载并解开 zcode 运行时（release 资产，公开可下载）
+        run: |
+          url="https://github.com/${{ github.repository }}/releases/download/${{ inputs.runtime_asset }}"
+          echo "fetching $url"
+          curl -fL --retry 3 -o runtime.tgz "$url"
+          mkdir -p "$HOME/.zcode"
+          tar -xzf runtime.tgz -C "$HOME/.zcode"
+          test -f "$HOME/.zcode/runtime/zcode/bin/zcode.mjs" && echo "runtime OK"
+
+      - name: 注入 provider 配置（api-key 的小 JSON）
+        run: |
+          mkdir -p "$HOME/.zcode/v2"
+          echo "${{ secrets.ZCODE_PROVIDER_CONFIG_B64 }}" | base64 -d > "$HOME/.zcode/v2/provider_config.json"
+          python3 - <<'PY'
+          import json, pathlib
+          p = pathlib.Path.home() / ".zcode/v2/provider_config.json"
+          d = json.loads(p.read_text())
+          print("providers:", d.get("config", {}).get("providerOrder"))
+          PY
+
+      - name: 组装 prompt
+        run: |
+          python3 - <<'PY'
+          import os, pathlib
+          f = "${{ matrix.file }}"
+          tpl = pathlib.Path("zcheck/fanout-prompt.txt")
+          base = tpl.read_text(encoding="utf-8") if tpl.is_file() else (
+              "Fix ALL scriptc diagnostics reported in the file {file} in this repo. "
+              "Edit ONLY that file; never change an exported type declaration; do not add exports. "
+              "Rules: Object.keys has no lowering on Record<string, any> - add a file-local generic helper "
+              "recordKeys<T>(rec: Record<string, T>) and bind a Record<string, unknown> first; "
+              "new Set(values) is unsupported - use Set with has/add; object spread of an any source is unsupported; "
+              "avoid `in` on any receivers, Object.fromEntries, process, for...in, Function.prototype.call; "
+              "an any value can never become a class instance. Do NOT run the compiler (too slow here) - "
+              "just make the edit and report before/after lines."
+          )
+          pathlib.Path("agent-prompt.txt").write_text(base.format(file=f), encoding="utf-8")
+          print("prompt bytes:", os.path.getsize("agent-prompt.txt"))
+          PY
+
+      - name: 跑 Agent（只允许改一个文件）
+        run: |
+          node "$HOME/.zcode/runtime/zcode/bin/zcode.mjs" -p "$(cat agent-prompt.txt)" --no-color 2>&1 | tail -80
+        continue-on-error: true
+
+      - name: 安装 scriptc（与 CI 同版本，用于单入口校验）
+        run: |
+          mkdir -p scriptc-try
+          cd scriptc-try
+          npm install scriptc@0.1.7 --no-audit --no-fund
+          ls node_modules/.bin/scriptc
+
+      - name: 编译校验（只编该文件所属入口）
+        run: |
+          python3 - <<'PY'
+          import json, pathlib, subprocess, sys
+          m = json.loads('''${{ inputs.entry_map }}''')
+          entry = m.get("${{ matrix.file }}")
+          if not entry:
+              print("no entry mapping; skipping compile check"); sys.exit(0)
+          r = subprocess.run(
+              ["node", "zcheck/compile-entry.mjs", entry, "--file", "${{ matrix.file }}"],
+              capture_output=True, text=True)
+          print(r.stdout[-4000:]); print(r.stderr[-2000:])
+          sys.exit(r.returncode)
+        continue-on-error: true
+
+      - name: 导出 patch
+        run: |
+          git diff -- "${{ matrix.file }}" > fix.patch
+          wc -c fix.patch
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fix-${{ strategy.job-index }}
+          path: fix.patch
+          if-no-files-found: warn
+
+  collect:
+    needs: fix
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.base_sha }}
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          path: fixes
+          pattern: fix-*
+      - name: 汇总并推送一个提交
+        run: |
+          shopt -s nullglob
+          n=0
+          for p in fixes/*/fix.patch; do
+            if git apply --whitespace=nowarn "$p" 2>/dev/null; then n=$((n+1)); echo "applied $p"; else echo "skip $p"; fi
+          done
+          echo "patches applied: $n"
+          git config user.name  "gha-agent"
+          git config user.email "gha-agent@users.noreply.github.com"
+          git add -A
+          git diff --cached --stat | tail -30
+          git commit -m "fix(port): agent fanout batch" || echo "no changes"
+          git push

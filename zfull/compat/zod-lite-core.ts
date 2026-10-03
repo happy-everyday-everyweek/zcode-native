@@ -314,13 +314,14 @@ export class ZBase {
   _litVal: string = "";
   _litMap: Record<string, string> | undefined = undefined;
 
-  get shape(): ZodRawShape {
-    // 返回类型是 ZodRawShape（Record<string, ZBase>）而不是 any：声明成 any 会把调用方拿到的
-    // shape 变成动态值，而 scriptc 不允许任何动态值变成类实例——config-schema 的 sparseShape/
-    // copyShape 就是卡在这里（对 shape[key] 调 .nullable() 报 “using an any value where ZBase is
-    // expected”）。_shapeObjs 本身就是 Record<string, ZBase>，直接返回即可，运行期完全一致。
-    return this._shapeObjs;
-  }
+  get shape(): any {
+    // 返回口保持 any（兼容调用点）。注意：若要把这里的返回类型收紧成具体记录，必须用
+    // **流式类型** Record<string, ZodType<any>>，而不是 compat 的 ZodRawShape（= Record<string, ZBase>）——
+    // 后者会让调用方拿到的值缺少 optional/nullable/pick/extend，实测一次就多出 ~80 条
+    // “Property x does not exist on type ZBase”。收紧时还要同步 _shapeObjs 字段类型与
+    // pickObjs/omitObjs/mergeObjs/copyShapeObjs 的签名。
+    return this._shapeObjs as Record<string, unknown>;
+  }}
 
   _parse(input: any, ctx: ParseCtx): unknown {
     // 键枚举用：泛型记录参数上的 Object.keys 才有 lowering。

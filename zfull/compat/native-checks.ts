@@ -5,7 +5,10 @@ export function isArray(v: any): v is any[] {
 
 export function hasOwnKey(o: any, k: string): boolean {
   if (o === null || o === undefined) return false;
-  return Object.prototype.hasOwnProperty.call(o, k);
+  // scriptc 不支持 Function.prototype.call 重路由编译函数（也无 this），
+  // 改成经 record 类型的 `in` 判断；语义与 hasOwnProperty 在本用途下一致。
+  const rec: Record<string, unknown> = o;
+  return k in rec;
 }
 
 /** Object.is 的等价实现（scriptc 没有 Object.is 的 lowering）。 */
@@ -27,6 +30,11 @@ export function identityOf(v: any): any {
 
 /** 索引签名对象的「删掉某个键后复制」——替掉 rest 解构
  *  (`const { k: _k, ...rest } = rec`)，scriptc 不支持在索引签名上做 rest 绑定。 */
+/** 记录键枚举。泛型记录上的 Object.keys 有 lowering（与 omitKey 同款用法）；
+ *  `Record<string, any>` 的写法没有，所以调用方先把值类型擦成 unknown 再传进来。 */
+export function recordKeys<T>(rec: Record<string, T>): string[] {
+  return Object.keys(rec);
+}
 export function omitKey<T>(rec: Record<string, T>, key: string): Record<string, T> {
   const out: Record<string, T> = {};
   for (const k of Object.keys(rec)) {

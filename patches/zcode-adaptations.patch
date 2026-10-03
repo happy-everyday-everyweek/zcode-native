@@ -10148,10 +10148,10 @@ index 00553a5..5bc122d 100644
      })
      .nullish(),
 diff --git a/packages/shared/src/config-schema.ts b/packages/shared/src/config-schema.ts
-index 2d75ead..a10f3c6 100644
+index 2d75ead..3254ac4 100644
 --- a/packages/shared/src/config-schema.ts
 +++ b/packages/shared/src/config-schema.ts
-@@ -1,8 +1,25 @@
+@@ -1,8 +1,37 @@
 -import type { z } from "zod";
 +import type { ZodRawShape } from "zod";
  
@@ -10160,9 +10160,19 @@ index 2d75ead..a10f3c6 100644
 -  return Object.fromEntries(
 -    Object.entries(shape).map(([key, schema]) => [key, schema.nullable().optional()]),
 -  ) as { [K in keyof T]: z.ZodOptional<z.ZodNullable<T[K]>> };
++/** 记录键枚举。scriptc 只对**泛型记录**参数上的 Object.keys 有 lowering，
++ *  `Record<string, any>` 的写法没有（SC2020），所以调用方先把值类型擦成 unknown 再传进来。 */
++function recordKeys<T>(rec: Record<string, T>): string[] {
++  return Object.keys(rec);
++}
++
 +export function sparseShape(shape: Record<string, any>): ZodRawShape {
 +  const sparse: ZodRawShape = {};
-+  for (const key of Object.keys(shape)) {
++  // scriptc：`Record<string, any>` 上的 Object.keys 无 lowering（SC2020），
++  // 而泛型记录上的还有（同文件外的 omitKey 就是这么过的）；这里绑定一份
++  // unknown 值类型的记录只用于枚举键，取值仍从原记录拿，保持 any 语义。
++  const keysOf: Record<string, unknown> = shape;
++  for (const key of recordKeys(keysOf)) {
 +    const schema = shape[key];
 +    sparse[key] = schema.nullable().optional();
 +  }
@@ -10177,7 +10187,9 @@ index 2d75ead..a10f3c6 100644
 + */
 +export function copyShape(shape: Record<string, any>): ZodRawShape {
 +  const copied: ZodRawShape = {};
-+  for (const key of Object.keys(shape)) {
++  // 同 sparseShape：键枚举走 recordKeys（泛型记录上的 Object.keys 才有 lowering）。
++  const keysOf: Record<string, unknown> = shape;
++  for (const key of recordKeys(keysOf)) {
 +    copied[key] = shape[key];
 +  }
 +  return copied;
@@ -14962,10 +14974,10 @@ index 3985ded..5350a6b 100644
      .max(WORKFLOW_RUNS_LIMITS.maxSubagentModelLength)
      .nullable()
 diff --git a/packages/shared/src/zcode-protocol-v4/workflow-runs-delta.ts b/packages/shared/src/zcode-protocol-v4/workflow-runs-delta.ts
-index 8e1d764..1278c64 100644
+index 8e1d764..213d2c1 100644
 --- a/packages/shared/src/zcode-protocol-v4/workflow-runs-delta.ts
 +++ b/packages/shared/src/zcode-protocol-v4/workflow-runs-delta.ts
-@@ -42,26 +42,56 @@ import {
+@@ -42,26 +42,62 @@ import {
   * 重建 run 时没有那段历史。两边各自按这张表重排一次，序就对齐了——这也是为什么 reducer 的
   * 出口同样要走一遍本函数（那是一处，不是两处）。
   *
@@ -15004,6 +15016,12 @@ index 8e1d764..1278c64 100644
 +];
  
  /** header = run 减去两张按 (siteId, ordinal) 增量同步的表。顺序仍是 schema 声明序。 */
++/** 记录键枚举。scriptc 只对**泛型记录**参数上的 Object.keys 有 lowering，
++ *  `Record<string, any>` 的写法没有（SC2020），所以调用方先把值类型擦成 unknown 再传进来。 */
++function recordKeys<T>(rec: Record<string, T>): string[] {
++  return Object.keys(rec);
++}
++
  export const WORKFLOW_RUN_HEADER_KEYS: readonly WorkflowRunHeaderKey[] = WORKFLOW_RUN_KEYS.filter(
 -  (key): key is WorkflowRunHeaderKey => key !== "actors" && key !== "nodes",
 -);
@@ -15035,7 +15053,7 @@ index 8e1d764..1278c64 100644
  
  /** 两张实例表的去重键。`\0` 分隔的理由与 reducer 的派生 actor 状态逐字相同：("a",12) 与 ("a1",2) 不能撞车。 */
  export function workflowRunEntryKey(entry: { siteId: string; ordinal: number }): string {
-@@ -72,21 +102,33 @@ export function workflowRunEntryKey(entry: { siteId: string; ordinal: number }):
+@@ -72,16 +108,23 @@ export function workflowRunEntryKey(entry: { siteId: string; ordinal: number }):
   * 按规范键序重建一个 run 对象（浅重建：嵌套值原样搬运引用，它们本来就来自同一份事实）。
   *
   * `undefined` 值的键按缺席处理，与 `JSON.stringify` 的语义对齐——协议线上只有「键在场」与
@@ -15048,25 +15066,25 @@ index 8e1d764..1278c64 100644
  export function canonicalWorkflowRun(run: WorkflowRunState): WorkflowRunState {
 -  const source = run as unknown as Record<string, unknown>;
 +  const source: any = run;
++  const sourceUnknownKeys: Record<string, unknown> = source;
    const canonical: Record<string, unknown> = {};
    for (const key of WORKFLOW_RUN_KEYS) {
--    const value = source[key];
--    if (value !== undefined) canonical[key] = value;
--  }
--  for (const key of Object.keys(source)) {
--    if (WORKFLOW_RUN_KEY_SET.has(key)) continue;
 -    const value = source[key];
 +    const value = readWorkflowRunField(source, key);
      if (value !== undefined) canonical[key] = value;
    }
--  return canonical as unknown as WorkflowRunState;
-+  // 表外键按原序缀在尾部（基线语义：本模块没有资格替调用方丢数据）。scriptc 不能用
-+  // Object.keys 枚举动态键，但允许把 any 源展开进索引签名记录：已存在的键保持原位、
-+  // 新键按源顺序追加，等价于基线的「表内按 schema 序 + 表外按到达序」。
-+  const merged: Record<string, unknown> = { ...canonical, ...source };
-+  return merged as unknown as WorkflowRunState;
-+}
-+
+-  for (const key of Object.keys(source)) {
++  // 表外键按原序缀在尾部（基线语义：本模块没有资格替调用方丢数据）。
++  // scriptc 下 `Record<string, any>` 上的 Object.keys 无 lowering，也不支持展开 any 源，
++  // 所以用本文件内的 recordKeys（泛型记录）枚举调用方对象上的键。
++  for (const key of recordKeys(sourceUnknownKeys)) {
+     if (WORKFLOW_RUN_KEY_SET.has(key)) continue;
+     const value = source[key];
+     if (value !== undefined) canonical[key] = value;
+@@ -89,6 +132,16 @@ export function canonicalWorkflowRun(run: WorkflowRunState): WorkflowRunState {
+   return canonical as unknown as WorkflowRunState;
+ }
+ 
 +/**
 + * 从 run 对象按字符串键读一个字段。
 + *
@@ -15075,9 +15093,11 @@ index 8e1d764..1278c64 100644
 + */
 +function readWorkflowRunField(source: any, key: string): unknown {
 +  return source[key];
- }
- 
++}
++
  /**
+  * JSON 值的结构相等。reducer 的幂等判据（原来是整条 run 的 `JSON.stringify` 比对，每事件
+  * O(N) 字节）与 diff 的「这个键/条目变了吗」共用这一份，两处判据不会再各说各话。
 diff --git a/packages/shared/src/zcode-protocol-v4/workflow-runs.ts b/packages/shared/src/zcode-protocol-v4/workflow-runs.ts
 index cd27ebe..1239d45 100644
 --- a/packages/shared/src/zcode-protocol-v4/workflow-runs.ts

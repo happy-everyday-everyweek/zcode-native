@@ -24,3 +24,16 @@ export function probeSession(value: unknown): boolean {
 export function probeWire(value: unknown): boolean {
   return conversationTopicWireFrameSchema.safeParse(value).success;
 }
+
+// 顶层调用保证四个函数体都被 lowering（未可达的函数会被剪枝）。
+export function main(): number {
+  let n = 0;
+  if (probeRegister() >= 0) n += 1;
+  if (probeArtifact({})) n += 1;
+  if (probeSession({})) n += 1;
+  if (probeWire({})) n += 1;
+  return n;
+}
+
+main();
+

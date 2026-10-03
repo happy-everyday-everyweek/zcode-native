@@ -321,7 +321,7 @@ export class ZBase {
     // “Property x does not exist on type ZBase”。收紧时还要同步 _shapeObjs 字段类型与
     // pickObjs/omitObjs/mergeObjs/copyShapeObjs 的签名。
     return this._shapeObjs as Record<string, unknown>;
-  }}
+  }
 
   _parse(input: any, ctx: ParseCtx): unknown {
     // 键枚举用：泛型记录参数上的 Object.keys 才有 lowering。

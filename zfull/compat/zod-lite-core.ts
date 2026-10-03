@@ -314,9 +314,12 @@ export class ZBase {
   _litVal: string = "";
   _litMap: Record<string, string> | undefined = undefined;
 
-  get shape(): any {
-    // agent-c P2：动态返回口只接受 JSON 可表示值；先取记录视图再交给 any 调用点。
-    return this._shapeObjs as Record<string, unknown>;
+  get shape(): ZodRawShape {
+    // 返回类型是 ZodRawShape（Record<string, ZBase>）而不是 any：声明成 any 会把调用方拿到的
+    // shape 变成动态值，而 scriptc 不允许任何动态值变成类实例——config-schema 的 sparseShape/
+    // copyShape 就是卡在这里（对 shape[key] 调 .nullable() 报 “using an any value where ZBase is
+    // expected”）。_shapeObjs 本身就是 Record<string, ZBase>，直接返回即可，运行期完全一致。
+    return this._shapeObjs;
   }
 
   _parse(input: any, ctx: ParseCtx): unknown {

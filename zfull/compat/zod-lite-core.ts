@@ -348,7 +348,9 @@ export class ZBase {
       return this._value;
     }
     if (w === "refine") {
-      const before = ctx.issues.length;
+      /** scriptc： 需要参数在编译期就是 record，而  的 input 是 jsval；
+ *  形参写成 Record<string, any> 后，调用处 any→JSON 安全记录是允许的出口，函数内部即可枚举。 */
+const before = ctx.issues.length;
       if (this._innerIdx < 0) return undefined;
       const value = schemaAt(this._innerIdx)._parse(input, ctx);
       if (ctx.issues.length > before) return undefined;
@@ -434,7 +436,7 @@ export class ZBase {
         }
       }
       if (this._unk === "strict") {
-        const inputKeys = Object.keys(input);
+        const inputKeys = keysOfRecord(input);
         for (const k of inputKeys) {
           if (!(k in shape)) {
             const msg = "Unrecognized key: " + '"' + k + '"';
@@ -445,7 +447,7 @@ export class ZBase {
           }
         }
       } else if (this._unk === "passthrough") {
-        const inputKeys = Object.keys(input);
+        const inputKeys = keysOfRecord(input);
         for (const k of inputKeys) {
           if (!(k in shape)) {
             out[k] = input[k];
@@ -461,7 +463,7 @@ export class ZBase {
       }
       if (this._innerIdx < 0) return undefined;
       const out2: Record<string, unknown> = {};
-      const ks = Object.keys(input);
+      const ks = keysOfRecord(input);
       for (const k of ks) {
         const subCtx2 = childCtx(ctx, k);
         const before2r = ctx.issues.length;
@@ -479,7 +481,7 @@ export class ZBase {
       }
       if (this._innerIdx < 0) return undefined;
       const out3: Record<string, unknown> = {};
-      const ks2 = Object.keys(input);
+      const ks2 = keysOfRecord(input);
       for (const k2 of ks2) {
         const subCtx3 = childCtx(ctx, k2);
         const v3 = schemaAt(this._innerIdx)._parse(input[k2], subCtx3);
@@ -600,6 +602,12 @@ export class ZBase {
     }
     return input;
   }
+}
+
+// scriptc：Object.keys 需要参数在编译期就是 record，而 _parse 的 input 是 jsval；
+// 形参写成 Record<string, any> 后，调用处 any→JSON 安全记录是允许的出口，函数内部即可枚举。
+function keysOfRecord(input: Record<string, any>): string[] {
+  return Object.keys(input);
 }
 
 export class ZodType<O = any> extends ZBase {

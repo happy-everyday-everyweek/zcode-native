@@ -1,0 +1,54 @@
+/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/compat/zod-lite-core.ts:625:14 - error SC1090: passing a value of type '{ error: m1.ZodError; success: boolean }' into dynamically-executed ('any'-typed) code (only numbers, strings, booleans, typed arrays, URLs, undefined/null-armed unions, and JSON-safe records/arrays/unions can cross the boundary) is not supported yet (instantiating class 'ZodType' with <any>)
+
+  624 |     if (issues.length > 0) {
+  625 |       return { success: false, error: new ZodError(issues) };
+      |              ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  626 |     }
+
+/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/compat/zod-lite-core.ts:627:35 - error SC1090: a checked cast of 'unknown' to 'any' (a dynamic value can only be validated against JSON-representable types: number, string, boolean, records, arrays, and unions of those) is not supported yet (instantiating class 'ZodType' with <any>)
+
+  626 |     }
+  627 |     return { success: true, data: value as O };
+      |                                   ^~~~~~~~~~
+  628 |   }
+
+/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/compat/zod-lite-core.ts:627:35 - error SC1090: a checked cast of 'unknown' to 'any[]' (a dynamic value can only be validated against JSON-representable types: number, string, boolean, records, arrays, and unions of those) is not supported yet (instantiating class 'ZodType' with <any[]>)
+
+  626 |     }
+  627 |     return { success: true, data: value as O };
+      |                                   ^~~~~~~~~~
+  628 |   }
+
+/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/compat/zod-lite-core.ts:1986:10 - error SC1090: 'm1.ZodType%0' values where 'm1.ZodType%5' is expected is not supported yet
+
+  1985 |   w._innerIdx = registerSchema(element);
+  1986 |   return w;
+       |          ^
+  1987 | }
+
+/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix.ts:28:10 - error SC1090: a checked cast of 'any' to 'unknown' (an 'any' value can only be validated against JSON-representable types: number, string, boolean, records, arrays, and unions of those) is not supported yet
+
+  27 |   }
+  28 |   return out as unknown as Shape;
+     |          ^~~~~~~~~~~~~~
+  29 | }
+
+/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix.ts:39:10 - error SC2002: record shapes must match exactly or width-coerce: expected '{ a: string; b: number | undefined }', got '{ [key: string]: unknown }' — 'a' is not a declared field of the source, and the source's index signature could hold it at runtime (a completed undefined would drop that value)
+
+  38 |   }
+  39 |   return out as unknown as Shape;
+     |          ^~~~~~~~~~~~~~~~~~~~~~~
+  40 | }
+
+  hint: width subtyping compiles as a copy (each expected field copied off the source; extra fields drop) — this pair is outside the copy's rules; build a literal with exactly the expected fields instead
+
+/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix.ts:50:10 - error SC2002: record shapes must match exactly or width-coerce: expected '{ a: string; b: number | undefined }', got '{ [key: string]: unknown }' — 'a' is not a declared field of the source, and the source's index signature could hold it at runtime (a completed undefined would drop that value)
+
+  49 |   }
+  50 |   return out as unknown as Shape;
+     |          ^~~~~~~~~~~~~~~~~~~~~~~
+  51 | }
+
+  hint: width subtyping compiles as a copy (each expected field copied off the source; extra fields drop) — this pair is outside the copy's rules; build a literal with exactly the expected fields instead
+
+7 errors.

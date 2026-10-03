@@ -1,0 +1,231 @@
+{
+  "compilerOptions": {
+    "target": "es2024",
+    "lib": [
+      "es2024"
+    ],
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "skipLibCheck": true,
+    "strict": true,
+    "useUnknownInCatchVariables": false,
+    "noImplicitAny": false,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "jsx": "react-jsx",
+    "baseUrl": "..",
+    "types": [
+      "node"
+    ],
+    "typeRoots": [
+      "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/node_modules/@types"
+    ],
+    "paths": {
+      "zod": [
+        "./compat/zod-lite.ts"
+      ],
+      "zod-to-json-schema": [
+        "./compat/zod-to-json-schema.ts"
+      ],
+      "zod-js": [
+        "./vendor/zod-js/index.js"
+      ],
+      "node-forge": [
+        "./compat/node-forge.d.ts"
+      ],
+      "@zcode/adapters": [
+        "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/apps/zcode-cli/packages/adapters/src/index.ts"
+      ],
+      "@zcode/adapters/*": [
+        "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/apps/zcode-cli/packages/adapters/src/*"
+      ],
+      "@zcode/bootstrap": [
+        "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/apps/zcode-cli/packages/bootstrap/src/index.ts"
+      ],
+      "@zcode/bootstrap/*": [
+        "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/apps/zcode-cli/packages/bootstrap/src/*"
+      ],
+      "@zcode/cli": [
+        "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/apps/zcode-cli/packages/cli/src/index.ts"
+      ],
+      "@zcode/cli/*": [
+        "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/apps/zcode-cli/packages/cli/src/*"
+      ],
+      "@zcode/contracts": [
+        "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/apps/zcode-cli/packages/contracts/src/index.ts"
+      ],
+      "@zcode/contracts/*": [
+        "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/apps/zcode-cli/packages/contracts/src/*"
+      ],
+      "@zcode/core": [
+        "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/apps/zcode-cli/packages/core/src/index.ts"
+      ],
+      "@zcode/core/repl": [
+        "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/apps/zcode-cli/packages/core/src/repl/node-repl-session.ts"
+      ],
+      "@zcode/core/*": [
+        "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/apps/zcode-cli/packages/core/src/*"
+      ],
+      "@zcode/dynamic-workflow": [
+        "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/apps/zcode-cli/packages/dynamic-workflow/src/index.ts"
+      ],
+      "@zcode/dynamic-workflow/*": [
+        "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/apps/zcode-cli/packages/dynamic-workflow/src/*"
+      ],
+      "@zcode/dynamic-workflow-runtime": [
+        "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/apps/zcode-cli/packages/dynamic-workflow-runtime/src/index.ts"
+      ],
+      "@zcode/dynamic-workflow-runtime/*": [
+        "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/apps/zcode-cli/packages/dynamic-workflow-runtime/src/*"
+      ],
+      "@zcode/i18n": [
+        "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/apps/zcode-cli/packages/i18n/src/index.ts"
+      ],
+      "@zcode/i18n/*": [
+        "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/apps/zcode-cli/packages/i18n/src/*"
+      ],
+      "@zcode/node-repl-host": [
+        "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/apps/zcode-cli/packages/node-repl-host/src/server.ts"
+      ],
+      "@zcode/node-repl-host/*": [
+        "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/apps/zcode-cli/packages/node-repl-host/src/*"
+      ],
+      "@zcode/shared-types": [
+        "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/apps/zcode-cli/packages/shared-types/src/index.ts"
+      ],
+      "@zcode/shared-types/*": [
+        "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/apps/zcode-cli/packages/shared-types/src/*"
+      ],
+      "@zcode/swift-bridge": [
+        "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/apps/zcode-cli/packages/swift-bridge/src/index.ts"
+      ],
+      "@zcode/swift-bridge/*": [
+        "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/apps/zcode-cli/packages/swift-bridge/src/*"
+      ],
+      "@zcode/telemetry": [
+        "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/apps/zcode-cli/packages/telemetry/src/index.ts"
+      ],
+      "@zcode/telemetry/*": [
+        "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/apps/zcode-cli/packages/telemetry/src/*"
+      ],
+      "@zcode/tui": [
+        "./compat/tui.ts"
+      ],
+      "@zcode/tui/*": [
+        "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/apps/zcode-cli/packages/tui/src/*"
+      ],
+      "@zcode/client": [
+        "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/client/src/index.ts"
+      ],
+      "@zcode/client/*": [
+        "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/client/src/*"
+      ],
+      "@zcode/formal-proof": [
+        "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/model.ts"
+      ],
+      "@zcode/formal-proof/*": [
+        "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/formal-proof/src/*"
+      ],
+      "@zcode/model-option-map": [
+        "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/model-option-map/src/index.ts"
+      ],
+      "@zcode/model-option-map/*": [
+        "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/model-option-map/src/*"
+      ],
+      "@zcode/provider": [
+        "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/provider/src/index.ts"
+      ],
+      "@zcode/provider/*": [
+        "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/provider/src/*"
+      ],
+      "@zcode/provider-node": [
+        "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/provider-node/src/index.ts"
+      ],
+      "@zcode/provider-node/*": [
+        "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/provider-node/src/*"
+      ],
+      "@zcode/rpc": [
+        "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/rpc/src/index.ts"
+      ],
+      "@zcode/rpc/*": [
+        "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/rpc/src/*"
+      ],
+      "@zcode/server": [
+        "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/server/src/index.ts"
+      ],
+      "@zcode/server/*": [
+        "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/server/src/*"
+      ],
+      "@zcode/server-cli": [
+        "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/zcode-server-cli/src/index.ts"
+      ],
+      "@zcode/server-cli/*": [
+        "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/zcode-server-cli/src/*"
+      ],
+      "@zcode/services": [
+        "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/services/src/index.ts"
+      ],
+      "@zcode/services/*": [
+        "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/ZCode/packages/services/src/*"
+      ],
+      "@zcode/shared": [
+        "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zcode-wt-b/packages/shared/src/index.ts"
+      ],
+      "@zcode/shared/*": [
+        "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zcode-wt-b/packages/shared/src/*"
+      ],
+      "@zcode/zcode-cua": [
+        "./compat/zcua/index.ts"
+      ],
+      "@zcode/zcode-cua/frame-contract": [
+        "./compat/zcua/frame-contract.ts"
+      ],
+      "@zcode/zcode-cua/host-display-contract": [
+        "./compat/zcua/host-display-contract.ts"
+      ],
+      "@zcode/zcode-cua/request-access-contract": [
+        "./compat/zcua/request-access-contract.ts"
+      ],
+      "@zcode/zcode-cua/pip-session": [
+        "./compat/zcua/pip-session.ts"
+      ],
+      "@zcode/zcode-cua/pip-session/node": [
+        "./compat/zcua/pip-session-node.ts"
+      ],
+      "@zcode/zcode-cua/broker": [
+        "./compat/zcua/broker.ts"
+      ],
+      "@zcode/zcode-cua/broker/server": [
+        "./compat/zcua/broker-server.ts"
+      ],
+      "@zcode/zcode-cua/broker/ports": [
+        "./compat/zcua/broker-ports.ts"
+      ],
+      "@zcode/zcode-cua/broker/socketPath": [
+        "./compat/zcua/broker-socket-path.ts"
+      ],
+      "@zcode/zcode-cua/broker/helperConstants": [
+        "./compat/zcua/broker-helper-constants.ts"
+      ],
+      "@zcode/zcode-cua/broker/helperHealth": [
+        "./compat/zcua/broker-helper-health.ts"
+      ],
+      "node:vm": [
+        "./compat/node-vm.ts"
+      ],
+      "node:sqlite": [
+        "./compat/node-sqlite.ts"
+      ],
+      "@zcode/node-sqlite": [
+        "./compat/node-sqlite.ts"
+      ],
+      "@zcode/node-vm": [
+        "./compat/node-vm.ts"
+      ],
+      "@zcode/native-checks": [
+        "./compat/native-checks.ts"
+      ]
+    }
+  }
+}

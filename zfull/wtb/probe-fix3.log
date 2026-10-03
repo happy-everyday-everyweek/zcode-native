@@ -1,0 +1,36 @@
+/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/compat/zod-lite-core.ts:625:14 - error SC1090: passing a value of type '{ error: m1.ZodError; success: boolean }' into dynamically-executed ('any'-typed) code (only numbers, strings, booleans, typed arrays, URLs, undefined/null-armed unions, and JSON-safe records/arrays/unions can cross the boundary) is not supported yet (instantiating class 'ZodType' with <any>)
+
+  624 |     if (issues.length > 0) {
+  625 |       return { success: false, error: new ZodError(issues) };
+      |              ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  626 |     }
+
+/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/compat/zod-lite-core.ts:627:35 - error SC1090: a checked cast of 'unknown' to 'any' (a dynamic value can only be validated against JSON-representable types: number, string, boolean, records, arrays, and unions of those) is not supported yet (instantiating class 'ZodType' with <any>)
+
+  626 |     }
+  627 |     return { success: true, data: value as O };
+      |                                   ^~~~~~~~~~
+  628 |   }
+
+/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/compat/zod-lite-core.ts:627:35 - error SC1090: a checked cast of 'unknown' to 'any[]' (a dynamic value can only be validated against JSON-representable types: number, string, boolean, records, arrays, and unions of those) is not supported yet (instantiating class 'ZodType' with <any[]>)
+
+  626 |     }
+  627 |     return { success: true, data: value as O };
+      |                                   ^~~~~~~~~~
+  628 |   }
+
+/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/compat/zod-lite-core.ts:1986:10 - error SC1090: 'm1.ZodType%0' values where 'm1.ZodType%5' is expected is not supported yet
+
+  1985 |   w._innerIdx = registerSchema(element);
+  1986 |   return w;
+       |          ^
+  1987 | }
+
+/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix3.ts:11:3 - error SC1090: using an 'any' value where '{ [key: string]: { safeParse: (unknown) => { success: boolean } } }' is expected (an 'any' value can only exit to numbers, strings, booleans, JSON-safe records/arrays/unions, and 'T | undefined' over those) is not supported yet
+
+  10 | const shapeE: Record<string, { safeParse: (value: unknown) => { success: boolean } }> =
+  11 |   workflowRunSchema.shape;
+     |   ^~~~~~~~~~~~~~~~~~~~~~~
+  12 | export const REQ_E: readonly HK[] = HDR.filter(
+
+5 errors.

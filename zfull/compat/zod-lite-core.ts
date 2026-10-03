@@ -622,9 +622,9 @@ export class ZodType<O = any> extends ZBase {
     const ctx: ParseCtx = { path: [], issues: issues };
     const value = this._parse(input, ctx);
     if (issues.length > 0) {
-      return { success: false, error: new ZodError(issues) };
+      return errOf<O>(new ZodError(issues));
     }
-    return { success: true, data: value as O };
+    return okOf<O>(value);
   }
 
 
@@ -1286,9 +1286,14 @@ function castTo<X>(v: unknown): X {
   return v as X;
 }
 
-function okOf(value: any): SafeParseResult<any> {
-  const ok: SafeParseSuccess<any> = { success: true, data: value };
-  return ok;
+function okOf<X>(value: unknown): SafeParseResult<X> {
+  const ok: { success: boolean; data: unknown } = { success: true, data: value };
+  return ok as SafeParseResult<X>;
+}
+
+function errOf<X>(error: ZodError): SafeParseResult<X> {
+  const e: { success: boolean; error: unknown } = { success: false, error: error };
+  return e as SafeParseResult<X>;
 }
 
 function makeFn(f: (v: any, ctx: RefinementCtx) => unknown): (value: any, ctx: RefinementCtx) => unknown {
@@ -1983,7 +1988,7 @@ export function array(element: ZBase): ZodType<any[]> {
   const w = new ZodType<Record<string, any>[]>();
   w._wrap = "array";
   w._innerIdx = registerSchema(element);
-  return w;
+  return castTo<ZodType<any[]>>(w);
 }
 
 export function object(shape: ZodRawShape): ZodType<any> {

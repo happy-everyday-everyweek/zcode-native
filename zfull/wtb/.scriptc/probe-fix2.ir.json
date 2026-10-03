@@ -1,0 +1,4642 @@
+{
+  "irVersion": 11,
+  "sourceFile": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+  "functions": [
+    {
+      "name": "readFieldAny",
+      "params": [
+        {
+          "localId": "source.0",
+          "name": "source",
+          "type": {
+            "kind": "jsval"
+          }
+        },
+        {
+          "localId": "key.0",
+          "name": "key",
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "returnType": {
+        "kind": "jsval"
+      },
+      "locals": [
+        {
+          "id": "source.0",
+          "name": "source",
+          "type": {
+            "kind": "jsval"
+          },
+          "mutable": true,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 304,
+              "end": 310
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 282,
+              "end": 360
+            }
+          }
+        },
+        {
+          "id": "key.0",
+          "name": "key",
+          "type": {
+            "kind": "string"
+          },
+          "mutable": true,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 317,
+              "end": 320
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 282,
+              "end": 360
+            }
+          }
+        }
+      ],
+      "body": [
+        {
+          "kind": "return",
+          "value": {
+            "kind": "jsOp",
+            "op": "getIdx",
+            "args": [
+              {
+                "kind": "varRef",
+                "localId": "source.0",
+                "type": {
+                  "kind": "jsval"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                  "start": 346,
+                  "end": 352
+                }
+              },
+              {
+                "kind": "jsMarshal",
+                "value": {
+                  "kind": "varRef",
+                  "localId": "key.0",
+                  "type": {
+                    "kind": "string"
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                    "start": 353,
+                    "end": 356
+                  }
+                },
+                "type": {
+                  "kind": "jsval"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                  "start": 353,
+                  "end": 356
+                }
+              }
+            ],
+            "type": {
+              "kind": "jsval"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 346,
+              "end": 357
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+            "start": 339,
+            "end": 358
+          }
+        }
+      ],
+      "loc": {
+        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+        "start": 282,
+        "end": 360
+      }
+    },
+    {
+      "name": "readFieldUnknown",
+      "params": [
+        {
+          "localId": "source.0",
+          "name": "source",
+          "type": {
+            "kind": "jsval"
+          }
+        },
+        {
+          "localId": "key.0",
+          "name": "key",
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "returnType": {
+        "kind": "dyn"
+      },
+      "locals": [
+        {
+          "id": "source.0",
+          "name": "source",
+          "type": {
+            "kind": "jsval"
+          },
+          "mutable": true,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 388,
+              "end": 394
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 362,
+              "end": 448
+            }
+          }
+        },
+        {
+          "id": "key.0",
+          "name": "key",
+          "type": {
+            "kind": "string"
+          },
+          "mutable": true,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 401,
+              "end": 404
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 362,
+              "end": 448
+            }
+          }
+        }
+      ],
+      "body": [
+        {
+          "kind": "return",
+          "value": {
+            "kind": "dynFromJsval",
+            "value": {
+              "kind": "jsOp",
+              "op": "getIdx",
+              "args": [
+                {
+                  "kind": "varRef",
+                  "localId": "source.0",
+                  "type": {
+                    "kind": "jsval"
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                    "start": 434,
+                    "end": 440
+                  }
+                },
+                {
+                  "kind": "jsMarshal",
+                  "value": {
+                    "kind": "varRef",
+                    "localId": "key.0",
+                    "type": {
+                      "kind": "string"
+                    },
+                    "loc": {
+                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                      "start": 441,
+                      "end": 444
+                    }
+                  },
+                  "type": {
+                    "kind": "jsval"
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                    "start": 441,
+                    "end": 444
+                  }
+                }
+              ],
+              "type": {
+                "kind": "jsval"
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                "start": 434,
+                "end": 445
+              }
+            },
+            "type": {
+              "kind": "dyn"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 434,
+              "end": 445
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+            "start": 427,
+            "end": 446
+          }
+        }
+      ],
+      "loc": {
+        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+        "start": 362,
+        "end": 448
+      }
+    },
+    {
+      "name": "candidateAnyHelper",
+      "params": [
+        {
+          "localId": "input.0",
+          "name": "input",
+          "type": {
+            "kind": "jsval"
+          }
+        }
+      ],
+      "returnType": {
+        "kind": "jsval"
+      },
+      "locals": [
+        {
+          "id": "input.0",
+          "name": "input",
+          "type": {
+            "kind": "jsval"
+          },
+          "mutable": true,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 546,
+              "end": 551
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 511,
+              "end": 851
+            }
+          }
+        },
+        {
+          "id": "source.0",
+          "name": "source",
+          "type": {
+            "kind": "jsval"
+          },
+          "mutable": false,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 599,
+              "end": 605
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 589,
+              "end": 851
+            }
+          }
+        },
+        {
+          "id": "canonical.0",
+          "name": "canonical",
+          "type": {
+            "kind": "record",
+            "shapeId": "r0"
+          },
+          "mutable": false,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 628,
+              "end": 637
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 589,
+              "end": 851
+            }
+          }
+        },
+        {
+          "id": "%arrayIterator.0",
+          "name": "%arrayIterator",
+          "type": {
+            "kind": "array",
+            "elem": {
+              "kind": "string"
+            }
+          },
+          "mutable": false
+        },
+        {
+          "id": "%arrayCursor.0",
+          "name": "%arrayCursor",
+          "type": {
+            "kind": "f64"
+          },
+          "mutable": true
+        },
+        {
+          "id": "key.0",
+          "name": "key",
+          "type": {
+            "kind": "union",
+            "unionId": "u0"
+          },
+          "mutable": false,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 682,
+              "end": 685
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 671,
+              "end": 798
+            }
+          }
+        },
+        {
+          "id": "value.0",
+          "name": "value",
+          "type": {
+            "kind": "jsval"
+          },
+          "mutable": false,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 707,
+              "end": 712
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 695,
+              "end": 798
+            }
+          }
+        }
+      ],
+      "body": [
+        {
+          "kind": "varDecl",
+          "localId": "source.0",
+          "init": {
+            "kind": "varRef",
+            "localId": "input.0",
+            "type": {
+              "kind": "jsval"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 613,
+              "end": 618
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+            "start": 599,
+            "end": 618
+          }
+        },
+        {
+          "kind": "varDecl",
+          "localId": "canonical.0",
+          "init": {
+            "kind": "recordLit",
+            "fields": [],
+            "type": {
+              "kind": "record",
+              "shapeId": "r0"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 665,
+              "end": 667
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+            "start": 628,
+            "end": 667
+          }
+        },
+        {
+          "kind": "block",
+          "body": [
+            {
+              "kind": "varDecl",
+              "localId": "%arrayIterator.0",
+              "init": {
+                "kind": "varRef",
+                "localId": "%g.e.KEYS",
+                "type": {
+                  "kind": "array",
+                  "elem": {
+                    "kind": "string"
+                  }
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                  "start": 689,
+                  "end": 693
+                }
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                "start": 671,
+                "end": 798
+              }
+            },
+            {
+              "kind": "for",
+              "init": {
+                "kind": "varDecl",
+                "localId": "%arrayCursor.0",
+                "init": {
+                  "kind": "numLit",
+                  "value": 0,
+                  "type": {
+                    "kind": "f64"
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                    "start": 671,
+                    "end": 798
+                  }
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                  "start": 671,
+                  "end": 798
+                }
+              },
+              "cond": {
+                "kind": "bin",
+                "op": "<",
+                "left": {
+                  "kind": "varRef",
+                  "localId": "%arrayCursor.0",
+                  "type": {
+                    "kind": "f64"
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                    "start": 671,
+                    "end": 798
+                  }
+                },
+                "right": {
+                  "kind": "arrIntrinsic",
+                  "method": "length",
+                  "receiver": {
+                    "kind": "varRef",
+                    "localId": "%arrayIterator.0",
+                    "type": {
+                      "kind": "array",
+                      "elem": {
+                        "kind": "string"
+                      }
+                    },
+                    "loc": {
+                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                      "start": 671,
+                      "end": 798
+                    }
+                  },
+                  "args": [],
+                  "type": {
+                    "kind": "f64"
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                    "start": 671,
+                    "end": 798
+                  }
+                },
+                "type": {
+                  "kind": "bool"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                  "start": 671,
+                  "end": 798
+                }
+              },
+              "update": {
+                "kind": "assign",
+                "localId": "%arrayCursor.0",
+                "value": {
+                  "kind": "bin",
+                  "op": "+",
+                  "left": {
+                    "kind": "varRef",
+                    "localId": "%arrayCursor.0",
+                    "type": {
+                      "kind": "f64"
+                    },
+                    "loc": {
+                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                      "start": 671,
+                      "end": 798
+                    }
+                  },
+                  "right": {
+                    "kind": "numLit",
+                    "value": 1,
+                    "type": {
+                      "kind": "f64"
+                    },
+                    "loc": {
+                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                      "start": 671,
+                      "end": 798
+                    }
+                  },
+                  "type": {
+                    "kind": "f64"
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                    "start": 671,
+                    "end": 798
+                  }
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                  "start": 671,
+                  "end": 798
+                }
+              },
+              "body": [
+                {
+                  "kind": "varDecl",
+                  "localId": "key.0",
+                  "init": {
+                    "kind": "ternary",
+                    "cond": {
+                      "kind": "bin",
+                      "op": "===",
+                      "left": {
+                        "kind": "arrayState",
+                        "arr": {
+                          "kind": "varRef",
+                          "localId": "%arrayIterator.0",
+                          "type": {
+                            "kind": "array",
+                            "elem": {
+                              "kind": "string"
+                            }
+                          },
+                          "loc": {
+                            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                            "start": 671,
+                            "end": 798
+                          }
+                        },
+                        "index": {
+                          "kind": "varRef",
+                          "localId": "%arrayCursor.0",
+                          "type": {
+                            "kind": "f64"
+                          },
+                          "loc": {
+                            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                            "start": 671,
+                            "end": 798
+                          }
+                        },
+                        "type": {
+                          "kind": "f64"
+                        },
+                        "loc": {
+                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                          "start": 671,
+                          "end": 798
+                        }
+                      },
+                      "right": {
+                        "kind": "numLit",
+                        "value": 1,
+                        "type": {
+                          "kind": "f64"
+                        },
+                        "loc": {
+                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                          "start": 671,
+                          "end": 798
+                        }
+                      },
+                      "type": {
+                        "kind": "bool"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                        "start": 671,
+                        "end": 798
+                      }
+                    },
+                    "then": {
+                      "kind": "unionWrap",
+                      "unionId": "u0",
+                      "tag": 0,
+                      "value": {
+                        "kind": "arrayGet",
+                        "arr": {
+                          "kind": "varRef",
+                          "localId": "%arrayIterator.0",
+                          "type": {
+                            "kind": "array",
+                            "elem": {
+                              "kind": "string"
+                            }
+                          },
+                          "loc": {
+                            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                            "start": 671,
+                            "end": 798
+                          }
+                        },
+                        "index": {
+                          "kind": "varRef",
+                          "localId": "%arrayCursor.0",
+                          "type": {
+                            "kind": "f64"
+                          },
+                          "loc": {
+                            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                            "start": 671,
+                            "end": 798
+                          }
+                        },
+                        "type": {
+                          "kind": "string"
+                        },
+                        "loc": {
+                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                          "start": 671,
+                          "end": 798
+                        }
+                      },
+                      "type": {
+                        "kind": "union",
+                        "unionId": "u0"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                        "start": 671,
+                        "end": 798
+                      }
+                    },
+                    "else_": {
+                      "kind": "unionWrap",
+                      "unionId": "u0",
+                      "tag": 1,
+                      "value": {
+                        "kind": "unitLit",
+                        "unit": "undefined",
+                        "type": {
+                          "kind": "undefinedT"
+                        },
+                        "loc": {
+                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                          "start": 671,
+                          "end": 798
+                        }
+                      },
+                      "type": {
+                        "kind": "union",
+                        "unionId": "u0"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                        "start": 671,
+                        "end": 798
+                      }
+                    },
+                    "type": {
+                      "kind": "union",
+                      "unionId": "u0"
+                    },
+                    "loc": {
+                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                      "start": 671,
+                      "end": 798
+                    }
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                    "start": 671,
+                    "end": 798
+                  }
+                },
+                {
+                  "kind": "varDecl",
+                  "localId": "value.0",
+                  "init": {
+                    "kind": "call",
+                    "callee": "readFieldAny",
+                    "args": [
+                      {
+                        "kind": "varRef",
+                        "localId": "source.0",
+                        "type": {
+                          "kind": "jsval"
+                        },
+                        "loc": {
+                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                          "start": 728,
+                          "end": 734
+                        }
+                      },
+                      {
+                        "kind": "call",
+                        "callee": "%union.narrow.0",
+                        "args": [
+                          {
+                            "kind": "varRef",
+                            "localId": "key.0",
+                            "type": {
+                              "kind": "union",
+                              "unionId": "u0"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                              "start": 736,
+                              "end": 739
+                            }
+                          }
+                        ],
+                        "type": {
+                          "kind": "string"
+                        },
+                        "loc": {
+                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                          "start": 736,
+                          "end": 739
+                        }
+                      }
+                    ],
+                    "type": {
+                      "kind": "jsval"
+                    },
+                    "loc": {
+                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                      "start": 715,
+                      "end": 740
+                    }
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                    "start": 707,
+                    "end": 740
+                  }
+                },
+                {
+                  "kind": "if",
+                  "cond": {
+                    "kind": "jsOp",
+                    "op": "neq",
+                    "args": [
+                      {
+                        "kind": "varRef",
+                        "localId": "value.0",
+                        "type": {
+                          "kind": "jsval"
+                        },
+                        "loc": {
+                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                          "start": 750,
+                          "end": 755
+                        }
+                      },
+                      {
+                        "kind": "jsOp",
+                        "op": "undefLit",
+                        "args": [],
+                        "type": {
+                          "kind": "jsval"
+                        },
+                        "loc": {
+                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                          "start": 760,
+                          "end": 769
+                        }
+                      }
+                    ],
+                    "type": {
+                      "kind": "bool"
+                    },
+                    "loc": {
+                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                      "start": 750,
+                      "end": 769
+                    }
+                  },
+                  "then": [
+                    {
+                      "kind": "recordKeySet",
+                      "obj": {
+                        "kind": "varRef",
+                        "localId": "canonical.0",
+                        "type": {
+                          "kind": "record",
+                          "shapeId": "r0"
+                        },
+                        "loc": {
+                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                          "start": 771,
+                          "end": 780
+                        }
+                      },
+                      "shapeId": "r0",
+                      "key": {
+                        "kind": "toString",
+                        "operand": {
+                          "kind": "varRef",
+                          "localId": "key.0",
+                          "type": {
+                            "kind": "union",
+                            "unionId": "u0"
+                          },
+                          "loc": {
+                            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                            "start": 781,
+                            "end": 784
+                          }
+                        },
+                        "type": {
+                          "kind": "string"
+                        },
+                        "loc": {
+                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                          "start": 781,
+                          "end": 784
+                        }
+                      },
+                      "value": {
+                        "kind": "dynFromJsval",
+                        "value": {
+                          "kind": "varRef",
+                          "localId": "value.0",
+                          "type": {
+                            "kind": "jsval"
+                          },
+                          "loc": {
+                            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                            "start": 788,
+                            "end": 793
+                          }
+                        },
+                        "type": {
+                          "kind": "dyn"
+                        },
+                        "loc": {
+                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                          "start": 788,
+                          "end": 793
+                        }
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                        "start": 771,
+                        "end": 793
+                      }
+                    }
+                  ],
+                  "else_": null,
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                    "start": 746,
+                    "end": 794
+                  }
+                }
+              ],
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                "start": 671,
+                "end": 798
+              }
+            }
+          ],
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+            "start": 671,
+            "end": 798
+          }
+        },
+        {
+          "kind": "return",
+          "value": {
+            "kind": "jsMarshal",
+            "value": {
+              "kind": "varRef",
+              "localId": "canonical.0",
+              "type": {
+                "kind": "record",
+                "shapeId": "r0"
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                "start": 808,
+                "end": 817
+              }
+            },
+            "type": {
+              "kind": "jsval"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 808,
+              "end": 817
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+            "start": 801,
+            "end": 849
+          }
+        }
+      ],
+      "loc": {
+        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+        "start": 511,
+        "end": 851
+      }
+    },
+    {
+      "name": "candidateUnknownHelper",
+      "params": [
+        {
+          "localId": "input.0",
+          "name": "input",
+          "type": {
+            "kind": "jsval"
+          }
+        }
+      ],
+      "returnType": {
+        "kind": "jsval"
+      },
+      "locals": [
+        {
+          "id": "input.0",
+          "name": "input",
+          "type": {
+            "kind": "jsval"
+          },
+          "mutable": true,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 919,
+              "end": 924
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 880,
+              "end": 1228
+            }
+          }
+        },
+        {
+          "id": "source.0",
+          "name": "source",
+          "type": {
+            "kind": "jsval"
+          },
+          "mutable": false,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 972,
+              "end": 978
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 962,
+              "end": 1228
+            }
+          }
+        },
+        {
+          "id": "canonical.0",
+          "name": "canonical",
+          "type": {
+            "kind": "record",
+            "shapeId": "r0"
+          },
+          "mutable": false,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 1001,
+              "end": 1010
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 962,
+              "end": 1228
+            }
+          }
+        },
+        {
+          "id": "%arrayIterator.0",
+          "name": "%arrayIterator",
+          "type": {
+            "kind": "array",
+            "elem": {
+              "kind": "string"
+            }
+          },
+          "mutable": false
+        },
+        {
+          "id": "%arrayCursor.0",
+          "name": "%arrayCursor",
+          "type": {
+            "kind": "f64"
+          },
+          "mutable": true
+        },
+        {
+          "id": "key.0",
+          "name": "key",
+          "type": {
+            "kind": "union",
+            "unionId": "u0"
+          },
+          "mutable": false,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 1055,
+              "end": 1058
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 1044,
+              "end": 1175
+            }
+          }
+        },
+        {
+          "id": "value.0",
+          "name": "value",
+          "type": {
+            "kind": "dyn"
+          },
+          "mutable": false,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 1080,
+              "end": 1085
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 1068,
+              "end": 1175
+            }
+          }
+        }
+      ],
+      "body": [
+        {
+          "kind": "varDecl",
+          "localId": "source.0",
+          "init": {
+            "kind": "varRef",
+            "localId": "input.0",
+            "type": {
+              "kind": "jsval"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 986,
+              "end": 991
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+            "start": 972,
+            "end": 991
+          }
+        },
+        {
+          "kind": "varDecl",
+          "localId": "canonical.0",
+          "init": {
+            "kind": "recordLit",
+            "fields": [],
+            "type": {
+              "kind": "record",
+              "shapeId": "r0"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 1038,
+              "end": 1040
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+            "start": 1001,
+            "end": 1040
+          }
+        },
+        {
+          "kind": "block",
+          "body": [
+            {
+              "kind": "varDecl",
+              "localId": "%arrayIterator.0",
+              "init": {
+                "kind": "varRef",
+                "localId": "%g.e.KEYS",
+                "type": {
+                  "kind": "array",
+                  "elem": {
+                    "kind": "string"
+                  }
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                  "start": 1062,
+                  "end": 1066
+                }
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                "start": 1044,
+                "end": 1175
+              }
+            },
+            {
+              "kind": "for",
+              "init": {
+                "kind": "varDecl",
+                "localId": "%arrayCursor.0",
+                "init": {
+                  "kind": "numLit",
+                  "value": 0,
+                  "type": {
+                    "kind": "f64"
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                    "start": 1044,
+                    "end": 1175
+                  }
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                  "start": 1044,
+                  "end": 1175
+                }
+              },
+              "cond": {
+                "kind": "bin",
+                "op": "<",
+                "left": {
+                  "kind": "varRef",
+                  "localId": "%arrayCursor.0",
+                  "type": {
+                    "kind": "f64"
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                    "start": 1044,
+                    "end": 1175
+                  }
+                },
+                "right": {
+                  "kind": "arrIntrinsic",
+                  "method": "length",
+                  "receiver": {
+                    "kind": "varRef",
+                    "localId": "%arrayIterator.0",
+                    "type": {
+                      "kind": "array",
+                      "elem": {
+                        "kind": "string"
+                      }
+                    },
+                    "loc": {
+                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                      "start": 1044,
+                      "end": 1175
+                    }
+                  },
+                  "args": [],
+                  "type": {
+                    "kind": "f64"
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                    "start": 1044,
+                    "end": 1175
+                  }
+                },
+                "type": {
+                  "kind": "bool"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                  "start": 1044,
+                  "end": 1175
+                }
+              },
+              "update": {
+                "kind": "assign",
+                "localId": "%arrayCursor.0",
+                "value": {
+                  "kind": "bin",
+                  "op": "+",
+                  "left": {
+                    "kind": "varRef",
+                    "localId": "%arrayCursor.0",
+                    "type": {
+                      "kind": "f64"
+                    },
+                    "loc": {
+                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                      "start": 1044,
+                      "end": 1175
+                    }
+                  },
+                  "right": {
+                    "kind": "numLit",
+                    "value": 1,
+                    "type": {
+                      "kind": "f64"
+                    },
+                    "loc": {
+                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                      "start": 1044,
+                      "end": 1175
+                    }
+                  },
+                  "type": {
+                    "kind": "f64"
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                    "start": 1044,
+                    "end": 1175
+                  }
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                  "start": 1044,
+                  "end": 1175
+                }
+              },
+              "body": [
+                {
+                  "kind": "varDecl",
+                  "localId": "key.0",
+                  "init": {
+                    "kind": "ternary",
+                    "cond": {
+                      "kind": "bin",
+                      "op": "===",
+                      "left": {
+                        "kind": "arrayState",
+                        "arr": {
+                          "kind": "varRef",
+                          "localId": "%arrayIterator.0",
+                          "type": {
+                            "kind": "array",
+                            "elem": {
+                              "kind": "string"
+                            }
+                          },
+                          "loc": {
+                            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                            "start": 1044,
+                            "end": 1175
+                          }
+                        },
+                        "index": {
+                          "kind": "varRef",
+                          "localId": "%arrayCursor.0",
+                          "type": {
+                            "kind": "f64"
+                          },
+                          "loc": {
+                            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                            "start": 1044,
+                            "end": 1175
+                          }
+                        },
+                        "type": {
+                          "kind": "f64"
+                        },
+                        "loc": {
+                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                          "start": 1044,
+                          "end": 1175
+                        }
+                      },
+                      "right": {
+                        "kind": "numLit",
+                        "value": 1,
+                        "type": {
+                          "kind": "f64"
+                        },
+                        "loc": {
+                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                          "start": 1044,
+                          "end": 1175
+                        }
+                      },
+                      "type": {
+                        "kind": "bool"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                        "start": 1044,
+                        "end": 1175
+                      }
+                    },
+                    "then": {
+                      "kind": "unionWrap",
+                      "unionId": "u0",
+                      "tag": 0,
+                      "value": {
+                        "kind": "arrayGet",
+                        "arr": {
+                          "kind": "varRef",
+                          "localId": "%arrayIterator.0",
+                          "type": {
+                            "kind": "array",
+                            "elem": {
+                              "kind": "string"
+                            }
+                          },
+                          "loc": {
+                            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                            "start": 1044,
+                            "end": 1175
+                          }
+                        },
+                        "index": {
+                          "kind": "varRef",
+                          "localId": "%arrayCursor.0",
+                          "type": {
+                            "kind": "f64"
+                          },
+                          "loc": {
+                            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                            "start": 1044,
+                            "end": 1175
+                          }
+                        },
+                        "type": {
+                          "kind": "string"
+                        },
+                        "loc": {
+                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                          "start": 1044,
+                          "end": 1175
+                        }
+                      },
+                      "type": {
+                        "kind": "union",
+                        "unionId": "u0"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                        "start": 1044,
+                        "end": 1175
+                      }
+                    },
+                    "else_": {
+                      "kind": "unionWrap",
+                      "unionId": "u0",
+                      "tag": 1,
+                      "value": {
+                        "kind": "unitLit",
+                        "unit": "undefined",
+                        "type": {
+                          "kind": "undefinedT"
+                        },
+                        "loc": {
+                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                          "start": 1044,
+                          "end": 1175
+                        }
+                      },
+                      "type": {
+                        "kind": "union",
+                        "unionId": "u0"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                        "start": 1044,
+                        "end": 1175
+                      }
+                    },
+                    "type": {
+                      "kind": "union",
+                      "unionId": "u0"
+                    },
+                    "loc": {
+                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                      "start": 1044,
+                      "end": 1175
+                    }
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                    "start": 1044,
+                    "end": 1175
+                  }
+                },
+                {
+                  "kind": "varDecl",
+                  "localId": "value.0",
+                  "init": {
+                    "kind": "call",
+                    "callee": "readFieldUnknown",
+                    "args": [
+                      {
+                        "kind": "varRef",
+                        "localId": "source.0",
+                        "type": {
+                          "kind": "jsval"
+                        },
+                        "loc": {
+                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                          "start": 1105,
+                          "end": 1111
+                        }
+                      },
+                      {
+                        "kind": "call",
+                        "callee": "%union.narrow.0",
+                        "args": [
+                          {
+                            "kind": "varRef",
+                            "localId": "key.0",
+                            "type": {
+                              "kind": "union",
+                              "unionId": "u0"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                              "start": 1113,
+                              "end": 1116
+                            }
+                          }
+                        ],
+                        "type": {
+                          "kind": "string"
+                        },
+                        "loc": {
+                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                          "start": 1113,
+                          "end": 1116
+                        }
+                      }
+                    ],
+                    "type": {
+                      "kind": "dyn"
+                    },
+                    "loc": {
+                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                      "start": 1088,
+                      "end": 1117
+                    }
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                    "start": 1080,
+                    "end": 1117
+                  }
+                },
+                {
+                  "kind": "if",
+                  "cond": {
+                    "kind": "dynTest",
+                    "test": "undefined",
+                    "negated": true,
+                    "value": {
+                      "kind": "varRef",
+                      "localId": "value.0",
+                      "type": {
+                        "kind": "dyn"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                        "start": 1127,
+                        "end": 1132
+                      }
+                    },
+                    "type": {
+                      "kind": "bool"
+                    },
+                    "loc": {
+                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                      "start": 1127,
+                      "end": 1146
+                    }
+                  },
+                  "then": [
+                    {
+                      "kind": "recordKeySet",
+                      "obj": {
+                        "kind": "varRef",
+                        "localId": "canonical.0",
+                        "type": {
+                          "kind": "record",
+                          "shapeId": "r0"
+                        },
+                        "loc": {
+                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                          "start": 1148,
+                          "end": 1157
+                        }
+                      },
+                      "shapeId": "r0",
+                      "key": {
+                        "kind": "toString",
+                        "operand": {
+                          "kind": "varRef",
+                          "localId": "key.0",
+                          "type": {
+                            "kind": "union",
+                            "unionId": "u0"
+                          },
+                          "loc": {
+                            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                            "start": 1158,
+                            "end": 1161
+                          }
+                        },
+                        "type": {
+                          "kind": "string"
+                        },
+                        "loc": {
+                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                          "start": 1158,
+                          "end": 1161
+                        }
+                      },
+                      "value": {
+                        "kind": "varRef",
+                        "localId": "value.0",
+                        "type": {
+                          "kind": "dyn"
+                        },
+                        "loc": {
+                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                          "start": 1165,
+                          "end": 1170
+                        }
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                        "start": 1148,
+                        "end": 1170
+                      }
+                    }
+                  ],
+                  "else_": null,
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                    "start": 1123,
+                    "end": 1171
+                  }
+                }
+              ],
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                "start": 1044,
+                "end": 1175
+              }
+            }
+          ],
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+            "start": 1044,
+            "end": 1175
+          }
+        },
+        {
+          "kind": "return",
+          "value": {
+            "kind": "jsMarshal",
+            "value": {
+              "kind": "varRef",
+              "localId": "canonical.0",
+              "type": {
+                "kind": "record",
+                "shapeId": "r0"
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                "start": 1185,
+                "end": 1194
+              }
+            },
+            "type": {
+              "kind": "jsval"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 1185,
+              "end": 1194
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+            "start": 1178,
+            "end": 1226
+          }
+        }
+      ],
+      "loc": {
+        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+        "start": 880,
+        "end": 1228
+      }
+    },
+    {
+      "name": "candidateDirectAny",
+      "params": [
+        {
+          "localId": "input.0",
+          "name": "input",
+          "type": {
+            "kind": "jsval"
+          }
+        }
+      ],
+      "returnType": {
+        "kind": "jsval"
+      },
+      "locals": [
+        {
+          "id": "input.0",
+          "name": "input",
+          "type": {
+            "kind": "jsval"
+          },
+          "mutable": true,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 1285,
+              "end": 1290
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 1250,
+              "end": 1576
+            }
+          }
+        },
+        {
+          "id": "source.0",
+          "name": "source",
+          "type": {
+            "kind": "jsval"
+          },
+          "mutable": false,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 1338,
+              "end": 1344
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 1328,
+              "end": 1576
+            }
+          }
+        },
+        {
+          "id": "canonical.0",
+          "name": "canonical",
+          "type": {
+            "kind": "record",
+            "shapeId": "r0"
+          },
+          "mutable": false,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 1367,
+              "end": 1376
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 1328,
+              "end": 1576
+            }
+          }
+        },
+        {
+          "id": "%arrayIterator.0",
+          "name": "%arrayIterator",
+          "type": {
+            "kind": "array",
+            "elem": {
+              "kind": "string"
+            }
+          },
+          "mutable": false
+        },
+        {
+          "id": "%arrayCursor.0",
+          "name": "%arrayCursor",
+          "type": {
+            "kind": "f64"
+          },
+          "mutable": true
+        },
+        {
+          "id": "key.0",
+          "name": "key",
+          "type": {
+            "kind": "union",
+            "unionId": "u0"
+          },
+          "mutable": false,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 1421,
+              "end": 1424
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 1410,
+              "end": 1523
+            }
+          }
+        },
+        {
+          "id": "value.0",
+          "name": "value",
+          "type": {
+            "kind": "jsval"
+          },
+          "mutable": false,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 1446,
+              "end": 1451
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 1434,
+              "end": 1523
+            }
+          }
+        }
+      ],
+      "body": [
+        {
+          "kind": "varDecl",
+          "localId": "source.0",
+          "init": {
+            "kind": "varRef",
+            "localId": "input.0",
+            "type": {
+              "kind": "jsval"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 1352,
+              "end": 1357
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+            "start": 1338,
+            "end": 1357
+          }
+        },
+        {
+          "kind": "varDecl",
+          "localId": "canonical.0",
+          "init": {
+            "kind": "recordLit",
+            "fields": [],
+            "type": {
+              "kind": "record",
+              "shapeId": "r0"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 1404,
+              "end": 1406
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+            "start": 1367,
+            "end": 1406
+          }
+        },
+        {
+          "kind": "block",
+          "body": [
+            {
+              "kind": "varDecl",
+              "localId": "%arrayIterator.0",
+              "init": {
+                "kind": "varRef",
+                "localId": "%g.e.KEYS",
+                "type": {
+                  "kind": "array",
+                  "elem": {
+                    "kind": "string"
+                  }
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                  "start": 1428,
+                  "end": 1432
+                }
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                "start": 1410,
+                "end": 1523
+              }
+            },
+            {
+              "kind": "for",
+              "init": {
+                "kind": "varDecl",
+                "localId": "%arrayCursor.0",
+                "init": {
+                  "kind": "numLit",
+                  "value": 0,
+                  "type": {
+                    "kind": "f64"
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                    "start": 1410,
+                    "end": 1523
+                  }
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                  "start": 1410,
+                  "end": 1523
+                }
+              },
+              "cond": {
+                "kind": "bin",
+                "op": "<",
+                "left": {
+                  "kind": "varRef",
+                  "localId": "%arrayCursor.0",
+                  "type": {
+                    "kind": "f64"
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                    "start": 1410,
+                    "end": 1523
+                  }
+                },
+                "right": {
+                  "kind": "arrIntrinsic",
+                  "method": "length",
+                  "receiver": {
+                    "kind": "varRef",
+                    "localId": "%arrayIterator.0",
+                    "type": {
+                      "kind": "array",
+                      "elem": {
+                        "kind": "string"
+                      }
+                    },
+                    "loc": {
+                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                      "start": 1410,
+                      "end": 1523
+                    }
+                  },
+                  "args": [],
+                  "type": {
+                    "kind": "f64"
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                    "start": 1410,
+                    "end": 1523
+                  }
+                },
+                "type": {
+                  "kind": "bool"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                  "start": 1410,
+                  "end": 1523
+                }
+              },
+              "update": {
+                "kind": "assign",
+                "localId": "%arrayCursor.0",
+                "value": {
+                  "kind": "bin",
+                  "op": "+",
+                  "left": {
+                    "kind": "varRef",
+                    "localId": "%arrayCursor.0",
+                    "type": {
+                      "kind": "f64"
+                    },
+                    "loc": {
+                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                      "start": 1410,
+                      "end": 1523
+                    }
+                  },
+                  "right": {
+                    "kind": "numLit",
+                    "value": 1,
+                    "type": {
+                      "kind": "f64"
+                    },
+                    "loc": {
+                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                      "start": 1410,
+                      "end": 1523
+                    }
+                  },
+                  "type": {
+                    "kind": "f64"
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                    "start": 1410,
+                    "end": 1523
+                  }
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                  "start": 1410,
+                  "end": 1523
+                }
+              },
+              "body": [
+                {
+                  "kind": "varDecl",
+                  "localId": "key.0",
+                  "init": {
+                    "kind": "ternary",
+                    "cond": {
+                      "kind": "bin",
+                      "op": "===",
+                      "left": {
+                        "kind": "arrayState",
+                        "arr": {
+                          "kind": "varRef",
+                          "localId": "%arrayIterator.0",
+                          "type": {
+                            "kind": "array",
+                            "elem": {
+                              "kind": "string"
+                            }
+                          },
+                          "loc": {
+                            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                            "start": 1410,
+                            "end": 1523
+                          }
+                        },
+                        "index": {
+                          "kind": "varRef",
+                          "localId": "%arrayCursor.0",
+                          "type": {
+                            "kind": "f64"
+                          },
+                          "loc": {
+                            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                            "start": 1410,
+                            "end": 1523
+                          }
+                        },
+                        "type": {
+                          "kind": "f64"
+                        },
+                        "loc": {
+                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                          "start": 1410,
+                          "end": 1523
+                        }
+                      },
+                      "right": {
+                        "kind": "numLit",
+                        "value": 1,
+                        "type": {
+                          "kind": "f64"
+                        },
+                        "loc": {
+                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                          "start": 1410,
+                          "end": 1523
+                        }
+                      },
+                      "type": {
+                        "kind": "bool"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                        "start": 1410,
+                        "end": 1523
+                      }
+                    },
+                    "then": {
+                      "kind": "unionWrap",
+                      "unionId": "u0",
+                      "tag": 0,
+                      "value": {
+                        "kind": "arrayGet",
+                        "arr": {
+                          "kind": "varRef",
+                          "localId": "%arrayIterator.0",
+                          "type": {
+                            "kind": "array",
+                            "elem": {
+                              "kind": "string"
+                            }
+                          },
+                          "loc": {
+                            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                            "start": 1410,
+                            "end": 1523
+                          }
+                        },
+                        "index": {
+                          "kind": "varRef",
+                          "localId": "%arrayCursor.0",
+                          "type": {
+                            "kind": "f64"
+                          },
+                          "loc": {
+                            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                            "start": 1410,
+                            "end": 1523
+                          }
+                        },
+                        "type": {
+                          "kind": "string"
+                        },
+                        "loc": {
+                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                          "start": 1410,
+                          "end": 1523
+                        }
+                      },
+                      "type": {
+                        "kind": "union",
+                        "unionId": "u0"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                        "start": 1410,
+                        "end": 1523
+                      }
+                    },
+                    "else_": {
+                      "kind": "unionWrap",
+                      "unionId": "u0",
+                      "tag": 1,
+                      "value": {
+                        "kind": "unitLit",
+                        "unit": "undefined",
+                        "type": {
+                          "kind": "undefinedT"
+                        },
+                        "loc": {
+                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                          "start": 1410,
+                          "end": 1523
+                        }
+                      },
+                      "type": {
+                        "kind": "union",
+                        "unionId": "u0"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                        "start": 1410,
+                        "end": 1523
+                      }
+                    },
+                    "type": {
+                      "kind": "union",
+                      "unionId": "u0"
+                    },
+                    "loc": {
+                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                      "start": 1410,
+                      "end": 1523
+                    }
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                    "start": 1410,
+                    "end": 1523
+                  }
+                },
+                {
+                  "kind": "varDecl",
+                  "localId": "value.0",
+                  "init": {
+                    "kind": "jsOp",
+                    "op": "getIdx",
+                    "args": [
+                      {
+                        "kind": "varRef",
+                        "localId": "source.0",
+                        "type": {
+                          "kind": "jsval"
+                        },
+                        "loc": {
+                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                          "start": 1454,
+                          "end": 1460
+                        }
+                      },
+                      {
+                        "kind": "jsMarshal",
+                        "value": {
+                          "kind": "toString",
+                          "operand": {
+                            "kind": "varRef",
+                            "localId": "key.0",
+                            "type": {
+                              "kind": "union",
+                              "unionId": "u0"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                              "start": 1461,
+                              "end": 1464
+                            }
+                          },
+                          "type": {
+                            "kind": "string"
+                          },
+                          "loc": {
+                            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                            "start": 1461,
+                            "end": 1464
+                          }
+                        },
+                        "type": {
+                          "kind": "jsval"
+                        },
+                        "loc": {
+                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                          "start": 1461,
+                          "end": 1464
+                        }
+                      }
+                    ],
+                    "type": {
+                      "kind": "jsval"
+                    },
+                    "loc": {
+                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                      "start": 1454,
+                      "end": 1465
+                    }
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                    "start": 1446,
+                    "end": 1465
+                  }
+                },
+                {
+                  "kind": "if",
+                  "cond": {
+                    "kind": "jsOp",
+                    "op": "neq",
+                    "args": [
+                      {
+                        "kind": "varRef",
+                        "localId": "value.0",
+                        "type": {
+                          "kind": "jsval"
+                        },
+                        "loc": {
+                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                          "start": 1475,
+                          "end": 1480
+                        }
+                      },
+                      {
+                        "kind": "jsOp",
+                        "op": "undefLit",
+                        "args": [],
+                        "type": {
+                          "kind": "jsval"
+                        },
+                        "loc": {
+                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                          "start": 1485,
+                          "end": 1494
+                        }
+                      }
+                    ],
+                    "type": {
+                      "kind": "bool"
+                    },
+                    "loc": {
+                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                      "start": 1475,
+                      "end": 1494
+                    }
+                  },
+                  "then": [
+                    {
+                      "kind": "recordKeySet",
+                      "obj": {
+                        "kind": "varRef",
+                        "localId": "canonical.0",
+                        "type": {
+                          "kind": "record",
+                          "shapeId": "r0"
+                        },
+                        "loc": {
+                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                          "start": 1496,
+                          "end": 1505
+                        }
+                      },
+                      "shapeId": "r0",
+                      "key": {
+                        "kind": "toString",
+                        "operand": {
+                          "kind": "varRef",
+                          "localId": "key.0",
+                          "type": {
+                            "kind": "union",
+                            "unionId": "u0"
+                          },
+                          "loc": {
+                            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                            "start": 1506,
+                            "end": 1509
+                          }
+                        },
+                        "type": {
+                          "kind": "string"
+                        },
+                        "loc": {
+                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                          "start": 1506,
+                          "end": 1509
+                        }
+                      },
+                      "value": {
+                        "kind": "dynFromJsval",
+                        "value": {
+                          "kind": "varRef",
+                          "localId": "value.0",
+                          "type": {
+                            "kind": "jsval"
+                          },
+                          "loc": {
+                            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                            "start": 1513,
+                            "end": 1518
+                          }
+                        },
+                        "type": {
+                          "kind": "dyn"
+                        },
+                        "loc": {
+                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                          "start": 1513,
+                          "end": 1518
+                        }
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                        "start": 1496,
+                        "end": 1518
+                      }
+                    }
+                  ],
+                  "else_": null,
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                    "start": 1471,
+                    "end": 1519
+                  }
+                }
+              ],
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                "start": 1410,
+                "end": 1523
+              }
+            }
+          ],
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+            "start": 1410,
+            "end": 1523
+          }
+        },
+        {
+          "kind": "return",
+          "value": {
+            "kind": "jsMarshal",
+            "value": {
+              "kind": "varRef",
+              "localId": "canonical.0",
+              "type": {
+                "kind": "record",
+                "shapeId": "r0"
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                "start": 1533,
+                "end": 1542
+              }
+            },
+            "type": {
+              "kind": "jsval"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 1533,
+              "end": 1542
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+            "start": 1526,
+            "end": 1574
+          }
+        }
+      ],
+      "loc": {
+        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+        "start": 1250,
+        "end": 1576
+      }
+    },
+    {
+      "name": "candidateDirectAnyOut",
+      "params": [
+        {
+          "localId": "input.0",
+          "name": "input",
+          "type": {
+            "kind": "jsval"
+          }
+        }
+      ],
+      "returnType": {
+        "kind": "jsval"
+      },
+      "locals": [
+        {
+          "id": "input.0",
+          "name": "input",
+          "type": {
+            "kind": "jsval"
+          },
+          "mutable": true,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 1660,
+              "end": 1665
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 1622,
+              "end": 1936
+            }
+          }
+        },
+        {
+          "id": "source.0",
+          "name": "source",
+          "type": {
+            "kind": "jsval"
+          },
+          "mutable": false,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 1713,
+              "end": 1719
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 1703,
+              "end": 1936
+            }
+          }
+        },
+        {
+          "id": "canonical.0",
+          "name": "canonical",
+          "type": {
+            "kind": "jsval"
+          },
+          "mutable": false,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 1742,
+              "end": 1751
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 1703,
+              "end": 1936
+            }
+          }
+        },
+        {
+          "id": "%arrayIterator.0",
+          "name": "%arrayIterator",
+          "type": {
+            "kind": "array",
+            "elem": {
+              "kind": "string"
+            }
+          },
+          "mutable": false
+        },
+        {
+          "id": "%arrayCursor.0",
+          "name": "%arrayCursor",
+          "type": {
+            "kind": "f64"
+          },
+          "mutable": true
+        },
+        {
+          "id": "key.0",
+          "name": "key",
+          "type": {
+            "kind": "union",
+            "unionId": "u0"
+          },
+          "mutable": false,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 1792,
+              "end": 1795
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 1781,
+              "end": 1894
+            }
+          }
+        },
+        {
+          "id": "value.0",
+          "name": "value",
+          "type": {
+            "kind": "jsval"
+          },
+          "mutable": false,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 1817,
+              "end": 1822
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 1805,
+              "end": 1894
+            }
+          }
+        }
+      ],
+      "body": [
+        {
+          "kind": "varDecl",
+          "localId": "source.0",
+          "init": {
+            "kind": "varRef",
+            "localId": "input.0",
+            "type": {
+              "kind": "jsval"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 1727,
+              "end": 1732
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+            "start": 1713,
+            "end": 1732
+          }
+        },
+        {
+          "kind": "varDecl",
+          "localId": "canonical.0",
+          "init": {
+            "kind": "jsOp",
+            "op": "objLit",
+            "args": [],
+            "type": {
+              "kind": "jsval"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 1775,
+              "end": 1777
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+            "start": 1742,
+            "end": 1777
+          }
+        },
+        {
+          "kind": "block",
+          "body": [
+            {
+              "kind": "varDecl",
+              "localId": "%arrayIterator.0",
+              "init": {
+                "kind": "varRef",
+                "localId": "%g.e.KEYS",
+                "type": {
+                  "kind": "array",
+                  "elem": {
+                    "kind": "string"
+                  }
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                  "start": 1799,
+                  "end": 1803
+                }
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                "start": 1781,
+                "end": 1894
+              }
+            },
+            {
+              "kind": "for",
+              "init": {
+                "kind": "varDecl",
+                "localId": "%arrayCursor.0",
+                "init": {
+                  "kind": "numLit",
+                  "value": 0,
+                  "type": {
+                    "kind": "f64"
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                    "start": 1781,
+                    "end": 1894
+                  }
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                  "start": 1781,
+                  "end": 1894
+                }
+              },
+              "cond": {
+                "kind": "bin",
+                "op": "<",
+                "left": {
+                  "kind": "varRef",
+                  "localId": "%arrayCursor.0",
+                  "type": {
+                    "kind": "f64"
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                    "start": 1781,
+                    "end": 1894
+                  }
+                },
+                "right": {
+                  "kind": "arrIntrinsic",
+                  "method": "length",
+                  "receiver": {
+                    "kind": "varRef",
+                    "localId": "%arrayIterator.0",
+                    "type": {
+                      "kind": "array",
+                      "elem": {
+                        "kind": "string"
+                      }
+                    },
+                    "loc": {
+                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                      "start": 1781,
+                      "end": 1894
+                    }
+                  },
+                  "args": [],
+                  "type": {
+                    "kind": "f64"
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                    "start": 1781,
+                    "end": 1894
+                  }
+                },
+                "type": {
+                  "kind": "bool"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                  "start": 1781,
+                  "end": 1894
+                }
+              },
+              "update": {
+                "kind": "assign",
+                "localId": "%arrayCursor.0",
+                "value": {
+                  "kind": "bin",
+                  "op": "+",
+                  "left": {
+                    "kind": "varRef",
+                    "localId": "%arrayCursor.0",
+                    "type": {
+                      "kind": "f64"
+                    },
+                    "loc": {
+                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                      "start": 1781,
+                      "end": 1894
+                    }
+                  },
+                  "right": {
+                    "kind": "numLit",
+                    "value": 1,
+                    "type": {
+                      "kind": "f64"
+                    },
+                    "loc": {
+                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                      "start": 1781,
+                      "end": 1894
+                    }
+                  },
+                  "type": {
+                    "kind": "f64"
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                    "start": 1781,
+                    "end": 1894
+                  }
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                  "start": 1781,
+                  "end": 1894
+                }
+              },
+              "body": [
+                {
+                  "kind": "varDecl",
+                  "localId": "key.0",
+                  "init": {
+                    "kind": "ternary",
+                    "cond": {
+                      "kind": "bin",
+                      "op": "===",
+                      "left": {
+                        "kind": "arrayState",
+                        "arr": {
+                          "kind": "varRef",
+                          "localId": "%arrayIterator.0",
+                          "type": {
+                            "kind": "array",
+                            "elem": {
+                              "kind": "string"
+                            }
+                          },
+                          "loc": {
+                            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                            "start": 1781,
+                            "end": 1894
+                          }
+                        },
+                        "index": {
+                          "kind": "varRef",
+                          "localId": "%arrayCursor.0",
+                          "type": {
+                            "kind": "f64"
+                          },
+                          "loc": {
+                            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                            "start": 1781,
+                            "end": 1894
+                          }
+                        },
+                        "type": {
+                          "kind": "f64"
+                        },
+                        "loc": {
+                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                          "start": 1781,
+                          "end": 1894
+                        }
+                      },
+                      "right": {
+                        "kind": "numLit",
+                        "value": 1,
+                        "type": {
+                          "kind": "f64"
+                        },
+                        "loc": {
+                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                          "start": 1781,
+                          "end": 1894
+                        }
+                      },
+                      "type": {
+                        "kind": "bool"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                        "start": 1781,
+                        "end": 1894
+                      }
+                    },
+                    "then": {
+                      "kind": "unionWrap",
+                      "unionId": "u0",
+                      "tag": 0,
+                      "value": {
+                        "kind": "arrayGet",
+                        "arr": {
+                          "kind": "varRef",
+                          "localId": "%arrayIterator.0",
+                          "type": {
+                            "kind": "array",
+                            "elem": {
+                              "kind": "string"
+                            }
+                          },
+                          "loc": {
+                            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                            "start": 1781,
+                            "end": 1894
+                          }
+                        },
+                        "index": {
+                          "kind": "varRef",
+                          "localId": "%arrayCursor.0",
+                          "type": {
+                            "kind": "f64"
+                          },
+                          "loc": {
+                            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                            "start": 1781,
+                            "end": 1894
+                          }
+                        },
+                        "type": {
+                          "kind": "string"
+                        },
+                        "loc": {
+                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                          "start": 1781,
+                          "end": 1894
+                        }
+                      },
+                      "type": {
+                        "kind": "union",
+                        "unionId": "u0"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                        "start": 1781,
+                        "end": 1894
+                      }
+                    },
+                    "else_": {
+                      "kind": "unionWrap",
+                      "unionId": "u0",
+                      "tag": 1,
+                      "value": {
+                        "kind": "unitLit",
+                        "unit": "undefined",
+                        "type": {
+                          "kind": "undefinedT"
+                        },
+                        "loc": {
+                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                          "start": 1781,
+                          "end": 1894
+                        }
+                      },
+                      "type": {
+                        "kind": "union",
+                        "unionId": "u0"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                        "start": 1781,
+                        "end": 1894
+                      }
+                    },
+                    "type": {
+                      "kind": "union",
+                      "unionId": "u0"
+                    },
+                    "loc": {
+                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                      "start": 1781,
+                      "end": 1894
+                    }
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                    "start": 1781,
+                    "end": 1894
+                  }
+                },
+                {
+                  "kind": "varDecl",
+                  "localId": "value.0",
+                  "init": {
+                    "kind": "jsOp",
+                    "op": "getIdx",
+                    "args": [
+                      {
+                        "kind": "varRef",
+                        "localId": "source.0",
+                        "type": {
+                          "kind": "jsval"
+                        },
+                        "loc": {
+                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                          "start": 1825,
+                          "end": 1831
+                        }
+                      },
+                      {
+                        "kind": "jsMarshal",
+                        "value": {
+                          "kind": "toString",
+                          "operand": {
+                            "kind": "varRef",
+                            "localId": "key.0",
+                            "type": {
+                              "kind": "union",
+                              "unionId": "u0"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                              "start": 1832,
+                              "end": 1835
+                            }
+                          },
+                          "type": {
+                            "kind": "string"
+                          },
+                          "loc": {
+                            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                            "start": 1832,
+                            "end": 1835
+                          }
+                        },
+                        "type": {
+                          "kind": "jsval"
+                        },
+                        "loc": {
+                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                          "start": 1832,
+                          "end": 1835
+                        }
+                      }
+                    ],
+                    "type": {
+                      "kind": "jsval"
+                    },
+                    "loc": {
+                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                      "start": 1825,
+                      "end": 1836
+                    }
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                    "start": 1817,
+                    "end": 1836
+                  }
+                },
+                {
+                  "kind": "if",
+                  "cond": {
+                    "kind": "jsOp",
+                    "op": "neq",
+                    "args": [
+                      {
+                        "kind": "varRef",
+                        "localId": "value.0",
+                        "type": {
+                          "kind": "jsval"
+                        },
+                        "loc": {
+                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                          "start": 1846,
+                          "end": 1851
+                        }
+                      },
+                      {
+                        "kind": "jsOp",
+                        "op": "undefLit",
+                        "args": [],
+                        "type": {
+                          "kind": "jsval"
+                        },
+                        "loc": {
+                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                          "start": 1856,
+                          "end": 1865
+                        }
+                      }
+                    ],
+                    "type": {
+                      "kind": "bool"
+                    },
+                    "loc": {
+                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                      "start": 1846,
+                      "end": 1865
+                    }
+                  },
+                  "then": [
+                    {
+                      "kind": "exprStmt",
+                      "expr": {
+                        "kind": "jsOp",
+                        "op": "setIdx",
+                        "args": [
+                          {
+                            "kind": "varRef",
+                            "localId": "canonical.0",
+                            "type": {
+                              "kind": "jsval"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                              "start": 1867,
+                              "end": 1876
+                            }
+                          },
+                          {
+                            "kind": "call",
+                            "callee": "%jsin.union.0",
+                            "args": [
+                              {
+                                "kind": "varRef",
+                                "localId": "key.0",
+                                "type": {
+                                  "kind": "union",
+                                  "unionId": "u0"
+                                },
+                                "loc": {
+                                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                                  "start": 1877,
+                                  "end": 1880
+                                }
+                              }
+                            ],
+                            "type": {
+                              "kind": "jsval"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                              "start": 1877,
+                              "end": 1880
+                            }
+                          },
+                          {
+                            "kind": "varRef",
+                            "localId": "value.0",
+                            "type": {
+                              "kind": "jsval"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                              "start": 1884,
+                              "end": 1889
+                            }
+                          }
+                        ],
+                        "type": {
+                          "kind": "void"
+                        },
+                        "loc": {
+                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                          "start": 1867,
+                          "end": 1889
+                        }
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                        "start": 1867,
+                        "end": 1889
+                      }
+                    }
+                  ],
+                  "else_": null,
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                    "start": 1842,
+                    "end": 1890
+                  }
+                }
+              ],
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                "start": 1781,
+                "end": 1894
+              }
+            }
+          ],
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+            "start": 1781,
+            "end": 1894
+          }
+        },
+        {
+          "kind": "return",
+          "value": {
+            "kind": "varRef",
+            "localId": "canonical.0",
+            "type": {
+              "kind": "jsval"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 1904,
+              "end": 1913
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+            "start": 1897,
+            "end": 1934
+          }
+        }
+      ],
+      "loc": {
+        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+        "start": 1622,
+        "end": 1936
+      }
+    },
+    {
+      "name": "main",
+      "params": [],
+      "returnType": {
+        "kind": "f64"
+      },
+      "locals": [
+        {
+          "id": "s.0",
+          "name": "s",
+          "type": {
+            "kind": "dyn"
+          },
+          "mutable": false,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 1979,
+              "end": 1980
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 1969,
+              "end": 2296
+            }
+          }
+        },
+        {
+          "id": "a.0",
+          "name": "a",
+          "type": {
+            "kind": "f64"
+          },
+          "mutable": false,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 2040,
+              "end": 2041
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 1969,
+              "end": 2296
+            }
+          }
+        },
+        {
+          "id": "b.0",
+          "name": "b",
+          "type": {
+            "kind": "f64"
+          },
+          "mutable": false,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 2098,
+              "end": 2099
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 1969,
+              "end": 2296
+            }
+          }
+        },
+        {
+          "id": "c.0",
+          "name": "c",
+          "type": {
+            "kind": "f64"
+          },
+          "mutable": false,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 2160,
+              "end": 2161
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 1969,
+              "end": 2296
+            }
+          }
+        },
+        {
+          "id": "d.0",
+          "name": "d",
+          "type": {
+            "kind": "f64"
+          },
+          "mutable": false,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 2218,
+              "end": 2219
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 1969,
+              "end": 2296
+            }
+          }
+        }
+      ],
+      "body": [
+        {
+          "kind": "varDecl",
+          "localId": "s.0",
+          "init": {
+            "kind": "libCall",
+            "fn": "json.parse",
+            "args": [
+              {
+                "kind": "strLit",
+                "value": "{\"runId\":\"r1\",\"status\":\"running\"}",
+                "type": {
+                  "kind": "string"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                  "start": 1994,
+                  "end": 2029
+                }
+              }
+            ],
+            "type": {
+              "kind": "dyn"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 1983,
+              "end": 2030
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+            "start": 1979,
+            "end": 2030
+          }
+        },
+        {
+          "kind": "varDecl",
+          "localId": "a.0",
+          "init": {
+            "kind": "strIntrinsic",
+            "method": "length",
+            "receiver": {
+              "kind": "jsOp",
+              "op": "toStr",
+              "args": [
+                {
+                  "kind": "jsOp",
+                  "op": "callMethod",
+                  "name": "stringify",
+                  "args": [
+                    {
+                      "kind": "jsOp",
+                      "op": "globalGet",
+                      "name": "JSON",
+                      "args": [],
+                      "type": {
+                        "kind": "jsval"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                        "start": 2044,
+                        "end": 2081
+                      }
+                    },
+                    {
+                      "kind": "call",
+                      "callee": "candidateAnyHelper",
+                      "args": [
+                        {
+                          "kind": "jsMarshal",
+                          "value": {
+                            "kind": "varRef",
+                            "localId": "s.0",
+                            "type": {
+                              "kind": "dyn"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                              "start": 2078,
+                              "end": 2079
+                            }
+                          },
+                          "type": {
+                            "kind": "jsval"
+                          },
+                          "loc": {
+                            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                            "start": 2078,
+                            "end": 2079
+                          }
+                        }
+                      ],
+                      "type": {
+                        "kind": "jsval"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                        "start": 2059,
+                        "end": 2080
+                      }
+                    }
+                  ],
+                  "type": {
+                    "kind": "jsval"
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                    "start": 2044,
+                    "end": 2081
+                  }
+                }
+              ],
+              "type": {
+                "kind": "string"
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                "start": 2044,
+                "end": 2081
+              }
+            },
+            "args": [],
+            "type": {
+              "kind": "f64"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 2044,
+              "end": 2088
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+            "start": 2040,
+            "end": 2088
+          }
+        },
+        {
+          "kind": "varDecl",
+          "localId": "b.0",
+          "init": {
+            "kind": "strIntrinsic",
+            "method": "length",
+            "receiver": {
+              "kind": "jsOp",
+              "op": "toStr",
+              "args": [
+                {
+                  "kind": "jsOp",
+                  "op": "callMethod",
+                  "name": "stringify",
+                  "args": [
+                    {
+                      "kind": "jsOp",
+                      "op": "globalGet",
+                      "name": "JSON",
+                      "args": [],
+                      "type": {
+                        "kind": "jsval"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                        "start": 2102,
+                        "end": 2143
+                      }
+                    },
+                    {
+                      "kind": "call",
+                      "callee": "candidateUnknownHelper",
+                      "args": [
+                        {
+                          "kind": "jsMarshal",
+                          "value": {
+                            "kind": "varRef",
+                            "localId": "s.0",
+                            "type": {
+                              "kind": "dyn"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                              "start": 2140,
+                              "end": 2141
+                            }
+                          },
+                          "type": {
+                            "kind": "jsval"
+                          },
+                          "loc": {
+                            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                            "start": 2140,
+                            "end": 2141
+                          }
+                        }
+                      ],
+                      "type": {
+                        "kind": "jsval"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                        "start": 2117,
+                        "end": 2142
+                      }
+                    }
+                  ],
+                  "type": {
+                    "kind": "jsval"
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                    "start": 2102,
+                    "end": 2143
+                  }
+                }
+              ],
+              "type": {
+                "kind": "string"
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                "start": 2102,
+                "end": 2143
+              }
+            },
+            "args": [],
+            "type": {
+              "kind": "f64"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 2102,
+              "end": 2150
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+            "start": 2098,
+            "end": 2150
+          }
+        },
+        {
+          "kind": "varDecl",
+          "localId": "c.0",
+          "init": {
+            "kind": "strIntrinsic",
+            "method": "length",
+            "receiver": {
+              "kind": "jsOp",
+              "op": "toStr",
+              "args": [
+                {
+                  "kind": "jsOp",
+                  "op": "callMethod",
+                  "name": "stringify",
+                  "args": [
+                    {
+                      "kind": "jsOp",
+                      "op": "globalGet",
+                      "name": "JSON",
+                      "args": [],
+                      "type": {
+                        "kind": "jsval"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                        "start": 2164,
+                        "end": 2201
+                      }
+                    },
+                    {
+                      "kind": "call",
+                      "callee": "candidateDirectAny",
+                      "args": [
+                        {
+                          "kind": "jsMarshal",
+                          "value": {
+                            "kind": "varRef",
+                            "localId": "s.0",
+                            "type": {
+                              "kind": "dyn"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                              "start": 2198,
+                              "end": 2199
+                            }
+                          },
+                          "type": {
+                            "kind": "jsval"
+                          },
+                          "loc": {
+                            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                            "start": 2198,
+                            "end": 2199
+                          }
+                        }
+                      ],
+                      "type": {
+                        "kind": "jsval"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                        "start": 2179,
+                        "end": 2200
+                      }
+                    }
+                  ],
+                  "type": {
+                    "kind": "jsval"
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                    "start": 2164,
+                    "end": 2201
+                  }
+                }
+              ],
+              "type": {
+                "kind": "string"
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                "start": 2164,
+                "end": 2201
+              }
+            },
+            "args": [],
+            "type": {
+              "kind": "f64"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 2164,
+              "end": 2208
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+            "start": 2160,
+            "end": 2208
+          }
+        },
+        {
+          "kind": "varDecl",
+          "localId": "d.0",
+          "init": {
+            "kind": "strIntrinsic",
+            "method": "length",
+            "receiver": {
+              "kind": "jsOp",
+              "op": "toStr",
+              "args": [
+                {
+                  "kind": "jsOp",
+                  "op": "callMethod",
+                  "name": "stringify",
+                  "args": [
+                    {
+                      "kind": "jsOp",
+                      "op": "globalGet",
+                      "name": "JSON",
+                      "args": [],
+                      "type": {
+                        "kind": "jsval"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                        "start": 2222,
+                        "end": 2262
+                      }
+                    },
+                    {
+                      "kind": "call",
+                      "callee": "candidateDirectAnyOut",
+                      "args": [
+                        {
+                          "kind": "jsMarshal",
+                          "value": {
+                            "kind": "varRef",
+                            "localId": "s.0",
+                            "type": {
+                              "kind": "dyn"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                              "start": 2259,
+                              "end": 2260
+                            }
+                          },
+                          "type": {
+                            "kind": "jsval"
+                          },
+                          "loc": {
+                            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                            "start": 2259,
+                            "end": 2260
+                          }
+                        }
+                      ],
+                      "type": {
+                        "kind": "jsval"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                        "start": 2237,
+                        "end": 2261
+                      }
+                    }
+                  ],
+                  "type": {
+                    "kind": "jsval"
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                    "start": 2222,
+                    "end": 2262
+                  }
+                }
+              ],
+              "type": {
+                "kind": "string"
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                "start": 2222,
+                "end": 2262
+              }
+            },
+            "args": [],
+            "type": {
+              "kind": "f64"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 2222,
+              "end": 2269
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+            "start": 2218,
+            "end": 2269
+          }
+        },
+        {
+          "kind": "return",
+          "value": {
+            "kind": "bin",
+            "op": "+",
+            "left": {
+              "kind": "bin",
+              "op": "+",
+              "left": {
+                "kind": "bin",
+                "op": "+",
+                "left": {
+                  "kind": "varRef",
+                  "localId": "a.0",
+                  "type": {
+                    "kind": "f64"
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                    "start": 2280,
+                    "end": 2281
+                  }
+                },
+                "right": {
+                  "kind": "varRef",
+                  "localId": "b.0",
+                  "type": {
+                    "kind": "f64"
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                    "start": 2284,
+                    "end": 2285
+                  }
+                },
+                "type": {
+                  "kind": "f64"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                  "start": 2280,
+                  "end": 2285
+                }
+              },
+              "right": {
+                "kind": "varRef",
+                "localId": "c.0",
+                "type": {
+                  "kind": "f64"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                  "start": 2288,
+                  "end": 2289
+                }
+              },
+              "type": {
+                "kind": "f64"
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                "start": 2280,
+                "end": 2289
+              }
+            },
+            "right": {
+              "kind": "varRef",
+              "localId": "d.0",
+              "type": {
+                "kind": "f64"
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                "start": 2292,
+                "end": 2293
+              }
+            },
+            "type": {
+              "kind": "f64"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 2280,
+              "end": 2293
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+            "start": 2273,
+            "end": 2294
+          }
+        }
+      ],
+      "loc": {
+        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+        "start": 1938,
+        "end": 2296
+      }
+    },
+    {
+      "name": "%init.0",
+      "params": [],
+      "returnType": {
+        "kind": "void"
+      },
+      "locals": [],
+      "body": [
+        {
+          "kind": "if",
+          "cond": {
+            "kind": "varRef",
+            "localId": "%g.m0.%loaded",
+            "type": {
+              "kind": "bool"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/shims/dom-globals.ts",
+              "start": 0,
+              "end": 0
+            }
+          },
+          "then": [
+            {
+              "kind": "return",
+              "value": null,
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/shims/dom-globals.ts",
+                "start": 0,
+                "end": 0
+              }
+            }
+          ],
+          "else_": null,
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/shims/dom-globals.ts",
+            "start": 0,
+            "end": 0
+          }
+        },
+        {
+          "kind": "assign",
+          "localId": "%g.m0.%loaded",
+          "value": {
+            "kind": "boolLit",
+            "value": true,
+            "type": {
+              "kind": "bool"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/shims/dom-globals.ts",
+              "start": 0,
+              "end": 0
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/shims/dom-globals.ts",
+            "start": 0,
+            "end": 0
+          }
+        }
+      ],
+      "loc": {
+        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/shims/dom-globals.ts",
+        "start": 0,
+        "end": 0
+      }
+    },
+    {
+      "name": "%init.1",
+      "params": [],
+      "returnType": {
+        "kind": "void"
+      },
+      "locals": [],
+      "body": [
+        {
+          "kind": "if",
+          "cond": {
+            "kind": "varRef",
+            "localId": "%g.e.%loaded",
+            "type": {
+              "kind": "bool"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 0,
+              "end": 0
+            }
+          },
+          "then": [
+            {
+              "kind": "return",
+              "value": null,
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                "start": 0,
+                "end": 0
+              }
+            }
+          ],
+          "else_": null,
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+            "start": 0,
+            "end": 0
+          }
+        },
+        {
+          "kind": "assign",
+          "localId": "%g.e.%loaded",
+          "value": {
+            "kind": "boolLit",
+            "value": true,
+            "type": {
+              "kind": "bool"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 0,
+              "end": 0
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+            "start": 0,
+            "end": 0
+          }
+        },
+        {
+          "kind": "exprStmt",
+          "expr": {
+            "kind": "call",
+            "callee": "%init.0",
+            "args": [],
+            "type": {
+              "kind": "void"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 82,
+              "end": 115
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+            "start": 82,
+            "end": 115
+          }
+        },
+        {
+          "kind": "assign",
+          "localId": "%g.e.KEYS",
+          "value": {
+            "kind": "arrayLit",
+            "elems": [
+              {
+                "kind": "strLit",
+                "value": "runId",
+                "type": {
+                  "kind": "string"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                  "start": 231,
+                  "end": 238
+                }
+              },
+              {
+                "kind": "strLit",
+                "value": "status",
+                "type": {
+                  "kind": "string"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                  "start": 240,
+                  "end": 248
+                }
+              },
+              {
+                "kind": "strLit",
+                "value": "usage",
+                "type": {
+                  "kind": "string"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                  "start": 250,
+                  "end": 257
+                }
+              },
+              {
+                "kind": "strLit",
+                "value": "lastEventSequence",
+                "type": {
+                  "kind": "string"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                  "start": 259,
+                  "end": 278
+                }
+              }
+            ],
+            "type": {
+              "kind": "array",
+              "elem": {
+                "kind": "string"
+              }
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 230,
+              "end": 279
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+            "start": 213,
+            "end": 279
+          }
+        },
+        {
+          "kind": "exprStmt",
+          "expr": {
+            "kind": "call",
+            "callee": "main",
+            "args": [],
+            "type": {
+              "kind": "f64"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 2298,
+              "end": 2304
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+            "start": 2298,
+            "end": 2304
+          }
+        }
+      ],
+      "loc": {
+        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+        "start": 0,
+        "end": 0
+      }
+    },
+    {
+      "name": "%main",
+      "params": [],
+      "returnType": {
+        "kind": "void"
+      },
+      "locals": [],
+      "body": [
+        {
+          "kind": "exprStmt",
+          "expr": {
+            "kind": "call",
+            "callee": "%init.1",
+            "args": [],
+            "type": {
+              "kind": "void"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 0,
+              "end": 0
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+            "start": 0,
+            "end": 0
+          }
+        }
+      ],
+      "loc": {
+        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+        "start": 0,
+        "end": 0
+      }
+    },
+    {
+      "name": "%union.narrow.0",
+      "params": [
+        {
+          "localId": "u.0",
+          "name": "u",
+          "type": {
+            "kind": "union",
+            "unionId": "u0"
+          }
+        }
+      ],
+      "returnType": {
+        "kind": "string"
+      },
+      "locals": [
+        {
+          "id": "u.0",
+          "name": "u",
+          "type": {
+            "kind": "union",
+            "unionId": "u0"
+          },
+          "mutable": true
+        }
+      ],
+      "body": [
+        {
+          "kind": "if",
+          "cond": {
+            "kind": "unionIsTag",
+            "unionId": "u0",
+            "tag": 1,
+            "negated": false,
+            "value": {
+              "kind": "varRef",
+              "localId": "u.0",
+              "type": {
+                "kind": "union",
+                "unionId": "u0"
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                "start": 736,
+                "end": 739
+              }
+            },
+            "type": {
+              "kind": "bool"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 736,
+              "end": 739
+            }
+          },
+          "then": [
+            {
+              "kind": "throw",
+              "value": {
+                "kind": "libCall",
+                "fn": "error.new",
+                "args": [
+                  {
+                    "kind": "strLit",
+                    "value": "undefined is not representable in the target union (a value narrowed or asserted past it still held it)",
+                    "type": {
+                      "kind": "string"
+                    },
+                    "loc": {
+                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                      "start": 736,
+                      "end": 739
+                    }
+                  }
+                ],
+                "type": {
+                  "kind": "object",
+                  "className": "%TypeError"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                  "start": 736,
+                  "end": 739
+                }
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                "start": 736,
+                "end": 739
+              }
+            }
+          ],
+          "else_": null,
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+            "start": 736,
+            "end": 739
+          }
+        },
+        {
+          "kind": "return",
+          "value": {
+            "kind": "unionNarrow",
+            "unionId": "u0",
+            "tag": 0,
+            "value": {
+              "kind": "varRef",
+              "localId": "u.0",
+              "type": {
+                "kind": "union",
+                "unionId": "u0"
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                "start": 736,
+                "end": 739
+              }
+            },
+            "type": {
+              "kind": "string"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 736,
+              "end": 739
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+            "start": 736,
+            "end": 739
+          }
+        }
+      ],
+      "loc": {
+        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+        "start": 736,
+        "end": 739
+      }
+    },
+    {
+      "name": "%jsin.union.0",
+      "params": [
+        {
+          "localId": "u.0",
+          "name": "u",
+          "type": {
+            "kind": "union",
+            "unionId": "u0"
+          }
+        }
+      ],
+      "returnType": {
+        "kind": "jsval"
+      },
+      "locals": [
+        {
+          "id": "u.0",
+          "name": "u",
+          "type": {
+            "kind": "union",
+            "unionId": "u0"
+          },
+          "mutable": true
+        }
+      ],
+      "body": [
+        {
+          "kind": "if",
+          "cond": {
+            "kind": "unionIsTag",
+            "unionId": "u0",
+            "tag": 0,
+            "negated": false,
+            "value": {
+              "kind": "varRef",
+              "localId": "u.0",
+              "type": {
+                "kind": "union",
+                "unionId": "u0"
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                "start": 1877,
+                "end": 1880
+              }
+            },
+            "type": {
+              "kind": "bool"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 1877,
+              "end": 1880
+            }
+          },
+          "then": [
+            {
+              "kind": "return",
+              "value": {
+                "kind": "jsMarshal",
+                "value": {
+                  "kind": "unionNarrow",
+                  "unionId": "u0",
+                  "tag": 0,
+                  "value": {
+                    "kind": "varRef",
+                    "localId": "u.0",
+                    "type": {
+                      "kind": "union",
+                      "unionId": "u0"
+                    },
+                    "loc": {
+                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                      "start": 1877,
+                      "end": 1880
+                    }
+                  },
+                  "type": {
+                    "kind": "string"
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                    "start": 1877,
+                    "end": 1880
+                  }
+                },
+                "type": {
+                  "kind": "jsval"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                  "start": 1877,
+                  "end": 1880
+                }
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                "start": 1877,
+                "end": 1880
+              }
+            }
+          ],
+          "else_": null,
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+            "start": 1877,
+            "end": 1880
+          }
+        },
+        {
+          "kind": "if",
+          "cond": {
+            "kind": "unionIsTag",
+            "unionId": "u0",
+            "tag": 1,
+            "negated": false,
+            "value": {
+              "kind": "varRef",
+              "localId": "u.0",
+              "type": {
+                "kind": "union",
+                "unionId": "u0"
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                "start": 1877,
+                "end": 1880
+              }
+            },
+            "type": {
+              "kind": "bool"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 1877,
+              "end": 1880
+            }
+          },
+          "then": [
+            {
+              "kind": "return",
+              "value": {
+                "kind": "jsOp",
+                "op": "undefLit",
+                "args": [],
+                "type": {
+                  "kind": "jsval"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                  "start": 1877,
+                  "end": 1880
+                }
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+                "start": 1877,
+                "end": 1880
+              }
+            }
+          ],
+          "else_": null,
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+            "start": 1877,
+            "end": 1880
+          }
+        },
+        {
+          "kind": "throw",
+          "value": {
+            "kind": "strLit",
+            "value": "scriptc: internal error: invalid union tag",
+            "type": {
+              "kind": "string"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+              "start": 1877,
+              "end": 1880
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+            "start": 1877,
+            "end": 1880
+          }
+        }
+      ],
+      "loc": {
+        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+        "start": 1877,
+        "end": 1880
+      }
+    }
+  ],
+  "classes": [
+    {
+      "name": "%Error",
+      "runtime": true,
+      "fields": [
+        {
+          "name": "name",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "message",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "%code",
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "loc": {
+        "file": "<builtin>",
+        "start": 0,
+        "end": 0
+      }
+    },
+    {
+      "name": "%TypeError",
+      "runtime": true,
+      "base": "%Error",
+      "fields": [
+        {
+          "name": "name",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "message",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "%code",
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "loc": {
+        "file": "<builtin>",
+        "start": 0,
+        "end": 0
+      }
+    },
+    {
+      "name": "%RangeError",
+      "runtime": true,
+      "base": "%Error",
+      "fields": [
+        {
+          "name": "name",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "message",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "%code",
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "loc": {
+        "file": "<builtin>",
+        "start": 0,
+        "end": 0
+      }
+    },
+    {
+      "name": "%SyntaxError",
+      "runtime": true,
+      "base": "%Error",
+      "fields": [
+        {
+          "name": "name",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "message",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "%code",
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "loc": {
+        "file": "<builtin>",
+        "start": 0,
+        "end": 0
+      }
+    },
+    {
+      "name": "%DOMException",
+      "runtime": true,
+      "base": "%Error",
+      "fields": [
+        {
+          "name": "name",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "message",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "%code",
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "loc": {
+        "file": "<builtin>",
+        "start": 0,
+        "end": 0
+      }
+    }
+  ],
+  "records": [
+    {
+      "id": "r0",
+      "fields": [],
+      "indexValue": {
+        "kind": "dyn"
+      },
+      "declaredOrder": []
+    }
+  ],
+  "unions": [
+    {
+      "id": "u0",
+      "arms": [
+        {
+          "kind": "string"
+        },
+        {
+          "kind": "undefinedT"
+        }
+      ]
+    }
+  ],
+  "globals": [
+    {
+      "id": "%g.e.KEYS",
+      "name": "KEYS",
+      "type": {
+        "kind": "array",
+        "elem": {
+          "kind": "string"
+        }
+      },
+      "mutable": false,
+      "source": {
+        "loc": {
+          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+          "start": 213,
+          "end": 217
+        },
+        "scope": {
+          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-fix2.ts",
+          "start": 82,
+          "end": 2306
+        }
+      }
+    },
+    {
+      "id": "%g.m0.%loaded",
+      "name": "%loaded",
+      "type": {
+        "kind": "bool"
+      },
+      "mutable": true
+    },
+    {
+      "id": "%g.e.%loaded",
+      "name": "%loaded",
+      "type": {
+        "kind": "bool"
+      },
+      "mutable": true
+    }
+  ],
+  "entry": "%main"
+}

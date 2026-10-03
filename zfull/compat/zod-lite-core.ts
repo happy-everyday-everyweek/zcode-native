@@ -435,8 +435,9 @@ const before = ctx.issues.length;
           }
         }
       }
+      const inputKeysRec: Record<string, unknown> = input;
       if (this._unk === "strict") {
-        const inputKeys = keysOfRecord(input);
+        const inputKeys = keysOfRecord(inputKeysRec);
         for (const k of inputKeys) {
           if (!(k in shape)) {
             const msg = "Unrecognized key: " + '"' + k + '"';
@@ -447,7 +448,7 @@ const before = ctx.issues.length;
           }
         }
       } else if (this._unk === "passthrough") {
-        const inputKeys = keysOfRecord(input);
+        const inputKeys = keysOfRecord(inputKeysRec);
         for (const k of inputKeys) {
           if (!(k in shape)) {
             out[k] = input[k];
@@ -463,7 +464,7 @@ const before = ctx.issues.length;
       }
       if (this._innerIdx < 0) return undefined;
       const out2: Record<string, unknown> = {};
-      const ks = keysOfRecord(input);
+      const ks = keysOfRecord(inputKeysRec);
       for (const k of ks) {
         const subCtx2 = childCtx(ctx, k);
         const before2r = ctx.issues.length;
@@ -481,7 +482,7 @@ const before = ctx.issues.length;
       }
       if (this._innerIdx < 0) return undefined;
       const out3: Record<string, unknown> = {};
-      const ks2 = keysOfRecord(input);
+      const ks2 = keysOfRecord(inputKeysRec);
       for (const k2 of ks2) {
         const subCtx3 = childCtx(ctx, k2);
         const v3 = schemaAt(this._innerIdx)._parse(input[k2], subCtx3);
@@ -606,8 +607,9 @@ const before = ctx.issues.length;
 
 // scriptc：Object.keys 需要参数在编译期就是 record，而 _parse 的 input 是 jsval；
 // 形参写成 Record<string, any> 后，调用处 any→JSON 安全记录是允许的出口，函数内部即可枚举。
-function keysOfRecord(input: Record<string, any>): string[] {
-  return Object.keys(input);
+function keysOfRecord<T>(rec: Record<string, T>): string[] {
+  // 泛型记录参数上的 Object.keys 才有 lowering；调用处先把值类型擦成 unknown 再传进来。
+  return Object.keys(rec);
 }
 
 export class ZodType<O = any> extends ZBase {

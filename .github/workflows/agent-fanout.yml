@@ -75,10 +75,10 @@ jobs:
       - name: 注入 provider 配置（走 env，不插值进 shell）
         env:
           ZCODE_PROVIDER_CONFIG_B64: ${{ secrets.ZCODE_PROVIDER_CONFIG_B64 }}
-        run: python3 zcheck/gha-agent.py prepare
+        run: python3 ci/gha-agent.py prepare
 
       - name: 组装 prompt
-        run: python3 zcheck/gha-agent.py prompt "${{ matrix.file }}"
+        run: python3 ci/gha-agent.py prompt "${{ matrix.file }}"
 
       - name: 跑 Agent（只允许改这一个文件）
         env:
@@ -101,7 +101,7 @@ jobs:
           ZCODE_ENTRY: ${{ fromJSON(inputs.entry_map)[matrix.file] }}
         run: |
           if [ -z "$ZCODE_ENTRY" ]; then echo "no entry mapping; skipping compile check"; exit 0; fi
-          python3 zcheck/gha-agent.py verify "$ZCODE_ENTRY" "${{ matrix.file }}" || echo "(校验失败：该文件仍有错误，或见上方输出)"
+          python3 ci/gha-agent.py verify "$ZCODE_ENTRY" "${{ matrix.file }}" || echo "(校验失败：该文件仍有错误，或见上方输出)"
         continue-on-error: true
 
       - name: 导出 patch

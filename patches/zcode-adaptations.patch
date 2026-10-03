@@ -6921,26 +6921,10 @@ index 1a8eac2..f4bc4f1 100644
  
  function optionPatch(
 diff --git a/packages/model-option-map/src/parser.ts b/packages/model-option-map/src/parser.ts
-index 0125f3e..8bb701e 100644
+index 0125f3e..b048276 100644
 --- a/packages/model-option-map/src/parser.ts
 +++ b/packages/model-option-map/src/parser.ts
-@@ -160,8 +160,13 @@ class Parser {
-         throw new RestrictedCelError("function calls are not supported", this.current().offset);
-       }
-       if (token.value === this.variableName) return { type: "input", offset: token.offset };
--      if (token.value === "true" || token.value === "false") {
--        return { type: "literal", value: token.value === "true", offset: token.offset };
-+      // scriptc：`value: token.value === "true"` 会推断成 `boolean`，无法窄到单一联合臂（SC2003）；
-+      // 拆成两个字面量分支，每支返回精确臂。
-+      if (token.value === "true") {
-+        return { type: "literal", value: true, offset: token.offset };
-+      }
-+      if (token.value === "false") {
-+        return { type: "literal", value: false, offset: token.offset };
-       }
-       if (token.value === "null") return { type: "literal", value: null, offset: token.offset };
-       throw new RestrictedCelError(
-@@ -186,7 +191,7 @@ class Parser {
+@@ -186,7 +186,7 @@ class Parser {
        while (this.consume(","));
        this.expect("]");
      }
@@ -6949,7 +6933,7 @@ index 0125f3e..8bb701e 100644
    }
  
    private parseObject(offset: number): RestrictedCelExpression {
-@@ -210,7 +215,7 @@ class Parser {
+@@ -210,7 +210,7 @@ class Parser {
        } while (this.consume(","));
        this.expect("}");
      }
@@ -7277,6 +7261,45 @@ index 5ae36c6..67222ed 100644
    }
  
    deletePersonalProvider(providerId: ProviderId): Promise<ProviderConfigLayerSnapshot> {
+diff --git a/packages/provider/src/config/manual-model-config.ts b/packages/provider/src/config/manual-model-config.ts
+index b924248..8c27fa4 100644
+--- a/packages/provider/src/config/manual-model-config.ts
++++ b/packages/provider/src/config/manual-model-config.ts
+@@ -40,13 +40,19 @@ export function clearManualModelConfig(input: z.infer<typeof modelConfigDataSche
+   );
+ }
+ 
++// 兼容层里 z.ZodObject 是工厂函数，直接 instanceof 会把被判定值收窄成 {}；
++// 用返回 boolean 的判定隔离收窄，让 child 保持 schema.shape 的原始类型。
++function isObjectSchema(value: unknown): boolean {
++  return value instanceof z.ZodObject;
++}
++
+ function omitSchemaFields(schema: z.ZodObject, input: unknown): unknown {
+   if (!input || typeof input !== "object" || Array.isArray(input)) return input;
+   return Object.fromEntries(
+     Object.entries(input).flatMap(([key, value]) => {
+       const child = schema.shape[key];
+       if (!child) return [[key, value]];
+-      if (!(child instanceof z.ZodObject) || value == null) return [];
++      if (!isObjectSchema(child) || value == null) return [];
+       const remaining = omitSchemaFields(child, value);
+       return remaining && typeof remaining === "object" && Object.keys(remaining).length
+         ? [[key, remaining]]
+@@ -59,10 +65,11 @@ function pickSchemaFields(schema: z.ZodObject, input: unknown): unknown {
+   if (!input || typeof input !== "object" || Array.isArray(input)) return input;
+   const source = input as Record<string, unknown>;
+   return Object.fromEntries(
+-    Object.entries(schema.shape).flatMap(([key, child]) => {
++    Object.keys(schema.shape).flatMap((key) => {
+       if (!(key in source)) return [];
++      const child = schema.shape[key];
+       return [
+-        [key, child instanceof z.ZodObject ? pickSchemaFields(child, source[key]) : source[key]],
++        [key, isObjectSchema(child) ? pickSchemaFields(child, source[key]) : source[key]],
+       ];
+     }),
+   );
 diff --git a/packages/provider/src/config/model-config.ts b/packages/provider/src/config/model-config.ts
 index beb7e9a..f191141 100644
 --- a/packages/provider/src/config/model-config.ts

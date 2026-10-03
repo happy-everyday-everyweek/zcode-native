@@ -320,6 +320,8 @@ export class ZBase {
   }
 
   _parse(input: any, ctx: ParseCtx): unknown {
+    // 键枚举用：泛型记录参数上的 Object.keys 才有 lowering。
+    const inputKeysRec: Record<string, unknown> = input;
     const w = this._wrap;
     if (w === "") {
       return input;
@@ -435,7 +437,6 @@ const before = ctx.issues.length;
           }
         }
       }
-      const inputKeysRec: Record<string, unknown> = input;
       if (this._unk === "strict") {
         const inputKeys = keysOfRecord(inputKeysRec);
         for (const k of inputKeys) {

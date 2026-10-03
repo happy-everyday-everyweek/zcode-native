@@ -6921,10 +6921,26 @@ index 1a8eac2..f4bc4f1 100644
  
  function optionPatch(
 diff --git a/packages/model-option-map/src/parser.ts b/packages/model-option-map/src/parser.ts
-index 0125f3e..b048276 100644
+index 0125f3e..8bb701e 100644
 --- a/packages/model-option-map/src/parser.ts
 +++ b/packages/model-option-map/src/parser.ts
-@@ -186,7 +186,7 @@ class Parser {
+@@ -160,8 +160,13 @@ class Parser {
+         throw new RestrictedCelError("function calls are not supported", this.current().offset);
+       }
+       if (token.value === this.variableName) return { type: "input", offset: token.offset };
+-      if (token.value === "true" || token.value === "false") {
+-        return { type: "literal", value: token.value === "true", offset: token.offset };
++      // scriptc：`value: token.value === "true"` 会推断成 `boolean`，无法窄到单一联合臂（SC2003）；
++      // 拆成两个字面量分支，每支返回精确臂。
++      if (token.value === "true") {
++        return { type: "literal", value: true, offset: token.offset };
++      }
++      if (token.value === "false") {
++        return { type: "literal", value: false, offset: token.offset };
+       }
+       if (token.value === "null") return { type: "literal", value: null, offset: token.offset };
+       throw new RestrictedCelError(
+@@ -186,7 +191,7 @@ class Parser {
        while (this.consume(","));
        this.expect("]");
      }
@@ -6933,7 +6949,7 @@ index 0125f3e..b048276 100644
    }
  
    private parseObject(offset: number): RestrictedCelExpression {
-@@ -210,7 +210,7 @@ class Parser {
+@@ -210,7 +215,7 @@ class Parser {
        } while (this.consume(","));
        this.expect("}");
      }

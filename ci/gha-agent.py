@@ -37,9 +37,14 @@ def prepare() -> int:
     if not raw:
         print("ZCODE_PROVIDER_CONFIG_B64 为空，无法还原 provider 配置")
         return 2
+    # 兼容两种存法：直接存原始 JSON（以 { 开头），或存 base64 文本。
+    if raw.startswith("{"):
+        payload = raw.encode("utf-8")
+    else:
+        payload = base64.b64decode(raw + "=" * (-len(raw) % 4))
     dest = pathlib.Path.home() / ".zcode" / "v2" / "provider_config.json"
     dest.parent.mkdir(parents=True, exist_ok=True)
-    dest.write_bytes(base64.b64decode(raw))
+    dest.write_bytes(payload)
     data = json.loads(dest.read_text(encoding="utf-8"))
     print("providers:", data.get("config", {}).get("providerOrder"))
     return 0
@@ -56,7 +61,7 @@ def prompt(file: str) -> int:
 
 def verify(entry: str, file: str) -> int:
     r = subprocess.run(
-        ["node", "ci/compile-entry.mjs", entry, "--file", file],
+        ["node", "zcheck/compile-entry.mjs", entry, "--file", file],
         capture_output=True,
         text=True,
     )

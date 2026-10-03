@@ -10170,7 +10170,7 @@ index 00553a5..5bc122d 100644
      })
      .nullish(),
 diff --git a/packages/shared/src/config-schema.ts b/packages/shared/src/config-schema.ts
-index 2d75ead..540daa7 100644
+index 2d75ead..3254ac4 100644
 --- a/packages/shared/src/config-schema.ts
 +++ b/packages/shared/src/config-schema.ts
 @@ -1,8 +1,37 @@
@@ -10188,7 +10188,7 @@ index 2d75ead..540daa7 100644
 +  return Object.keys(rec);
 +}
 +
-+export function sparseShape(shape: ZodRawShape): ZodRawShape {
++export function sparseShape(shape: Record<string, any>): ZodRawShape {
 +  const sparse: ZodRawShape = {};
 +  // scriptc：`Record<string, any>` 上的 Object.keys 无 lowering（SC2020），
 +  // 而泛型记录上的还有（同文件外的 omitKey 就是这么过的）；这里绑定一份
@@ -10207,7 +10207,7 @@ index 2d75ead..540daa7 100644
 + * scriptc 不认 `Object.fromEntries`，也不肯展开类型为 `any` 的 `.shape`（compat 的 shape
 + * getter 是 any）；复制成索引签名记录后两个问题都没有了。
 + */
-+export function copyShape(shape: ZodRawShape): ZodRawShape {
++export function copyShape(shape: Record<string, any>): ZodRawShape {
 +  const copied: ZodRawShape = {};
 +  // 同 sparseShape：键枚举走 recordKeys（泛型记录上的 Object.keys 才有 lowering）。
 +  const keysOf: Record<string, unknown> = shape;

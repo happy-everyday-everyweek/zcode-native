@@ -1,0 +1,4378 @@
+{
+  "irVersion": 11,
+  "sourceFile": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+  "functions": [
+    {
+      "name": "createRegistry",
+      "params": [],
+      "returnType": {
+        "kind": "record",
+        "shapeId": "r2"
+      },
+      "locals": [
+        {
+          "id": "providers.0",
+          "name": "providers",
+          "type": {
+            "kind": "record",
+            "shapeId": "r3"
+          },
+          "mutable": false,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 377,
+              "end": 386
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 367,
+              "end": 1178
+            }
+          },
+          "boxed": true
+        }
+      ],
+      "body": [
+        {
+          "kind": "varDecl",
+          "localId": "providers.0",
+          "init": {
+            "kind": "recordLit",
+            "fields": [],
+            "type": {
+              "kind": "record",
+              "shapeId": "r3"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 415,
+              "end": 417
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+            "start": 377,
+            "end": 417
+          }
+        },
+        {
+          "kind": "return",
+          "value": {
+            "kind": "recordLit",
+            "fields": [
+              {
+                "name": "register",
+                "value": {
+                  "kind": "closure",
+                  "fnName": "%fn1_register",
+                  "captures": [
+                    "providers.0"
+                  ],
+                  "type": {
+                    "kind": "func",
+                    "params": [
+                      {
+                        "kind": "string"
+                      },
+                      {
+                        "kind": "func",
+                        "params": [],
+                        "ret": {
+                          "kind": "record",
+                          "shapeId": "r0"
+                        }
+                      }
+                    ],
+                    "ret": {
+                      "kind": "record",
+                      "shapeId": "r1"
+                    }
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                    "start": 434,
+                    "end": 649
+                  }
+                }
+              },
+              {
+                "name": "collect",
+                "value": {
+                  "kind": "closure",
+                  "fnName": "%fn3_collect",
+                  "captures": [
+                    "providers.0"
+                  ],
+                  "type": {
+                    "kind": "func",
+                    "params": [],
+                    "ret": {
+                      "kind": "record",
+                      "shapeId": "r0"
+                    }
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                    "start": 655,
+                    "end": 1170
+                  }
+                }
+              }
+            ],
+            "type": {
+              "kind": "record",
+              "shapeId": "r2"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 428,
+              "end": 1175
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+            "start": 421,
+            "end": 1176
+          }
+        }
+      ],
+      "loc": {
+        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+        "start": 324,
+        "end": 1178
+      }
+    },
+    {
+      "name": "main",
+      "params": [],
+      "returnType": {
+        "kind": "f64"
+      },
+      "locals": [
+        {
+          "id": "registry.0",
+          "name": "registry",
+          "type": {
+            "kind": "record",
+            "shapeId": "r2"
+          },
+          "mutable": false,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 1221,
+              "end": 1229
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 1211,
+              "end": 1460
+            }
+          }
+        },
+        {
+          "id": "handle.0",
+          "name": "handle",
+          "type": {
+            "kind": "record",
+            "shapeId": "r1"
+          },
+          "mutable": false,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 1258,
+              "end": 1264
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 1211,
+              "end": 1460
+            }
+          }
+        },
+        {
+          "id": "collected.0",
+          "name": "collected",
+          "type": {
+            "kind": "record",
+            "shapeId": "r0"
+          },
+          "mutable": false,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 1349,
+              "end": 1358
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 1211,
+              "end": 1460
+            }
+          }
+        }
+      ],
+      "body": [
+        {
+          "kind": "varDecl",
+          "localId": "registry.0",
+          "init": {
+            "kind": "call",
+            "callee": "createRegistry",
+            "args": [],
+            "type": {
+              "kind": "record",
+              "shapeId": "r2"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 1232,
+              "end": 1248
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+            "start": 1221,
+            "end": 1248
+          }
+        },
+        {
+          "kind": "varDecl",
+          "localId": "handle.0",
+          "init": {
+            "kind": "callValue",
+            "callee": {
+              "kind": "recordGet",
+              "obj": {
+                "kind": "varRef",
+                "localId": "registry.0",
+                "type": {
+                  "kind": "record",
+                  "shapeId": "r2"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                  "start": 1267,
+                  "end": 1275
+                }
+              },
+              "shapeId": "r2",
+              "field": "register",
+              "type": {
+                "kind": "func",
+                "params": [
+                  {
+                    "kind": "string"
+                  },
+                  {
+                    "kind": "func",
+                    "params": [],
+                    "ret": {
+                      "kind": "record",
+                      "shapeId": "r0"
+                    }
+                  }
+                ],
+                "ret": {
+                  "kind": "record",
+                  "shapeId": "r1"
+                }
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                "start": 1267,
+                "end": 1284
+              }
+            },
+            "args": [
+              {
+                "kind": "strLit",
+                "value": "probe",
+                "type": {
+                  "kind": "string"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                  "start": 1285,
+                  "end": 1292
+                }
+              },
+              {
+                "kind": "closure",
+                "fnName": "%fn0",
+                "captures": [],
+                "type": {
+                  "kind": "func",
+                  "params": [],
+                  "ret": {
+                    "kind": "record",
+                    "shapeId": "r0"
+                  }
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                  "start": 1294,
+                  "end": 1338
+                }
+              }
+            ],
+            "type": {
+              "kind": "record",
+              "shapeId": "r1"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 1267,
+              "end": 1339
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+            "start": 1258,
+            "end": 1339
+          }
+        },
+        {
+          "kind": "varDecl",
+          "localId": "collected.0",
+          "init": {
+            "kind": "callValue",
+            "callee": {
+              "kind": "recordGet",
+              "obj": {
+                "kind": "varRef",
+                "localId": "registry.0",
+                "type": {
+                  "kind": "record",
+                  "shapeId": "r2"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                  "start": 1361,
+                  "end": 1369
+                }
+              },
+              "shapeId": "r2",
+              "field": "collect",
+              "type": {
+                "kind": "func",
+                "params": [],
+                "ret": {
+                  "kind": "record",
+                  "shapeId": "r0"
+                }
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                "start": 1361,
+                "end": 1377
+              }
+            },
+            "args": [],
+            "type": {
+              "kind": "record",
+              "shapeId": "r0"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 1361,
+              "end": 1379
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+            "start": 1349,
+            "end": 1379
+          }
+        },
+        {
+          "kind": "exprStmt",
+          "expr": {
+            "kind": "callValue",
+            "callee": {
+              "kind": "recordGet",
+              "obj": {
+                "kind": "varRef",
+                "localId": "handle.0",
+                "type": {
+                  "kind": "record",
+                  "shapeId": "r1"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                  "start": 1383,
+                  "end": 1389
+                }
+              },
+              "shapeId": "r1",
+              "field": "dispose",
+              "type": {
+                "kind": "func",
+                "params": [],
+                "ret": {
+                  "kind": "void"
+                }
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                "start": 1383,
+                "end": 1397
+              }
+            },
+            "args": [],
+            "type": {
+              "kind": "void"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 1383,
+              "end": 1399
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+            "start": 1383,
+            "end": 1399
+          }
+        },
+        {
+          "kind": "return",
+          "value": {
+            "kind": "ternary",
+            "cond": {
+              "kind": "unionIsTag",
+              "unionId": "u0",
+              "tag": 1,
+              "negated": false,
+              "value": {
+                "kind": "recordKeyGet",
+                "obj": {
+                  "kind": "varRef",
+                  "localId": "collected.0",
+                  "type": {
+                    "kind": "record",
+                    "shapeId": "r0"
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                    "start": 1410,
+                    "end": 1419
+                  }
+                },
+                "shapeId": "r0",
+                "key": {
+                  "kind": "strLit",
+                  "value": "probe.count",
+                  "type": {
+                    "kind": "string"
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                    "start": 1420,
+                    "end": 1433
+                  }
+                },
+                "overflowOnly": true,
+                "type": {
+                  "kind": "union",
+                  "unionId": "u0"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                  "start": 1410,
+                  "end": 1434
+                }
+              },
+              "type": {
+                "kind": "bool"
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                "start": 1410,
+                "end": 1448
+              }
+            },
+            "then": {
+              "kind": "numLit",
+              "value": -1,
+              "type": {
+                "kind": "f64"
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                "start": 1451,
+                "end": 1453
+              }
+            },
+            "else_": {
+              "kind": "numLit",
+              "value": 1,
+              "type": {
+                "kind": "f64"
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                "start": 1456,
+                "end": 1457
+              }
+            },
+            "type": {
+              "kind": "f64"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 1410,
+              "end": 1457
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+            "start": 1403,
+            "end": 1458
+          }
+        }
+      ],
+      "loc": {
+        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+        "start": 1180,
+        "end": 1460
+      }
+    },
+    {
+      "name": "%init.0",
+      "params": [],
+      "returnType": {
+        "kind": "void"
+      },
+      "locals": [],
+      "body": [
+        {
+          "kind": "if",
+          "cond": {
+            "kind": "varRef",
+            "localId": "%g.e.%loaded",
+            "type": {
+              "kind": "bool"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 0,
+              "end": 0
+            }
+          },
+          "then": [
+            {
+              "kind": "return",
+              "value": null,
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                "start": 0,
+                "end": 0
+              }
+            }
+          ],
+          "else_": null,
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+            "start": 0,
+            "end": 0
+          }
+        },
+        {
+          "kind": "assign",
+          "localId": "%g.e.%loaded",
+          "value": {
+            "kind": "boolLit",
+            "value": true,
+            "type": {
+              "kind": "bool"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 0,
+              "end": 0
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+            "start": 0,
+            "end": 0
+          }
+        },
+        {
+          "kind": "exprStmt",
+          "expr": {
+            "kind": "call",
+            "callee": "main",
+            "args": [],
+            "type": {
+              "kind": "f64"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 1462,
+              "end": 1468
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+            "start": 1462,
+            "end": 1468
+          }
+        }
+      ],
+      "loc": {
+        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+        "start": 0,
+        "end": 0
+      }
+    },
+    {
+      "name": "%main",
+      "params": [],
+      "returnType": {
+        "kind": "void"
+      },
+      "locals": [],
+      "body": [
+        {
+          "kind": "exprStmt",
+          "expr": {
+            "kind": "call",
+            "callee": "%init.0",
+            "args": [],
+            "type": {
+              "kind": "void"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 0,
+              "end": 0
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+            "start": 0,
+            "end": 0
+          }
+        }
+      ],
+      "loc": {
+        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+        "start": 0,
+        "end": 0
+      }
+    },
+    {
+      "name": "recordKeys%0",
+      "params": [
+        {
+          "localId": "rec.0",
+          "name": "rec",
+          "type": {
+            "kind": "record",
+            "shapeId": "r4"
+          }
+        }
+      ],
+      "returnType": {
+        "kind": "array",
+        "elem": {
+          "kind": "string"
+        }
+      },
+      "locals": [
+        {
+          "id": "rec.0",
+          "name": "rec",
+          "type": {
+            "kind": "record",
+            "shapeId": "r4"
+          },
+          "mutable": true,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 130,
+              "end": 133
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 107,
+              "end": 194
+            }
+          }
+        }
+      ],
+      "body": [
+        {
+          "kind": "return",
+          "value": {
+            "kind": "call",
+            "callee": "%obj.keys.1",
+            "args": [
+              {
+                "kind": "varRef",
+                "localId": "rec.0",
+                "type": {
+                  "kind": "record",
+                  "shapeId": "r4"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                  "start": 187,
+                  "end": 190
+                }
+              }
+            ],
+            "type": {
+              "kind": "array",
+              "elem": {
+                "kind": "string"
+              }
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 175,
+              "end": 191
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+            "start": 168,
+            "end": 192
+          }
+        }
+      ],
+      "loc": {
+        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+        "start": 107,
+        "end": 194
+      }
+    },
+    {
+      "name": "%fn0",
+      "params": [],
+      "returnType": {
+        "kind": "record",
+        "shapeId": "r0"
+      },
+      "locals": [],
+      "captures": [],
+      "body": [
+        {
+          "kind": "return",
+          "value": {
+            "kind": "recordLit",
+            "fields": [
+              {
+                "name": "count",
+                "value": {
+                  "kind": "numLit",
+                  "value": 1,
+                  "type": {
+                    "kind": "f64"
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                    "start": 1334,
+                    "end": 1335
+                  }
+                },
+                "overflow": true
+              }
+            ],
+            "type": {
+              "kind": "record",
+              "shapeId": "r0"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 1325,
+              "end": 1337
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+            "start": 1324,
+            "end": 1338
+          }
+        }
+      ],
+      "loc": {
+        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+        "start": 1294,
+        "end": 1338
+      }
+    },
+    {
+      "name": "%fn2_dispose",
+      "params": [],
+      "returnType": {
+        "kind": "void"
+      },
+      "locals": [
+        {
+          "id": "providers.0",
+          "name": "providers",
+          "type": {
+            "kind": "record",
+            "shapeId": "r3"
+          },
+          "mutable": false,
+          "boxed": true,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 377,
+              "end": 386
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 367,
+              "end": 1178
+            }
+          }
+        },
+        {
+          "id": "name.0",
+          "name": "name",
+          "type": {
+            "kind": "string"
+          },
+          "mutable": true,
+          "boxed": true,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 443,
+              "end": 447
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 434,
+              "end": 649
+            }
+          }
+        },
+        {
+          "id": "provider.0",
+          "name": "provider",
+          "type": {
+            "kind": "func",
+            "params": [],
+            "ret": {
+              "kind": "record",
+              "shapeId": "r0"
+            }
+          },
+          "mutable": true,
+          "boxed": true,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 449,
+              "end": 457
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 434,
+              "end": 649
+            }
+          }
+        }
+      ],
+      "captures": [
+        {
+          "localId": "providers.0",
+          "name": "providers",
+          "type": {
+            "kind": "record",
+            "shapeId": "r3"
+          }
+        },
+        {
+          "localId": "name.0",
+          "name": "name",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "localId": "provider.0",
+          "name": "provider",
+          "type": {
+            "kind": "func",
+            "params": [],
+            "ret": {
+              "kind": "record",
+              "shapeId": "r0"
+            }
+          }
+        }
+      ],
+      "body": [
+        {
+          "kind": "if",
+          "cond": {
+            "kind": "unionFuncEq",
+            "unionId": "u1",
+            "tag": 0,
+            "union": {
+              "kind": "recordKeyGet",
+              "obj": {
+                "kind": "varRef",
+                "localId": "providers.0",
+                "type": {
+                  "kind": "record",
+                  "shapeId": "r3"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                  "start": 544,
+                  "end": 553
+                }
+              },
+              "shapeId": "r3",
+              "key": {
+                "kind": "varRef",
+                "localId": "name.0",
+                "type": {
+                  "kind": "string"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                  "start": 554,
+                  "end": 558
+                }
+              },
+              "type": {
+                "kind": "union",
+                "unionId": "u1"
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                "start": 544,
+                "end": 559
+              }
+            },
+            "func": {
+              "kind": "varRef",
+              "localId": "provider.0",
+              "type": {
+                "kind": "func",
+                "params": [],
+                "ret": {
+                  "kind": "record",
+                  "shapeId": "r0"
+                }
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                "start": 564,
+                "end": 572
+              }
+            },
+            "negated": false,
+            "type": {
+              "kind": "bool"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 544,
+              "end": 572
+            }
+          },
+          "then": [
+            {
+              "kind": "recordKeyDelete",
+              "obj": {
+                "kind": "varRef",
+                "localId": "providers.0",
+                "type": {
+                  "kind": "record",
+                  "shapeId": "r3"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                  "start": 595,
+                  "end": 604
+                }
+              },
+              "shapeId": "r3",
+              "key": {
+                "kind": "varRef",
+                "localId": "name.0",
+                "type": {
+                  "kind": "string"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                  "start": 605,
+                  "end": 609
+                }
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                "start": 588,
+                "end": 610
+              }
+            }
+          ],
+          "else_": null,
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+            "start": 540,
+            "end": 623
+          }
+        }
+      ],
+      "loc": {
+        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+        "start": 518,
+        "end": 633
+      }
+    },
+    {
+      "name": "%fn1_register",
+      "params": [
+        {
+          "localId": "name.0",
+          "name": "name",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "localId": "provider.0",
+          "name": "provider",
+          "type": {
+            "kind": "func",
+            "params": [],
+            "ret": {
+              "kind": "record",
+              "shapeId": "r0"
+            }
+          }
+        }
+      ],
+      "returnType": {
+        "kind": "record",
+        "shapeId": "r1"
+      },
+      "locals": [
+        {
+          "id": "name.0",
+          "name": "name",
+          "type": {
+            "kind": "string"
+          },
+          "mutable": true,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 443,
+              "end": 447
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 434,
+              "end": 649
+            }
+          },
+          "boxed": true
+        },
+        {
+          "id": "provider.0",
+          "name": "provider",
+          "type": {
+            "kind": "func",
+            "params": [],
+            "ret": {
+              "kind": "record",
+              "shapeId": "r0"
+            }
+          },
+          "mutable": true,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 449,
+              "end": 457
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 434,
+              "end": 649
+            }
+          },
+          "boxed": true
+        },
+        {
+          "id": "providers.0",
+          "name": "providers",
+          "type": {
+            "kind": "record",
+            "shapeId": "r3"
+          },
+          "mutable": false,
+          "boxed": true,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 377,
+              "end": 386
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 367,
+              "end": 1178
+            }
+          }
+        }
+      ],
+      "captures": [
+        {
+          "localId": "providers.0",
+          "name": "providers",
+          "type": {
+            "kind": "record",
+            "shapeId": "r3"
+          }
+        }
+      ],
+      "body": [
+        {
+          "kind": "recordKeySet",
+          "obj": {
+            "kind": "varRef",
+            "localId": "providers.0",
+            "type": {
+              "kind": "record",
+              "shapeId": "r3"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 467,
+              "end": 476
+            }
+          },
+          "shapeId": "r3",
+          "key": {
+            "kind": "varRef",
+            "localId": "name.0",
+            "type": {
+              "kind": "string"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 477,
+              "end": 481
+            }
+          },
+          "value": {
+            "kind": "varRef",
+            "localId": "provider.0",
+            "type": {
+              "kind": "func",
+              "params": [],
+              "ret": {
+                "kind": "record",
+                "shapeId": "r0"
+              }
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 485,
+              "end": 493
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+            "start": 467,
+            "end": 493
+          }
+        },
+        {
+          "kind": "return",
+          "value": {
+            "kind": "recordLit",
+            "fields": [
+              {
+                "name": "dispose",
+                "value": {
+                  "kind": "closure",
+                  "fnName": "%fn2_dispose",
+                  "captures": [
+                    "providers.0",
+                    "name.0",
+                    "provider.0"
+                  ],
+                  "type": {
+                    "kind": "func",
+                    "params": [],
+                    "ret": {
+                      "kind": "void"
+                    }
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                    "start": 518,
+                    "end": 633
+                  }
+                }
+              }
+            ],
+            "type": {
+              "kind": "record",
+              "shapeId": "r1"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 508,
+              "end": 642
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+            "start": 501,
+            "end": 643
+          }
+        }
+      ],
+      "loc": {
+        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+        "start": 434,
+        "end": 649
+      }
+    },
+    {
+      "name": "%rec.capture.0",
+      "params": [
+        {
+          "localId": "s.0",
+          "name": "s",
+          "type": {
+            "kind": "record",
+            "shapeId": "r3"
+          }
+        }
+      ],
+      "returnType": {
+        "kind": "record",
+        "shapeId": "r4"
+      },
+      "locals": [
+        {
+          "id": "s.0",
+          "name": "s",
+          "type": {
+            "kind": "record",
+            "shapeId": "r3"
+          },
+          "mutable": true
+        },
+        {
+          "id": "out.0",
+          "name": "out",
+          "type": {
+            "kind": "record",
+            "shapeId": "r4"
+          },
+          "mutable": false
+        },
+        {
+          "id": "ks.0",
+          "name": "ks",
+          "type": {
+            "kind": "array",
+            "elem": {
+              "kind": "string"
+            }
+          },
+          "mutable": false
+        },
+        {
+          "id": "i.0",
+          "name": "i",
+          "type": {
+            "kind": "f64"
+          },
+          "mutable": true
+        },
+        {
+          "id": "k.0",
+          "name": "k",
+          "type": {
+            "kind": "string"
+          },
+          "mutable": false
+        }
+      ],
+      "body": [
+        {
+          "kind": "varDecl",
+          "localId": "out.0",
+          "init": {
+            "kind": "recordLit",
+            "fields": [],
+            "type": {
+              "kind": "record",
+              "shapeId": "r4"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 762,
+              "end": 771
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+            "start": 762,
+            "end": 771
+          }
+        },
+        {
+          "kind": "varDecl",
+          "localId": "ks.0",
+          "init": {
+            "kind": "recordOvfKeys",
+            "obj": {
+              "kind": "varRef",
+              "localId": "s.0",
+              "type": {
+                "kind": "record",
+                "shapeId": "r3"
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                "start": 762,
+                "end": 771
+              }
+            },
+            "shapeId": "r3",
+            "type": {
+              "kind": "array",
+              "elem": {
+                "kind": "string"
+              }
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 762,
+              "end": 771
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+            "start": 762,
+            "end": 771
+          }
+        },
+        {
+          "kind": "for",
+          "init": {
+            "kind": "varDecl",
+            "localId": "i.0",
+            "init": {
+              "kind": "numLit",
+              "value": 0,
+              "type": {
+                "kind": "f64"
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                "start": 762,
+                "end": 771
+              }
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 762,
+              "end": 771
+            }
+          },
+          "cond": {
+            "kind": "bin",
+            "op": "<",
+            "left": {
+              "kind": "varRef",
+              "localId": "i.0",
+              "type": {
+                "kind": "f64"
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                "start": 762,
+                "end": 771
+              }
+            },
+            "right": {
+              "kind": "arrIntrinsic",
+              "method": "length",
+              "receiver": {
+                "kind": "varRef",
+                "localId": "ks.0",
+                "type": {
+                  "kind": "array",
+                  "elem": {
+                    "kind": "string"
+                  }
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                  "start": 762,
+                  "end": 771
+                }
+              },
+              "args": [],
+              "type": {
+                "kind": "f64"
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                "start": 762,
+                "end": 771
+              }
+            },
+            "type": {
+              "kind": "bool"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 762,
+              "end": 771
+            }
+          },
+          "update": {
+            "kind": "assign",
+            "localId": "i.0",
+            "value": {
+              "kind": "bin",
+              "op": "+",
+              "left": {
+                "kind": "varRef",
+                "localId": "i.0",
+                "type": {
+                  "kind": "f64"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                  "start": 762,
+                  "end": 771
+                }
+              },
+              "right": {
+                "kind": "numLit",
+                "value": 1,
+                "type": {
+                  "kind": "f64"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                  "start": 762,
+                  "end": 771
+                }
+              },
+              "type": {
+                "kind": "f64"
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                "start": 762,
+                "end": 771
+              }
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 762,
+              "end": 771
+            }
+          },
+          "body": [
+            {
+              "kind": "varDecl",
+              "localId": "k.0",
+              "init": {
+                "kind": "arrayGet",
+                "arr": {
+                  "kind": "varRef",
+                  "localId": "ks.0",
+                  "type": {
+                    "kind": "array",
+                    "elem": {
+                      "kind": "string"
+                    }
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                    "start": 762,
+                    "end": 771
+                  }
+                },
+                "index": {
+                  "kind": "varRef",
+                  "localId": "i.0",
+                  "type": {
+                    "kind": "f64"
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                    "start": 762,
+                    "end": 771
+                  }
+                },
+                "type": {
+                  "kind": "string"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                  "start": 762,
+                  "end": 771
+                }
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                "start": 762,
+                "end": 771
+              }
+            },
+            {
+              "kind": "recordKeySet",
+              "obj": {
+                "kind": "varRef",
+                "localId": "out.0",
+                "type": {
+                  "kind": "record",
+                  "shapeId": "r4"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                  "start": 762,
+                  "end": 771
+                }
+              },
+              "shapeId": "r4",
+              "key": {
+                "kind": "varRef",
+                "localId": "k.0",
+                "type": {
+                  "kind": "string"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                  "start": 762,
+                  "end": 771
+                }
+              },
+              "value": {
+                "kind": "dynFrom",
+                "value": {
+                  "kind": "recordKeyGet",
+                  "obj": {
+                    "kind": "varRef",
+                    "localId": "s.0",
+                    "type": {
+                      "kind": "record",
+                      "shapeId": "r3"
+                    },
+                    "loc": {
+                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                      "start": 762,
+                      "end": 771
+                    }
+                  },
+                  "shapeId": "r3",
+                  "key": {
+                    "kind": "varRef",
+                    "localId": "k.0",
+                    "type": {
+                      "kind": "string"
+                    },
+                    "loc": {
+                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                      "start": 762,
+                      "end": 771
+                    }
+                  },
+                  "overflowOnly": true,
+                  "type": {
+                    "kind": "func",
+                    "params": [],
+                    "ret": {
+                      "kind": "record",
+                      "shapeId": "r0"
+                    }
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                    "start": 762,
+                    "end": 771
+                  }
+                },
+                "type": {
+                  "kind": "dyn"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                  "start": 762,
+                  "end": 771
+                }
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                "start": 762,
+                "end": 771
+              }
+            }
+          ],
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+            "start": 762,
+            "end": 771
+          }
+        },
+        {
+          "kind": "return",
+          "value": {
+            "kind": "varRef",
+            "localId": "out.0",
+            "type": {
+              "kind": "record",
+              "shapeId": "r4"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 762,
+              "end": 771
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+            "start": 762,
+            "end": 771
+          }
+        }
+      ],
+      "loc": {
+        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+        "start": 762,
+        "end": 771
+      }
+    },
+    {
+      "name": "%obj.entries.0",
+      "params": [
+        {
+          "localId": "r.0",
+          "name": "r",
+          "type": {
+            "kind": "record",
+            "shapeId": "r0"
+          }
+        }
+      ],
+      "returnType": {
+        "kind": "array",
+        "elem": {
+          "kind": "record",
+          "shapeId": "r5"
+        }
+      },
+      "locals": [
+        {
+          "id": "r.0",
+          "name": "r",
+          "type": {
+            "kind": "record",
+            "shapeId": "r0"
+          },
+          "mutable": true
+        },
+        {
+          "id": "out.0",
+          "name": "out",
+          "type": {
+            "kind": "array",
+            "elem": {
+              "kind": "record",
+              "shapeId": "r5"
+            }
+          },
+          "mutable": false
+        },
+        {
+          "id": "ks.0",
+          "name": "ks",
+          "type": {
+            "kind": "array",
+            "elem": {
+              "kind": "string"
+            }
+          },
+          "mutable": false
+        },
+        {
+          "id": "i.0",
+          "name": "i",
+          "type": {
+            "kind": "f64"
+          },
+          "mutable": true
+        },
+        {
+          "id": "k.0",
+          "name": "k",
+          "type": {
+            "kind": "string"
+          },
+          "mutable": false
+        }
+      ],
+      "body": [
+        {
+          "kind": "varDecl",
+          "localId": "out.0",
+          "init": {
+            "kind": "arrayLit",
+            "elems": [],
+            "type": {
+              "kind": "array",
+              "elem": {
+                "kind": "record",
+                "shapeId": "r5"
+              }
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 914,
+              "end": 940
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+            "start": 914,
+            "end": 940
+          }
+        },
+        {
+          "kind": "varDecl",
+          "localId": "ks.0",
+          "init": {
+            "kind": "recordOvfKeys",
+            "obj": {
+              "kind": "varRef",
+              "localId": "r.0",
+              "type": {
+                "kind": "record",
+                "shapeId": "r0"
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                "start": 914,
+                "end": 940
+              }
+            },
+            "shapeId": "r0",
+            "type": {
+              "kind": "array",
+              "elem": {
+                "kind": "string"
+              }
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 914,
+              "end": 940
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+            "start": 914,
+            "end": 940
+          }
+        },
+        {
+          "kind": "for",
+          "init": {
+            "kind": "varDecl",
+            "localId": "i.0",
+            "init": {
+              "kind": "numLit",
+              "value": 0,
+              "type": {
+                "kind": "f64"
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                "start": 914,
+                "end": 940
+              }
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 914,
+              "end": 940
+            }
+          },
+          "cond": {
+            "kind": "bin",
+            "op": "<",
+            "left": {
+              "kind": "varRef",
+              "localId": "i.0",
+              "type": {
+                "kind": "f64"
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                "start": 914,
+                "end": 940
+              }
+            },
+            "right": {
+              "kind": "arrIntrinsic",
+              "method": "length",
+              "receiver": {
+                "kind": "varRef",
+                "localId": "ks.0",
+                "type": {
+                  "kind": "array",
+                  "elem": {
+                    "kind": "string"
+                  }
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                  "start": 914,
+                  "end": 940
+                }
+              },
+              "args": [],
+              "type": {
+                "kind": "f64"
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                "start": 914,
+                "end": 940
+              }
+            },
+            "type": {
+              "kind": "bool"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 914,
+              "end": 940
+            }
+          },
+          "update": {
+            "kind": "assign",
+            "localId": "i.0",
+            "value": {
+              "kind": "bin",
+              "op": "+",
+              "left": {
+                "kind": "varRef",
+                "localId": "i.0",
+                "type": {
+                  "kind": "f64"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                  "start": 914,
+                  "end": 940
+                }
+              },
+              "right": {
+                "kind": "numLit",
+                "value": 1,
+                "type": {
+                  "kind": "f64"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                  "start": 914,
+                  "end": 940
+                }
+              },
+              "type": {
+                "kind": "f64"
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                "start": 914,
+                "end": 940
+              }
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 914,
+              "end": 940
+            }
+          },
+          "body": [
+            {
+              "kind": "varDecl",
+              "localId": "k.0",
+              "init": {
+                "kind": "arrayGet",
+                "arr": {
+                  "kind": "varRef",
+                  "localId": "ks.0",
+                  "type": {
+                    "kind": "array",
+                    "elem": {
+                      "kind": "string"
+                    }
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                    "start": 914,
+                    "end": 940
+                  }
+                },
+                "index": {
+                  "kind": "varRef",
+                  "localId": "i.0",
+                  "type": {
+                    "kind": "f64"
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                    "start": 914,
+                    "end": 940
+                  }
+                },
+                "type": {
+                  "kind": "string"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                  "start": 914,
+                  "end": 940
+                }
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                "start": 914,
+                "end": 940
+              }
+            },
+            {
+              "kind": "exprStmt",
+              "expr": {
+                "kind": "arrIntrinsic",
+                "method": "push",
+                "receiver": {
+                  "kind": "varRef",
+                  "localId": "out.0",
+                  "type": {
+                    "kind": "array",
+                    "elem": {
+                      "kind": "record",
+                      "shapeId": "r5"
+                    }
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                    "start": 914,
+                    "end": 940
+                  }
+                },
+                "args": [
+                  {
+                    "kind": "recordLit",
+                    "fields": [
+                      {
+                        "name": "0",
+                        "value": {
+                          "kind": "varRef",
+                          "localId": "k.0",
+                          "type": {
+                            "kind": "string"
+                          },
+                          "loc": {
+                            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                            "start": 914,
+                            "end": 940
+                          }
+                        }
+                      },
+                      {
+                        "name": "1",
+                        "value": {
+                          "kind": "recordKeyGet",
+                          "obj": {
+                            "kind": "varRef",
+                            "localId": "r.0",
+                            "type": {
+                              "kind": "record",
+                              "shapeId": "r0"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                              "start": 914,
+                              "end": 940
+                            }
+                          },
+                          "shapeId": "r0",
+                          "key": {
+                            "kind": "varRef",
+                            "localId": "k.0",
+                            "type": {
+                              "kind": "string"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                              "start": 914,
+                              "end": 940
+                            }
+                          },
+                          "overflowOnly": true,
+                          "type": {
+                            "kind": "f64"
+                          },
+                          "loc": {
+                            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                            "start": 914,
+                            "end": 940
+                          }
+                        }
+                      }
+                    ],
+                    "type": {
+                      "kind": "record",
+                      "shapeId": "r5"
+                    },
+                    "loc": {
+                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                      "start": 914,
+                      "end": 940
+                    }
+                  }
+                ],
+                "type": {
+                  "kind": "f64"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                  "start": 914,
+                  "end": 940
+                }
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                "start": 914,
+                "end": 940
+              }
+            }
+          ],
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+            "start": 914,
+            "end": 940
+          }
+        },
+        {
+          "kind": "return",
+          "value": {
+            "kind": "varRef",
+            "localId": "out.0",
+            "type": {
+              "kind": "array",
+              "elem": {
+                "kind": "record",
+                "shapeId": "r5"
+              }
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 914,
+              "end": 940
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+            "start": 914,
+            "end": 940
+          }
+        }
+      ],
+      "loc": {
+        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+        "start": 914,
+        "end": 940
+      }
+    },
+    {
+      "name": "%unit.strand.0",
+      "params": [],
+      "returnType": {
+        "kind": "string"
+      },
+      "locals": [],
+      "body": [
+        {
+          "kind": "throw",
+          "value": {
+            "kind": "libCall",
+            "fn": "error.new",
+            "args": [
+              {
+                "kind": "strLit",
+                "value": "undefined is not representable in a 'string' slot (a value narrowed or asserted past the type still held it)",
+                "type": {
+                  "kind": "string"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                  "start": 899,
+                  "end": 902
+                }
+              }
+            ],
+            "type": {
+              "kind": "object",
+              "className": "%TypeError"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 899,
+              "end": 902
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+            "start": 899,
+            "end": 902
+          }
+        }
+      ],
+      "loc": {
+        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+        "start": 899,
+        "end": 902
+      }
+    },
+    {
+      "name": "%unit.strand.1",
+      "params": [],
+      "returnType": {
+        "kind": "f64"
+      },
+      "locals": [],
+      "body": [
+        {
+          "kind": "throw",
+          "value": {
+            "kind": "libCall",
+            "fn": "error.new",
+            "args": [
+              {
+                "kind": "strLit",
+                "value": "undefined is not representable in a 'number' slot (a value narrowed or asserted past the type still held it)",
+                "type": {
+                  "kind": "string"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                  "start": 904,
+                  "end": 909
+                }
+              }
+            ],
+            "type": {
+              "kind": "object",
+              "className": "%TypeError"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 904,
+              "end": 909
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+            "start": 904,
+            "end": 909
+          }
+        }
+      ],
+      "loc": {
+        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+        "start": 904,
+        "end": 909
+      }
+    },
+    {
+      "name": "%fn3_collect",
+      "params": [],
+      "returnType": {
+        "kind": "record",
+        "shapeId": "r0"
+      },
+      "locals": [
+        {
+          "id": "result.0",
+          "name": "result",
+          "type": {
+            "kind": "record",
+            "shapeId": "r0"
+          },
+          "mutable": false,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 679,
+              "end": 685
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 665,
+              "end": 1170
+            }
+          }
+        },
+        {
+          "id": "providers.0",
+          "name": "providers",
+          "type": {
+            "kind": "record",
+            "shapeId": "r3"
+          },
+          "mutable": false,
+          "boxed": true,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 377,
+              "end": 386
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 367,
+              "end": 1178
+            }
+          }
+        },
+        {
+          "id": "keysOf.0",
+          "name": "keysOf",
+          "type": {
+            "kind": "record",
+            "shapeId": "r4"
+          },
+          "mutable": false,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 728,
+              "end": 734
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 665,
+              "end": 1170
+            }
+          }
+        },
+        {
+          "id": "%arrayIterator.0",
+          "name": "%arrayIterator",
+          "type": {
+            "kind": "array",
+            "elem": {
+              "kind": "string"
+            }
+          },
+          "mutable": false
+        },
+        {
+          "id": "%arrayCursor.0",
+          "name": "%arrayCursor",
+          "type": {
+            "kind": "f64"
+          },
+          "mutable": true
+        },
+        {
+          "id": "name.0",
+          "name": "name",
+          "type": {
+            "kind": "union",
+            "unionId": "u2"
+          },
+          "mutable": false,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 790,
+              "end": 794
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 779,
+              "end": 1143
+            }
+          }
+        },
+        {
+          "id": "provider.0",
+          "name": "provider",
+          "type": {
+            "kind": "func",
+            "params": [],
+            "ret": {
+              "kind": "record",
+              "shapeId": "r0"
+            }
+          },
+          "mutable": false,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 834,
+              "end": 842
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 818,
+              "end": 1143
+            }
+          }
+        },
+        {
+          "id": "%arrayIterator.1",
+          "name": "%arrayIterator",
+          "type": {
+            "kind": "array",
+            "elem": {
+              "kind": "record",
+              "shapeId": "r5"
+            }
+          },
+          "mutable": false
+        },
+        {
+          "id": "%arrayCursor.1",
+          "name": "%arrayCursor",
+          "type": {
+            "kind": "f64"
+          },
+          "mutable": true
+        },
+        {
+          "id": "%destr.0",
+          "name": "%destr",
+          "type": {
+            "kind": "union",
+            "unionId": "u3"
+          },
+          "mutable": false
+        },
+        {
+          "id": "key.0",
+          "name": "key",
+          "type": {
+            "kind": "string"
+          },
+          "mutable": true,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 899,
+              "end": 902
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 887,
+              "end": 1088
+            }
+          }
+        },
+        {
+          "id": "value.0",
+          "name": "value",
+          "type": {
+            "kind": "f64"
+          },
+          "mutable": true,
+          "source": {
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 904,
+              "end": 909
+            },
+            "scope": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 887,
+              "end": 1088
+            }
+          }
+        }
+      ],
+      "captures": [
+        {
+          "localId": "providers.0",
+          "name": "providers",
+          "type": {
+            "kind": "record",
+            "shapeId": "r3"
+          }
+        }
+      ],
+      "body": [
+        {
+          "kind": "varDecl",
+          "localId": "result.0",
+          "init": {
+            "kind": "recordLit",
+            "fields": [],
+            "type": {
+              "kind": "record",
+              "shapeId": "r0"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 712,
+              "end": 714
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+            "start": 679,
+            "end": 714
+          }
+        },
+        {
+          "kind": "varDecl",
+          "localId": "keysOf.0",
+          "init": {
+            "kind": "call",
+            "callee": "%rec.capture.0",
+            "args": [
+              {
+                "kind": "varRef",
+                "localId": "providers.0",
+                "type": {
+                  "kind": "record",
+                  "shapeId": "r3"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                  "start": 762,
+                  "end": 771
+                }
+              }
+            ],
+            "type": {
+              "kind": "record",
+              "shapeId": "r4"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 762,
+              "end": 771
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+            "start": 728,
+            "end": 771
+          }
+        },
+        {
+          "kind": "varDecl",
+          "localId": "key.0",
+          "init": null,
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+            "start": 899,
+            "end": 902
+          }
+        },
+        {
+          "kind": "varDecl",
+          "localId": "value.0",
+          "init": null,
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+            "start": 904,
+            "end": 909
+          }
+        },
+        {
+          "kind": "block",
+          "body": [
+            {
+              "kind": "varDecl",
+              "localId": "%arrayIterator.0",
+              "init": {
+                "kind": "call",
+                "callee": "recordKeys%0",
+                "args": [
+                  {
+                    "kind": "varRef",
+                    "localId": "keysOf.0",
+                    "type": {
+                      "kind": "record",
+                      "shapeId": "r4"
+                    },
+                    "loc": {
+                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                      "start": 809,
+                      "end": 815
+                    }
+                  }
+                ],
+                "type": {
+                  "kind": "array",
+                  "elem": {
+                    "kind": "string"
+                  }
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                  "start": 798,
+                  "end": 816
+                }
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                "start": 779,
+                "end": 1143
+              }
+            },
+            {
+              "kind": "for",
+              "init": {
+                "kind": "varDecl",
+                "localId": "%arrayCursor.0",
+                "init": {
+                  "kind": "numLit",
+                  "value": 0,
+                  "type": {
+                    "kind": "f64"
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                    "start": 779,
+                    "end": 1143
+                  }
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                  "start": 779,
+                  "end": 1143
+                }
+              },
+              "cond": {
+                "kind": "bin",
+                "op": "<",
+                "left": {
+                  "kind": "varRef",
+                  "localId": "%arrayCursor.0",
+                  "type": {
+                    "kind": "f64"
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                    "start": 779,
+                    "end": 1143
+                  }
+                },
+                "right": {
+                  "kind": "arrIntrinsic",
+                  "method": "length",
+                  "receiver": {
+                    "kind": "varRef",
+                    "localId": "%arrayIterator.0",
+                    "type": {
+                      "kind": "array",
+                      "elem": {
+                        "kind": "string"
+                      }
+                    },
+                    "loc": {
+                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                      "start": 779,
+                      "end": 1143
+                    }
+                  },
+                  "args": [],
+                  "type": {
+                    "kind": "f64"
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                    "start": 779,
+                    "end": 1143
+                  }
+                },
+                "type": {
+                  "kind": "bool"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                  "start": 779,
+                  "end": 1143
+                }
+              },
+              "update": {
+                "kind": "assign",
+                "localId": "%arrayCursor.0",
+                "value": {
+                  "kind": "bin",
+                  "op": "+",
+                  "left": {
+                    "kind": "varRef",
+                    "localId": "%arrayCursor.0",
+                    "type": {
+                      "kind": "f64"
+                    },
+                    "loc": {
+                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                      "start": 779,
+                      "end": 1143
+                    }
+                  },
+                  "right": {
+                    "kind": "numLit",
+                    "value": 1,
+                    "type": {
+                      "kind": "f64"
+                    },
+                    "loc": {
+                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                      "start": 779,
+                      "end": 1143
+                    }
+                  },
+                  "type": {
+                    "kind": "f64"
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                    "start": 779,
+                    "end": 1143
+                  }
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                  "start": 779,
+                  "end": 1143
+                }
+              },
+              "body": [
+                {
+                  "kind": "varDecl",
+                  "localId": "name.0",
+                  "init": {
+                    "kind": "ternary",
+                    "cond": {
+                      "kind": "bin",
+                      "op": "===",
+                      "left": {
+                        "kind": "arrayState",
+                        "arr": {
+                          "kind": "varRef",
+                          "localId": "%arrayIterator.0",
+                          "type": {
+                            "kind": "array",
+                            "elem": {
+                              "kind": "string"
+                            }
+                          },
+                          "loc": {
+                            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                            "start": 779,
+                            "end": 1143
+                          }
+                        },
+                        "index": {
+                          "kind": "varRef",
+                          "localId": "%arrayCursor.0",
+                          "type": {
+                            "kind": "f64"
+                          },
+                          "loc": {
+                            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                            "start": 779,
+                            "end": 1143
+                          }
+                        },
+                        "type": {
+                          "kind": "f64"
+                        },
+                        "loc": {
+                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                          "start": 779,
+                          "end": 1143
+                        }
+                      },
+                      "right": {
+                        "kind": "numLit",
+                        "value": 1,
+                        "type": {
+                          "kind": "f64"
+                        },
+                        "loc": {
+                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                          "start": 779,
+                          "end": 1143
+                        }
+                      },
+                      "type": {
+                        "kind": "bool"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                        "start": 779,
+                        "end": 1143
+                      }
+                    },
+                    "then": {
+                      "kind": "unionWrap",
+                      "unionId": "u2",
+                      "tag": 0,
+                      "value": {
+                        "kind": "arrayGet",
+                        "arr": {
+                          "kind": "varRef",
+                          "localId": "%arrayIterator.0",
+                          "type": {
+                            "kind": "array",
+                            "elem": {
+                              "kind": "string"
+                            }
+                          },
+                          "loc": {
+                            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                            "start": 779,
+                            "end": 1143
+                          }
+                        },
+                        "index": {
+                          "kind": "varRef",
+                          "localId": "%arrayCursor.0",
+                          "type": {
+                            "kind": "f64"
+                          },
+                          "loc": {
+                            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                            "start": 779,
+                            "end": 1143
+                          }
+                        },
+                        "type": {
+                          "kind": "string"
+                        },
+                        "loc": {
+                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                          "start": 779,
+                          "end": 1143
+                        }
+                      },
+                      "type": {
+                        "kind": "union",
+                        "unionId": "u2"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                        "start": 779,
+                        "end": 1143
+                      }
+                    },
+                    "else_": {
+                      "kind": "unionWrap",
+                      "unionId": "u2",
+                      "tag": 1,
+                      "value": {
+                        "kind": "unitLit",
+                        "unit": "undefined",
+                        "type": {
+                          "kind": "undefinedT"
+                        },
+                        "loc": {
+                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                          "start": 779,
+                          "end": 1143
+                        }
+                      },
+                      "type": {
+                        "kind": "union",
+                        "unionId": "u2"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                        "start": 779,
+                        "end": 1143
+                      }
+                    },
+                    "type": {
+                      "kind": "union",
+                      "unionId": "u2"
+                    },
+                    "loc": {
+                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                      "start": 779,
+                      "end": 1143
+                    }
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                    "start": 779,
+                    "end": 1143
+                  }
+                },
+                {
+                  "kind": "varDecl",
+                  "localId": "provider.0",
+                  "init": {
+                    "kind": "recordKeyGet",
+                    "obj": {
+                      "kind": "varRef",
+                      "localId": "providers.0",
+                      "type": {
+                        "kind": "record",
+                        "shapeId": "r3"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                        "start": 845,
+                        "end": 854
+                      }
+                    },
+                    "shapeId": "r3",
+                    "key": {
+                      "kind": "toString",
+                      "operand": {
+                        "kind": "varRef",
+                        "localId": "name.0",
+                        "type": {
+                          "kind": "union",
+                          "unionId": "u2"
+                        },
+                        "loc": {
+                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                          "start": 855,
+                          "end": 859
+                        }
+                      },
+                      "type": {
+                        "kind": "string"
+                      },
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                        "start": 855,
+                        "end": 859
+                      }
+                    },
+                    "type": {
+                      "kind": "func",
+                      "params": [],
+                      "ret": {
+                        "kind": "record",
+                        "shapeId": "r0"
+                      }
+                    },
+                    "loc": {
+                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                      "start": 845,
+                      "end": 860
+                    }
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                    "start": 834,
+                    "end": 861
+                  }
+                },
+                {
+                  "kind": "tryCatch",
+                  "tryBody": [
+                    {
+                      "kind": "block",
+                      "body": [
+                        {
+                          "kind": "varDecl",
+                          "localId": "%arrayIterator.1",
+                          "init": {
+                            "kind": "call",
+                            "callee": "%obj.entries.0",
+                            "args": [
+                              {
+                                "kind": "callValue",
+                                "callee": {
+                                  "kind": "varRef",
+                                  "localId": "provider.0",
+                                  "type": {
+                                    "kind": "func",
+                                    "params": [],
+                                    "ret": {
+                                      "kind": "record",
+                                      "shapeId": "r0"
+                                    }
+                                  },
+                                  "loc": {
+                                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                    "start": 929,
+                                    "end": 937
+                                  }
+                                },
+                                "args": [],
+                                "type": {
+                                  "kind": "record",
+                                  "shapeId": "r0"
+                                },
+                                "loc": {
+                                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                  "start": 929,
+                                  "end": 939
+                                }
+                              }
+                            ],
+                            "type": {
+                              "kind": "array",
+                              "elem": {
+                                "kind": "record",
+                                "shapeId": "r5"
+                              }
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                              "start": 914,
+                              "end": 940
+                            }
+                          },
+                          "loc": {
+                            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                            "start": 887,
+                            "end": 1088
+                          }
+                        },
+                        {
+                          "kind": "for",
+                          "init": {
+                            "kind": "varDecl",
+                            "localId": "%arrayCursor.1",
+                            "init": {
+                              "kind": "numLit",
+                              "value": 0,
+                              "type": {
+                                "kind": "f64"
+                              },
+                              "loc": {
+                                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                "start": 887,
+                                "end": 1088
+                              }
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                              "start": 887,
+                              "end": 1088
+                            }
+                          },
+                          "cond": {
+                            "kind": "bin",
+                            "op": "<",
+                            "left": {
+                              "kind": "varRef",
+                              "localId": "%arrayCursor.1",
+                              "type": {
+                                "kind": "f64"
+                              },
+                              "loc": {
+                                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                "start": 887,
+                                "end": 1088
+                              }
+                            },
+                            "right": {
+                              "kind": "arrIntrinsic",
+                              "method": "length",
+                              "receiver": {
+                                "kind": "varRef",
+                                "localId": "%arrayIterator.1",
+                                "type": {
+                                  "kind": "array",
+                                  "elem": {
+                                    "kind": "record",
+                                    "shapeId": "r5"
+                                  }
+                                },
+                                "loc": {
+                                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                  "start": 887,
+                                  "end": 1088
+                                }
+                              },
+                              "args": [],
+                              "type": {
+                                "kind": "f64"
+                              },
+                              "loc": {
+                                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                "start": 887,
+                                "end": 1088
+                              }
+                            },
+                            "type": {
+                              "kind": "bool"
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                              "start": 887,
+                              "end": 1088
+                            }
+                          },
+                          "update": {
+                            "kind": "assign",
+                            "localId": "%arrayCursor.1",
+                            "value": {
+                              "kind": "bin",
+                              "op": "+",
+                              "left": {
+                                "kind": "varRef",
+                                "localId": "%arrayCursor.1",
+                                "type": {
+                                  "kind": "f64"
+                                },
+                                "loc": {
+                                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                  "start": 887,
+                                  "end": 1088
+                                }
+                              },
+                              "right": {
+                                "kind": "numLit",
+                                "value": 1,
+                                "type": {
+                                  "kind": "f64"
+                                },
+                                "loc": {
+                                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                  "start": 887,
+                                  "end": 1088
+                                }
+                              },
+                              "type": {
+                                "kind": "f64"
+                              },
+                              "loc": {
+                                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                "start": 887,
+                                "end": 1088
+                              }
+                            },
+                            "loc": {
+                              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                              "start": 887,
+                              "end": 1088
+                            }
+                          },
+                          "body": [
+                            {
+                              "kind": "varDecl",
+                              "localId": "%destr.0",
+                              "init": {
+                                "kind": "ternary",
+                                "cond": {
+                                  "kind": "bin",
+                                  "op": "===",
+                                  "left": {
+                                    "kind": "arrayState",
+                                    "arr": {
+                                      "kind": "varRef",
+                                      "localId": "%arrayIterator.1",
+                                      "type": {
+                                        "kind": "array",
+                                        "elem": {
+                                          "kind": "record",
+                                          "shapeId": "r5"
+                                        }
+                                      },
+                                      "loc": {
+                                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                        "start": 887,
+                                        "end": 1088
+                                      }
+                                    },
+                                    "index": {
+                                      "kind": "varRef",
+                                      "localId": "%arrayCursor.1",
+                                      "type": {
+                                        "kind": "f64"
+                                      },
+                                      "loc": {
+                                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                        "start": 887,
+                                        "end": 1088
+                                      }
+                                    },
+                                    "type": {
+                                      "kind": "f64"
+                                    },
+                                    "loc": {
+                                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                      "start": 887,
+                                      "end": 1088
+                                    }
+                                  },
+                                  "right": {
+                                    "kind": "numLit",
+                                    "value": 1,
+                                    "type": {
+                                      "kind": "f64"
+                                    },
+                                    "loc": {
+                                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                      "start": 887,
+                                      "end": 1088
+                                    }
+                                  },
+                                  "type": {
+                                    "kind": "bool"
+                                  },
+                                  "loc": {
+                                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                    "start": 887,
+                                    "end": 1088
+                                  }
+                                },
+                                "then": {
+                                  "kind": "unionWrap",
+                                  "unionId": "u3",
+                                  "tag": 0,
+                                  "value": {
+                                    "kind": "arrayGet",
+                                    "arr": {
+                                      "kind": "varRef",
+                                      "localId": "%arrayIterator.1",
+                                      "type": {
+                                        "kind": "array",
+                                        "elem": {
+                                          "kind": "record",
+                                          "shapeId": "r5"
+                                        }
+                                      },
+                                      "loc": {
+                                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                        "start": 887,
+                                        "end": 1088
+                                      }
+                                    },
+                                    "index": {
+                                      "kind": "varRef",
+                                      "localId": "%arrayCursor.1",
+                                      "type": {
+                                        "kind": "f64"
+                                      },
+                                      "loc": {
+                                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                        "start": 887,
+                                        "end": 1088
+                                      }
+                                    },
+                                    "type": {
+                                      "kind": "record",
+                                      "shapeId": "r5"
+                                    },
+                                    "loc": {
+                                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                      "start": 887,
+                                      "end": 1088
+                                    }
+                                  },
+                                  "type": {
+                                    "kind": "union",
+                                    "unionId": "u3"
+                                  },
+                                  "loc": {
+                                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                    "start": 887,
+                                    "end": 1088
+                                  }
+                                },
+                                "else_": {
+                                  "kind": "unionWrap",
+                                  "unionId": "u3",
+                                  "tag": 1,
+                                  "value": {
+                                    "kind": "unitLit",
+                                    "unit": "undefined",
+                                    "type": {
+                                      "kind": "undefinedT"
+                                    },
+                                    "loc": {
+                                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                      "start": 887,
+                                      "end": 1088
+                                    }
+                                  },
+                                  "type": {
+                                    "kind": "union",
+                                    "unionId": "u3"
+                                  },
+                                  "loc": {
+                                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                    "start": 887,
+                                    "end": 1088
+                                  }
+                                },
+                                "type": {
+                                  "kind": "union",
+                                  "unionId": "u3"
+                                },
+                                "loc": {
+                                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                  "start": 887,
+                                  "end": 1088
+                                }
+                              },
+                              "loc": {
+                                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                "start": 887,
+                                "end": 1088
+                              }
+                            },
+                            {
+                              "kind": "if",
+                              "cond": {
+                                "kind": "unionIsTag",
+                                "unionId": "u3",
+                                "tag": 1,
+                                "value": {
+                                  "kind": "varRef",
+                                  "localId": "%destr.0",
+                                  "type": {
+                                    "kind": "union",
+                                    "unionId": "u3"
+                                  },
+                                  "loc": {
+                                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                    "start": 898,
+                                    "end": 910
+                                  }
+                                },
+                                "negated": false,
+                                "type": {
+                                  "kind": "bool"
+                                },
+                                "loc": {
+                                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                  "start": 898,
+                                  "end": 910
+                                }
+                              },
+                              "then": [
+                                {
+                                  "kind": "throw",
+                                  "value": {
+                                    "kind": "libCall",
+                                    "fn": "error.new",
+                                    "args": [
+                                      {
+                                        "kind": "strLit",
+                                        "value": "undefined is not iterable (cannot read property Symbol(Symbol.iterator))",
+                                        "type": {
+                                          "kind": "string"
+                                        },
+                                        "loc": {
+                                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                          "start": 898,
+                                          "end": 910
+                                        }
+                                      }
+                                    ],
+                                    "type": {
+                                      "kind": "object",
+                                      "className": "%TypeError"
+                                    },
+                                    "loc": {
+                                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                      "start": 898,
+                                      "end": 910
+                                    }
+                                  },
+                                  "loc": {
+                                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                    "start": 898,
+                                    "end": 910
+                                  }
+                                }
+                              ],
+                              "else_": null,
+                              "loc": {
+                                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                "start": 898,
+                                "end": 910
+                              }
+                            },
+                            {
+                              "kind": "assign",
+                              "localId": "key.0",
+                              "value": {
+                                "kind": "recordGet",
+                                "obj": {
+                                  "kind": "unionNarrow",
+                                  "unionId": "u3",
+                                  "tag": 0,
+                                  "value": {
+                                    "kind": "varRef",
+                                    "localId": "%destr.0",
+                                    "type": {
+                                      "kind": "union",
+                                      "unionId": "u3"
+                                    },
+                                    "loc": {
+                                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                      "start": 898,
+                                      "end": 910
+                                    }
+                                  },
+                                  "type": {
+                                    "kind": "record",
+                                    "shapeId": "r5"
+                                  },
+                                  "loc": {
+                                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                    "start": 898,
+                                    "end": 910
+                                  }
+                                },
+                                "shapeId": "r5",
+                                "field": "0",
+                                "type": {
+                                  "kind": "string"
+                                },
+                                "loc": {
+                                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                  "start": 899,
+                                  "end": 902
+                                }
+                              },
+                              "loc": {
+                                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                "start": 899,
+                                "end": 902
+                              }
+                            },
+                            {
+                              "kind": "assign",
+                              "localId": "value.0",
+                              "value": {
+                                "kind": "recordGet",
+                                "obj": {
+                                  "kind": "unionNarrow",
+                                  "unionId": "u3",
+                                  "tag": 0,
+                                  "value": {
+                                    "kind": "varRef",
+                                    "localId": "%destr.0",
+                                    "type": {
+                                      "kind": "union",
+                                      "unionId": "u3"
+                                    },
+                                    "loc": {
+                                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                      "start": 898,
+                                      "end": 910
+                                    }
+                                  },
+                                  "type": {
+                                    "kind": "record",
+                                    "shapeId": "r5"
+                                  },
+                                  "loc": {
+                                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                    "start": 898,
+                                    "end": 910
+                                  }
+                                },
+                                "shapeId": "r5",
+                                "field": "1",
+                                "type": {
+                                  "kind": "f64"
+                                },
+                                "loc": {
+                                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                  "start": 904,
+                                  "end": 909
+                                }
+                              },
+                              "loc": {
+                                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                "start": 904,
+                                "end": 909
+                              }
+                            },
+                            {
+                              "kind": "if",
+                              "cond": {
+                                "kind": "logical",
+                                "op": "&&",
+                                "left": {
+                                  "kind": "strEq",
+                                  "negated": false,
+                                  "left": {
+                                    "kind": "strLit",
+                                    "value": "number",
+                                    "type": {
+                                      "kind": "string"
+                                    },
+                                    "loc": {
+                                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                      "start": 960,
+                                      "end": 972
+                                    }
+                                  },
+                                  "right": {
+                                    "kind": "strLit",
+                                    "value": "number",
+                                    "type": {
+                                      "kind": "string"
+                                    },
+                                    "loc": {
+                                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                      "start": 977,
+                                      "end": 985
+                                    }
+                                  },
+                                  "type": {
+                                    "kind": "bool"
+                                  },
+                                  "loc": {
+                                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                    "start": 960,
+                                    "end": 985
+                                  }
+                                },
+                                "right": {
+                                  "kind": "libCall",
+                                  "fn": "number.isFinite",
+                                  "args": [
+                                    {
+                                      "kind": "varRef",
+                                      "localId": "value.0",
+                                      "type": {
+                                        "kind": "f64"
+                                      },
+                                      "loc": {
+                                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                        "start": 1005,
+                                        "end": 1010
+                                      }
+                                    }
+                                  ],
+                                  "type": {
+                                    "kind": "bool"
+                                  },
+                                  "loc": {
+                                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                    "start": 989,
+                                    "end": 1011
+                                  }
+                                },
+                                "type": {
+                                  "kind": "bool"
+                                },
+                                "loc": {
+                                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                  "start": 960,
+                                  "end": 1011
+                                }
+                              },
+                              "then": [
+                                {
+                                  "kind": "recordKeySet",
+                                  "obj": {
+                                    "kind": "varRef",
+                                    "localId": "result.0",
+                                    "type": {
+                                      "kind": "record",
+                                      "shapeId": "r0"
+                                    },
+                                    "loc": {
+                                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                      "start": 1029,
+                                      "end": 1035
+                                    }
+                                  },
+                                  "shapeId": "r0",
+                                  "key": {
+                                    "kind": "strConcat",
+                                    "left": {
+                                      "kind": "strConcat",
+                                      "left": {
+                                        "kind": "toString",
+                                        "operand": {
+                                          "kind": "varRef",
+                                          "localId": "name.0",
+                                          "type": {
+                                            "kind": "union",
+                                            "unionId": "u2"
+                                          },
+                                          "loc": {
+                                            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                            "start": 1039,
+                                            "end": 1043
+                                          }
+                                        },
+                                        "type": {
+                                          "kind": "string"
+                                        },
+                                        "loc": {
+                                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                          "start": 1039,
+                                          "end": 1043
+                                        }
+                                      },
+                                      "right": {
+                                        "kind": "strLit",
+                                        "value": ".",
+                                        "type": {
+                                          "kind": "string"
+                                        },
+                                        "loc": {
+                                          "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                          "start": 1043,
+                                          "end": 1047
+                                        }
+                                      },
+                                      "type": {
+                                        "kind": "string"
+                                      },
+                                      "loc": {
+                                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                        "start": 1036,
+                                        "end": 1052
+                                      }
+                                    },
+                                    "right": {
+                                      "kind": "varRef",
+                                      "localId": "key.0",
+                                      "type": {
+                                        "kind": "string"
+                                      },
+                                      "loc": {
+                                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                        "start": 1047,
+                                        "end": 1050
+                                      }
+                                    },
+                                    "type": {
+                                      "kind": "string"
+                                    },
+                                    "loc": {
+                                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                      "start": 1036,
+                                      "end": 1052
+                                    }
+                                  },
+                                  "value": {
+                                    "kind": "varRef",
+                                    "localId": "value.0",
+                                    "type": {
+                                      "kind": "f64"
+                                    },
+                                    "loc": {
+                                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                      "start": 1056,
+                                      "end": 1061
+                                    }
+                                  },
+                                  "loc": {
+                                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                    "start": 1029,
+                                    "end": 1061
+                                  }
+                                }
+                              ],
+                              "else_": null,
+                              "loc": {
+                                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                                "start": 956,
+                                "end": 1076
+                              }
+                            }
+                          ],
+                          "loc": {
+                            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                            "start": 887,
+                            "end": 1088
+                          }
+                        }
+                      ],
+                      "loc": {
+                        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                        "start": 887,
+                        "end": 1088
+                      }
+                    }
+                  ],
+                  "catchBody": [],
+                  "catchLocalId": null,
+                  "finallyBody": null,
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                    "start": 871,
+                    "end": 1135
+                  }
+                }
+              ],
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                "start": 779,
+                "end": 1143
+              }
+            }
+          ],
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+            "start": 779,
+            "end": 1143
+          }
+        },
+        {
+          "kind": "return",
+          "value": {
+            "kind": "varRef",
+            "localId": "result.0",
+            "type": {
+              "kind": "record",
+              "shapeId": "r0"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 1157,
+              "end": 1163
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+            "start": 1150,
+            "end": 1164
+          }
+        }
+      ],
+      "loc": {
+        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+        "start": 655,
+        "end": 1170
+      }
+    },
+    {
+      "name": "%obj.keys.1",
+      "params": [
+        {
+          "localId": "r.0",
+          "name": "r",
+          "type": {
+            "kind": "record",
+            "shapeId": "r4"
+          }
+        }
+      ],
+      "returnType": {
+        "kind": "array",
+        "elem": {
+          "kind": "string"
+        }
+      },
+      "locals": [
+        {
+          "id": "r.0",
+          "name": "r",
+          "type": {
+            "kind": "record",
+            "shapeId": "r4"
+          },
+          "mutable": true
+        },
+        {
+          "id": "out.0",
+          "name": "out",
+          "type": {
+            "kind": "array",
+            "elem": {
+              "kind": "string"
+            }
+          },
+          "mutable": false
+        },
+        {
+          "id": "ks.0",
+          "name": "ks",
+          "type": {
+            "kind": "array",
+            "elem": {
+              "kind": "string"
+            }
+          },
+          "mutable": false
+        },
+        {
+          "id": "i.0",
+          "name": "i",
+          "type": {
+            "kind": "f64"
+          },
+          "mutable": true
+        },
+        {
+          "id": "k.0",
+          "name": "k",
+          "type": {
+            "kind": "string"
+          },
+          "mutable": false
+        }
+      ],
+      "body": [
+        {
+          "kind": "varDecl",
+          "localId": "out.0",
+          "init": {
+            "kind": "arrayLit",
+            "elems": [],
+            "type": {
+              "kind": "array",
+              "elem": {
+                "kind": "string"
+              }
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 175,
+              "end": 191
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+            "start": 175,
+            "end": 191
+          }
+        },
+        {
+          "kind": "varDecl",
+          "localId": "ks.0",
+          "init": {
+            "kind": "recordOvfKeys",
+            "obj": {
+              "kind": "varRef",
+              "localId": "r.0",
+              "type": {
+                "kind": "record",
+                "shapeId": "r4"
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                "start": 175,
+                "end": 191
+              }
+            },
+            "shapeId": "r4",
+            "type": {
+              "kind": "array",
+              "elem": {
+                "kind": "string"
+              }
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 175,
+              "end": 191
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+            "start": 175,
+            "end": 191
+          }
+        },
+        {
+          "kind": "for",
+          "init": {
+            "kind": "varDecl",
+            "localId": "i.0",
+            "init": {
+              "kind": "numLit",
+              "value": 0,
+              "type": {
+                "kind": "f64"
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                "start": 175,
+                "end": 191
+              }
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 175,
+              "end": 191
+            }
+          },
+          "cond": {
+            "kind": "bin",
+            "op": "<",
+            "left": {
+              "kind": "varRef",
+              "localId": "i.0",
+              "type": {
+                "kind": "f64"
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                "start": 175,
+                "end": 191
+              }
+            },
+            "right": {
+              "kind": "arrIntrinsic",
+              "method": "length",
+              "receiver": {
+                "kind": "varRef",
+                "localId": "ks.0",
+                "type": {
+                  "kind": "array",
+                  "elem": {
+                    "kind": "string"
+                  }
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                  "start": 175,
+                  "end": 191
+                }
+              },
+              "args": [],
+              "type": {
+                "kind": "f64"
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                "start": 175,
+                "end": 191
+              }
+            },
+            "type": {
+              "kind": "bool"
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 175,
+              "end": 191
+            }
+          },
+          "update": {
+            "kind": "assign",
+            "localId": "i.0",
+            "value": {
+              "kind": "bin",
+              "op": "+",
+              "left": {
+                "kind": "varRef",
+                "localId": "i.0",
+                "type": {
+                  "kind": "f64"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                  "start": 175,
+                  "end": 191
+                }
+              },
+              "right": {
+                "kind": "numLit",
+                "value": 1,
+                "type": {
+                  "kind": "f64"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                  "start": 175,
+                  "end": 191
+                }
+              },
+              "type": {
+                "kind": "f64"
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                "start": 175,
+                "end": 191
+              }
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 175,
+              "end": 191
+            }
+          },
+          "body": [
+            {
+              "kind": "varDecl",
+              "localId": "k.0",
+              "init": {
+                "kind": "arrayGet",
+                "arr": {
+                  "kind": "varRef",
+                  "localId": "ks.0",
+                  "type": {
+                    "kind": "array",
+                    "elem": {
+                      "kind": "string"
+                    }
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                    "start": 175,
+                    "end": 191
+                  }
+                },
+                "index": {
+                  "kind": "varRef",
+                  "localId": "i.0",
+                  "type": {
+                    "kind": "f64"
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                    "start": 175,
+                    "end": 191
+                  }
+                },
+                "type": {
+                  "kind": "string"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                  "start": 175,
+                  "end": 191
+                }
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                "start": 175,
+                "end": 191
+              }
+            },
+            {
+              "kind": "exprStmt",
+              "expr": {
+                "kind": "arrIntrinsic",
+                "method": "push",
+                "receiver": {
+                  "kind": "varRef",
+                  "localId": "out.0",
+                  "type": {
+                    "kind": "array",
+                    "elem": {
+                      "kind": "string"
+                    }
+                  },
+                  "loc": {
+                    "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                    "start": 175,
+                    "end": 191
+                  }
+                },
+                "args": [
+                  {
+                    "kind": "varRef",
+                    "localId": "k.0",
+                    "type": {
+                      "kind": "string"
+                    },
+                    "loc": {
+                      "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                      "start": 175,
+                      "end": 191
+                    }
+                  }
+                ],
+                "type": {
+                  "kind": "f64"
+                },
+                "loc": {
+                  "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                  "start": 175,
+                  "end": 191
+                }
+              },
+              "loc": {
+                "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+                "start": 175,
+                "end": 191
+              }
+            }
+          ],
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+            "start": 175,
+            "end": 191
+          }
+        },
+        {
+          "kind": "return",
+          "value": {
+            "kind": "varRef",
+            "localId": "out.0",
+            "type": {
+              "kind": "array",
+              "elem": {
+                "kind": "string"
+              }
+            },
+            "loc": {
+              "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+              "start": 175,
+              "end": 191
+            }
+          },
+          "loc": {
+            "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+            "start": 175,
+            "end": 191
+          }
+        }
+      ],
+      "loc": {
+        "file": "/data/user/0/com.ai.assistance.operit/files/workspace/0989ed71-87e4-413f-ad5d-c239ed0ee1fa/zgh/zfull/wtb/probe-registry.ts",
+        "start": 175,
+        "end": 191
+      }
+    }
+  ],
+  "classes": [
+    {
+      "name": "%Error",
+      "runtime": true,
+      "fields": [
+        {
+          "name": "name",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "message",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "%code",
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "loc": {
+        "file": "<builtin>",
+        "start": 0,
+        "end": 0
+      }
+    },
+    {
+      "name": "%TypeError",
+      "runtime": true,
+      "base": "%Error",
+      "fields": [
+        {
+          "name": "name",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "message",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "%code",
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "loc": {
+        "file": "<builtin>",
+        "start": 0,
+        "end": 0
+      }
+    },
+    {
+      "name": "%RangeError",
+      "runtime": true,
+      "base": "%Error",
+      "fields": [
+        {
+          "name": "name",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "message",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "%code",
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "loc": {
+        "file": "<builtin>",
+        "start": 0,
+        "end": 0
+      }
+    },
+    {
+      "name": "%SyntaxError",
+      "runtime": true,
+      "base": "%Error",
+      "fields": [
+        {
+          "name": "name",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "message",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "%code",
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "loc": {
+        "file": "<builtin>",
+        "start": 0,
+        "end": 0
+      }
+    },
+    {
+      "name": "%DOMException",
+      "runtime": true,
+      "base": "%Error",
+      "fields": [
+        {
+          "name": "name",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "message",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "%code",
+          "type": {
+            "kind": "string"
+          }
+        }
+      ],
+      "loc": {
+        "file": "<builtin>",
+        "start": 0,
+        "end": 0
+      }
+    }
+  ],
+  "records": [
+    {
+      "id": "r0",
+      "fields": [],
+      "indexValue": {
+        "kind": "f64"
+      },
+      "declaredOrder": []
+    },
+    {
+      "id": "r1",
+      "fields": [
+        {
+          "name": "dispose",
+          "type": {
+            "kind": "func",
+            "params": [],
+            "ret": {
+              "kind": "void"
+            }
+          }
+        }
+      ],
+      "declaredOrder": [
+        "dispose"
+      ]
+    },
+    {
+      "id": "r2",
+      "fields": [
+        {
+          "name": "collect",
+          "type": {
+            "kind": "func",
+            "params": [],
+            "ret": {
+              "kind": "record",
+              "shapeId": "r0"
+            }
+          }
+        },
+        {
+          "name": "register",
+          "type": {
+            "kind": "func",
+            "params": [
+              {
+                "kind": "string"
+              },
+              {
+                "kind": "func",
+                "params": [],
+                "ret": {
+                  "kind": "record",
+                  "shapeId": "r0"
+                }
+              }
+            ],
+            "ret": {
+              "kind": "record",
+              "shapeId": "r1"
+            }
+          }
+        }
+      ],
+      "declaredOrder": [
+        "register",
+        "collect"
+      ]
+    },
+    {
+      "id": "r3",
+      "fields": [],
+      "indexValue": {
+        "kind": "func",
+        "params": [],
+        "ret": {
+          "kind": "record",
+          "shapeId": "r0"
+        }
+      },
+      "declaredOrder": []
+    },
+    {
+      "id": "r4",
+      "fields": [],
+      "indexValue": {
+        "kind": "dyn"
+      },
+      "declaredOrder": []
+    },
+    {
+      "id": "r5",
+      "fields": [
+        {
+          "name": "0",
+          "type": {
+            "kind": "string"
+          }
+        },
+        {
+          "name": "1",
+          "type": {
+            "kind": "f64"
+          }
+        }
+      ],
+      "tuple": true
+    }
+  ],
+  "unions": [
+    {
+      "id": "u0",
+      "arms": [
+        {
+          "kind": "f64"
+        },
+        {
+          "kind": "undefinedT"
+        }
+      ]
+    },
+    {
+      "id": "u1",
+      "arms": [
+        {
+          "kind": "func",
+          "params": [],
+          "ret": {
+            "kind": "record",
+            "shapeId": "r0"
+          }
+        },
+        {
+          "kind": "undefinedT"
+        }
+      ]
+    },
+    {
+      "id": "u2",
+      "arms": [
+        {
+          "kind": "string"
+        },
+        {
+          "kind": "undefinedT"
+        }
+      ]
+    },
+    {
+      "id": "u3",
+      "arms": [
+        {
+          "kind": "record",
+          "shapeId": "r5"
+        },
+        {
+          "kind": "undefinedT"
+        }
+      ]
+    }
+  ],
+  "globals": [
+    {
+      "id": "%g.e.%loaded",
+      "name": "%loaded",
+      "type": {
+        "kind": "bool"
+      },
+      "mutable": true
+    }
+  ],
+  "entry": "%main"
+}

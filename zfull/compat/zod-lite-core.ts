@@ -348,7 +348,14 @@ export class ZBase {
       return this._value;
     }
     if (w === "refine") {
-      const before = ctx.issues.length;
+      /** scriptc：`Object.keys` 要求参数在编译期就是 record，而 `_parse` 的 input 是 jsval（any），
+ *  直接枚举会触发内部编译器错误（SC9001）；过一层恒等转换后再枚举，运行期行为不变。 */
+function keysOfRecordLike(input: any): string[] {
+  const rec = castTo<Record<string, any>>(input);
+  return Object.keys(rec);
+}
+
+const before = ctx.issues.length;
       if (this._innerIdx < 0) return undefined;
       const value = schemaAt(this._innerIdx)._parse(input, ctx);
       if (ctx.issues.length > before) return undefined;
@@ -434,7 +441,7 @@ export class ZBase {
         }
       }
       if (this._unk === "strict") {
-        const inputKeys = Object.keys(input);
+        const inputKeys = keysOfRecordLike(input);
         for (const k of inputKeys) {
           if (!(k in shape)) {
             const msg = "Unrecognized key: " + '"' + k + '"';
@@ -445,7 +452,7 @@ export class ZBase {
           }
         }
       } else if (this._unk === "passthrough") {
-        const inputKeys = Object.keys(input);
+        const inputKeys = keysOfRecordLike(input);
         for (const k of inputKeys) {
           if (!(k in shape)) {
             out[k] = input[k];
@@ -461,7 +468,7 @@ export class ZBase {
       }
       if (this._innerIdx < 0) return undefined;
       const out2: Record<string, unknown> = {};
-      const ks = Object.keys(input);
+      const ks = keysOfRecordLike(input);
       for (const k of ks) {
         const subCtx2 = childCtx(ctx, k);
         const before2r = ctx.issues.length;
@@ -479,7 +486,7 @@ export class ZBase {
       }
       if (this._innerIdx < 0) return undefined;
       const out3: Record<string, unknown> = {};
-      const ks2 = Object.keys(input);
+      const ks2 = keysOfRecordLike(input);
       for (const k2 of ks2) {
         const subCtx3 = childCtx(ctx, k2);
         const v3 = schemaAt(this._innerIdx)._parse(input[k2], subCtx3);

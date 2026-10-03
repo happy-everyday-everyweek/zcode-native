@@ -31,6 +31,16 @@ rules are already experimentally verified in this port; use them:
 - `Record<string, ZodType<any>>` is treated as a different instantiation from
   `Record<string, ZodType>` by this compiler. Spell the record type exactly as the value
   you pass in does, otherwise you get SC2002 "record shapes must match exactly".
+- The compat layer's `ZBase.shape` getter returns `any`. If the diagnostic is
+  "using an 'any' value where '...ZBase' is expected" on something like
+  `someSchema.shape.enabled`, do NOT try to cast the expression: an `any` value can never
+  become a class instance here. Instead restructure the code so the schema object is
+  referenced directly (keep a reference to the source schema, or build the object from the
+  source schema instead of pulling the field out of `.shape`).
+- A record whose values are class instances (e.g. `Record<string, ZBase>`) cannot be
+  assigned into an `any`-typed sink and cannot be passed to a parameter typed
+  `Record<string, any>`: that crosses a dynamic boundary (SC1090). Bind only JSON-safe
+  records (`Record<string, unknown>`) for key enumeration.
 - Never leave the file with unbalanced braces.
 
 Report: which lines you changed, and the before/after text for each change.

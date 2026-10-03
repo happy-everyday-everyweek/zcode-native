@@ -73,6 +73,10 @@ jobs:
           git config user.name "gha-agent"
           git config user.email "gha-agent@users.noreply.github.com"
           git apply ../patches/zcode-adaptations.patch
+          # 把「改编基线」落成一次提交：否则 HEAD 还是 upstream tag，后面
+          # git diff 会把改编补丁自身的内容一起算进 fix.patch，collect 端必然冲突。
+          git add -A
+          git commit -q -m "adaptation base"
           test -f "${{ matrix.file }}" && echo "target file present: ${{ matrix.file }}"
           cd ..
 
@@ -162,6 +166,10 @@ jobs:
           git config user.email "gha-agent@users.noreply.github.com"
           git apply ../patches/zcode-adaptations.patch
           cd ..
+          ORIG=$(git -C ZCode rev-parse HEAD)
+          echo "upstream base: $ORIG"
+          git -C ZCode add -A
+          git -C ZCode commit -q -m "adaptation base"
           shopt -s nullglob
           n=0
           for p in fixes/*/fix.patch; do
@@ -173,11 +181,10 @@ jobs:
           done
           echo "patches applied: $n"
           if [ "$n" -eq 0 ]; then echo "no fix applied; nothing to push"; exit 0; fi
-          # ZCode 不在本仓库里，唯一能落库的形态就是这份改编补丁（diff 对 upstream tag 取）
-          cd ZCode
-          git add -A
-          git diff --cached > ../patches/zcode-adaptations.patch
-          cd ..
+          # ZCode 不在本仓库里，唯一能落库的形态就是这份改编补丁（对 upstream tag 取 diff，
+          # 即「改编基线 + 本轮修复」的完整态）。
+          git -C ZCode add -A
+          git -C ZCode diff "$ORIG" > patches/zcode-adaptations.patch
           wc -c patches/zcode-adaptations.patch
           git add patches/zcode-adaptations.patch
           git diff --cached --stat | tail -5

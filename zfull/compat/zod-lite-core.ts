@@ -1876,12 +1876,6 @@ function applyNumberChecks(s: ZBase, out: Record<string, unknown>): void {
   out.type = isInt ? "integer" : "number";
 }
 
-// scriptc：键枚举必须在 compat 层做——`shared` 的 lane 里 Object.keys 无 lowering（SC2020），
-// 而 compat 的 lane 会把它降级成 %obj.keys.6；形参写成 Record<string, any> 让 any 走允许的出口。
-export function recordKeysOf(v: Record<string, any>): string[] {
-  return Object.keys(v);
-}
-
 export function zodToJsonSchemaInternal(schema: ZBase): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   const unwrapped = unwrapIdx(schema);

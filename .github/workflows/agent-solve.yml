@@ -1,0 +1,125 @@
+name: agent-solve
+
+# 云端闭环修错：一个 job 内「全量 sweep → 把真实错误喂给 agent → 重编验证 → 保留或回滚」循环多轮。
+# 与 agent-fanout 的分工：
+#   * agent-fanout：一批文件、每文件一个 runner，盲修（agent 看不到编译结果），产出 fix.patch。
+#   * agent-solve ：单 runner、多轮闭环，带编译反馈和回滚，适合「自己迭代到清零」。
+#
+# 时长：托管 runner 单个 job 上限 360 分钟，这里用 350。公开仓库的标准 runner 分钟数不限。
+#
+# 用法：
+#   curl -X POST -H "Authorization: Bearer <PAT>" \
+#     https://api.github.com/repos/<owner>/<repo>/actions/workflows/agent-solve.yml/dispatches \
+#     -d '{"ref":"main","inputs":{"rounds":"6","per_round":"8"}}'
+#
+# 产出：artifact `agent-solve-patch`（对 upstream tag 的完整改编补丁，含本轮所有保留的修复）。
+# 不回推 main：由编排者拉回本地复测后再决定是否推送。
+
+on:
+  workflow_dispatch:
+    inputs:
+      rounds:
+        description: '最多几轮'
+        required: false
+        default: '6'
+      per_round:
+        description: '每轮修几个文件'
+        required: false
+        default: '8'
+      entries:
+        description: '只扫这些入口（逗号分隔，留空=全部）'
+        required: false
+        default: ''
+      agent_timeout:
+        description: '单次 agent 调用硬超时（秒）'
+        required: false
+        default: '1200'
+
+permissions:
+  contents: read
+
+env:
+  ZCODE_TAG: v3.14.3
+
+jobs:
+  solve:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Clone ZCode 并打改编补丁，落成「改编基线」提交
+        run: |
+          git clone --depth 1 --branch "$ZCODE_TAG" https://github.com/zai-org/ZCode.git ZCode
+          cd ZCode
+          git config user.name "gha-agent"
+          git config user.email "gha-agent@users.noreply.github.com"
+          git apply ../patches/zcode-adaptations.patch
+          git add -A
+          git commit -q -m "adaptation base"
+          git log --oneline -1
+          cd ..
+
+      - name: 安装 scriptc + 工作区依赖
+        run: |
+          mkdir -p scriptc-try
+          cd scriptc-try
+          npm init -y >/dev/null 2>&1 || true
+          npm install scriptc@0.1.7 --no-audit --no-fund
+          cd ..
+          npm i -g pnpm@10.33.2 >/dev/null 2>&1 || true
+          cd ZCode
+          pnpm install --ignore-scripts --no-frozen-lockfile
+          cd ..
+          mkdir -p zfull/node_modules/@types
+          ln -sfn "$PWD/ZCode/node_modules/@types/node" zfull/node_modules/@types/node
+          ln -sfn "$PWD/ZCode/node_modules/undici-types" zfull/node_modules/undici-types
+
+      - name: 生成 dynamic-workflow libs（sweep 需要）
+        run: |
+          cd ZCode/apps/zcode-cli/packages/dynamic-workflow
+          node scripts/generate-libs.mjs
+          cd -
+
+      - name: 下载并解开 zcode 运行时
+        run: |
+          curl -fL --retry 3 -o runtime.tgz \
+            "https://github.com/$GITHUB_REPOSITORY/releases/download/zcode-runtime-v3.14.3/zcode-runtime-3.14.3.tar.gz"
+          mkdir -p "$HOME/.zcode"
+          tar -xzf runtime.tgz -C "$HOME/.zcode"
+          test -f "$HOME/.zcode/runtime/zcode/bin/zcode.mjs" && echo "runtime OK"
+
+      - name: 注入 provider 配置
+        env:
+          ZCODE_PROVIDER_CONFIG_B64: ${{ secrets.ZCODE_PROVIDER_CONFIG_B64 }}
+        run: python3 ci/gha-agent.py prepare
+
+      - name: 闭环修错（每轮跑真实 sweep，按错误数决定保留/回滚）
+        run: |
+          python3 ci/solve-loop.py \
+            --rounds "${{ inputs.rounds }}" \
+            --per-round "${{ inputs.per_round }}" \
+            --entries "${{ inputs.entries }}" \
+            --agent-timeout "${{ inputs.agent_timeout }}" \
+            --repo-root "$PWD"
+
+      - name: 导出补丁
+        if: always()
+        run: |
+          ORIG=$(git -C ZCode rev-parse HEAD~1 2>/dev/null || git -C ZCode rev-parse HEAD)
+          echo "diff vs $ORIG"
+          git -C ZCode add -A
+          git -C ZCode diff "$ORIG" > agent-solve.patch
+          wc -c agent-solve.patch
+          grep -c '^+++ ' agent-solve.patch || true
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: agent-solve-patch
+          path: agent-solve.patch
+          if-no-files-found: warn

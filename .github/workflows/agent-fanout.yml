@@ -120,7 +120,7 @@ jobs:
       - name: 跑 Agent（只允许改这一个文件）
         run: |
           # 硬超时：实测 agent 偶尔会卡住不返回，不能让它拖到 job 超时（会把 collect 一起拖没）。
-          timeout 900 node "$HOME/.zcode/runtime/zcode/bin/zcode.mjs" -p "$(cat agent-prompt.txt)" --no-color 2>&1 | tail -120 || echo "(agent 超时或异常退出，继续走后面的步骤)"
+          timeout 1200 node "$HOME/.zcode/runtime/zcode/bin/zcode.mjs" -p "$(cat agent-prompt.txt)" --no-color 2>&1 | tail -120 || echo "(agent 超时或异常退出，继续走后面的步骤)"
           echo "---- changed files in ZCode ----"
           git -C ZCode status --porcelain -- "${{ matrix.file }}"
         continue-on-error: true

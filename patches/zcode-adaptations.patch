@@ -1309,11 +1309,14 @@ index f125336..bef8d0b 100644
      strategy: z.enum([MicrocompactStrategy.LocalToolResultClear]),
      preMicrocompactTokenCount: z.number().int().nonnegative(),
 diff --git a/apps/zcode-cli/packages/contracts/src/events/event-reducer-helpers.ts b/apps/zcode-cli/packages/contracts/src/events/event-reducer-helpers.ts
-index 8b61463..c539c8f 100644
+index 8b61463..6bc2de1 100644
 --- a/apps/zcode-cli/packages/contracts/src/events/event-reducer-helpers.ts
 +++ b/apps/zcode-cli/packages/contracts/src/events/event-reducer-helpers.ts
-@@ -22,7 +22,9 @@ import type {
+@@ -20,9 +20,12 @@ import type {
+ import type {
+   StreamRecoveryAnchorPayload,
    StreamingToolLedgerPayload,
++  StreamingToolLedgerProjectionInfo,
  } from "./stream-recovery.events.js";
  
 -export const initialSessionProjection = {
@@ -1323,6 +1326,77 @@ index 8b61463..c539c8f 100644
    createdAt: new Date(),
    updatedAt: new Date(),
    mode: "build" as CollaborationMode,
+@@ -53,7 +56,8 @@ export function applyStreamingToolLedgerUpdate(
+   payload: StreamingToolLedgerPayload,
+   timestamp: Date,
+ ): SessionProjection {
+-  const next = { ...payload, updatedAt: timestamp };
++  // ZCode Android port: 显式标注，避免 scriptc 把含 Date 字段的字面量当动态对象构造（SC1090）。
++  const next: StreamingToolLedgerProjectionInfo = { ...payload, updatedAt: timestamp };
+   const found = projection.streamingToolLedger.some(
+     (item) => item.attemptId === payload.attemptId && item.toolCallId === payload.toolCallId,
+   );
+@@ -180,7 +184,8 @@ export function applyBackgroundTaskCompleted(
+   payload: BackgroundTaskCompletedPayload,
+   timestamp: Date,
+ ): SessionProjection {
+-  const next = {
++  // ZCode Android port: 用显式类型标注代替 satisfies，保证 scriptc 按声明类型构造含 Date 的字面量。
++  const next: SessionProjection["backgroundTasks"][number] = {
+     taskId: payload.taskId,
+     toolCallId: payload.toolCallId,
+     toolName: payload.toolName,
+@@ -207,7 +212,7 @@ export function applyBackgroundTaskCompleted(
+     stdoutBytes: payload.stdoutBytes,
+     stdoutTail: payload.stdoutTail,
+     terminalId: payload.terminalId,
+-  } satisfies SessionProjection["backgroundTasks"][number];
++  };
+ 
+   const found = projection.backgroundTasks.some((task) => task.taskId === payload.taskId);
+   return {
+@@ -221,12 +226,38 @@ export function applyBackgroundTaskCompleted(
+   };
+ }
+ 
++// ZCode Android port: scriptc 不支持 Object.fromEntries（checker 崩溃），含 Date 类实例的
++// Partial 记录也不能做动态键拷贝（SC1090）；改为逐字段合并，undefined 表示该字段未更新。
+ function mergeBackgroundTask(
+   current: SessionProjection["backgroundTasks"][number],
+   next: Partial<SessionProjection["backgroundTasks"][number]>,
+ ): SessionProjection["backgroundTasks"][number] {
+   return {
+-    ...current,
+-    ...Object.fromEntries(Object.entries(next).filter(([, value]) => value !== undefined)),
+-  } as SessionProjection["backgroundTasks"][number];
++    taskId: next.taskId ?? current.taskId,
++    toolCallId: next.toolCallId ?? current.toolCallId,
++    toolName: next.toolName ?? current.toolName,
++    taskKind: next.taskKind ?? current.taskKind,
++    childSessionId: next.childSessionId ?? current.childSessionId,
++    blocked: next.blocked ?? current.blocked,
++    blockedReason: next.blockedReason ?? current.blockedReason,
++    cancellable: next.cancellable ?? current.cancellable,
++    cancelRequestedAt: next.cancelRequestedAt ?? current.cancelRequestedAt,
++    command: next.command ?? current.command,
++    description: next.description ?? current.description,
++    status: next.status ?? current.status,
++    pid: next.pid ?? current.pid,
++    startedAt: next.startedAt ?? current.startedAt,
++    completedAt: next.completedAt ?? current.completedAt,
++    outputPath: next.outputPath ?? current.outputPath,
++    stderrPersistedOutputPath: next.stderrPersistedOutputPath ?? current.stderrPersistedOutputPath,
++    stdoutPersistedOutputPath: next.stdoutPersistedOutputPath ?? current.stdoutPersistedOutputPath,
++    outputBytes: next.outputBytes ?? current.outputBytes,
++    outputTruncated: next.outputTruncated ?? current.outputTruncated,
++    outputTail: next.outputTail ?? current.outputTail,
++    stderrBytes: next.stderrBytes ?? current.stderrBytes,
++    stderrTail: next.stderrTail ?? current.stderrTail,
++    stdoutBytes: next.stdoutBytes ?? current.stdoutBytes,
++    stdoutTail: next.stdoutTail ?? current.stdoutTail,
++    terminalId: next.terminalId ?? current.terminalId,
++  };
+ }
 diff --git a/apps/zcode-cli/packages/contracts/src/events/session.events.ts b/apps/zcode-cli/packages/contracts/src/events/session.events.ts
 index 655c088..06998e6 100644
 --- a/apps/zcode-cli/packages/contracts/src/events/session.events.ts
@@ -6168,6 +6242,58 @@ index 283656d..e859df7 100644
      "module": "NodeNext",
      "moduleResolution": "NodeNext",
      "target": "ES2022",
+diff --git a/apps/zcode-cli/packages/dynamic-workflow/src/analysis/callbacks.ts b/apps/zcode-cli/packages/dynamic-workflow/src/analysis/callbacks.ts
+index 563cf42..6781a9e 100644
+--- a/apps/zcode-cli/packages/dynamic-workflow/src/analysis/callbacks.ts
++++ b/apps/zcode-cli/packages/dynamic-workflow/src/analysis/callbacks.ts
+@@ -60,22 +60,25 @@ export const DEFAULT_CALLBACK_SEMANTICS: Pick<CallbackSemantics, "multiplicity"
+ 
+ /** Array methods that invoke their callback per element. Name-based on any receiver that is
+  * not a script-declared method (a user class's own `.map` is a user function: callee path).
+- * Value: element / whole-collection / accumulator parameter indices of the callback. */
+-const EACH_METHODS: ReadonlyMap<string, { element: readonly number[]; whole: readonly number[]; accumulator?: number }> =
++ * Value: element / whole-collection parameter indices of the callback; `accumulator` is the
++ * accumulator parameter index, or NO_ACCUMULATOR for methods that do not accumulate. Every
++ * entry spells all three fields, so the seed's value type is one record shape. */
++const NO_ACCUMULATOR = -1;
++const EACH_METHODS: ReadonlyMap<string, { element: readonly number[]; whole: readonly number[]; accumulator: number }> =
+   new Map([
+-    ["map", { element: [0], whole: [2] }],
+-    ["flatMap", { element: [0], whole: [2] }],
+-    ["forEach", { element: [0], whole: [2] }],
+-    ["filter", { element: [0], whole: [2] }],
+-    ["some", { element: [0], whole: [2] }],
+-    ["every", { element: [0], whole: [2] }],
+-    ["find", { element: [0], whole: [2] }],
+-    ["findIndex", { element: [0], whole: [2] }],
+-    ["findLast", { element: [0], whole: [2] }],
+-    ["findLastIndex", { element: [0], whole: [2] }],
++    ["map", { accumulator: NO_ACCUMULATOR, element: [0], whole: [2] }],
++    ["flatMap", { accumulator: NO_ACCUMULATOR, element: [0], whole: [2] }],
++    ["forEach", { accumulator: NO_ACCUMULATOR, element: [0], whole: [2] }],
++    ["filter", { accumulator: NO_ACCUMULATOR, element: [0], whole: [2] }],
++    ["some", { accumulator: NO_ACCUMULATOR, element: [0], whole: [2] }],
++    ["every", { accumulator: NO_ACCUMULATOR, element: [0], whole: [2] }],
++    ["find", { accumulator: NO_ACCUMULATOR, element: [0], whole: [2] }],
++    ["findIndex", { accumulator: NO_ACCUMULATOR, element: [0], whole: [2] }],
++    ["findLast", { accumulator: NO_ACCUMULATOR, element: [0], whole: [2] }],
++    ["findLastIndex", { accumulator: NO_ACCUMULATOR, element: [0], whole: [2] }],
+     ["reduce", { accumulator: 0, element: [1], whole: [3] }],
+     ["reduceRight", { accumulator: 0, element: [1], whole: [3] }],
+-    ["sort", { element: [0, 1], whole: [] }],
++    ["sort", { accumulator: NO_ACCUMULATOR, element: [0, 1], whole: [] }],
+   ]);
+ 
+ /** Promise continuation methods: run at most once, after the receiver settles. */
+@@ -125,7 +128,7 @@ export function callbackSemanticsOf(
+         label: method,
+         multiplicity: "each",
+         wholeParams: each.whole,
+-        ...(each.accumulator === undefined ? {} : { accumulatorParam: each.accumulator }),
++        ...(each.accumulator === NO_ACCUMULATOR ? {} : { accumulatorParam: each.accumulator }),
+       };
+     }
+     const once = ONCE_METHODS.get(method);
 diff --git a/apps/zcode-cli/packages/dynamic-workflow/src/analysis/causality-reduce.ts b/apps/zcode-cli/packages/dynamic-workflow/src/analysis/causality-reduce.ts
 index 2154cea..829a5b2 100644
 --- a/apps/zcode-cli/packages/dynamic-workflow/src/analysis/causality-reduce.ts
@@ -7300,27 +7426,210 @@ index 5ae36c6..67222ed 100644
  
    deletePersonalProvider(providerId: ProviderId): Promise<ProviderConfigLayerSnapshot> {
 diff --git a/packages/provider/src/config/manual-model-config.ts b/packages/provider/src/config/manual-model-config.ts
-index b924248..f58acb7 100644
+index b924248..ce535e6 100644
 --- a/packages/provider/src/config/manual-model-config.ts
 +++ b/packages/provider/src/config/manual-model-config.ts
-@@ -40,7 +40,7 @@ export function clearManualModelConfig(input: z.infer<typeof modelConfigDataSche
-   );
+@@ -1,69 +1,149 @@
+ import { z } from "zod";
+-import { completeModelConfigDataSchema, modelConfigDataSchema } from "@zcode/shared/model-config";
++import { completeEnumOptionSpecDataSchema, modelConfigDataSchema } from "@zcode/shared/model-config";
+ 
+-const complete = completeModelConfigDataSchema.shape;
+-// 手动模式只冻结产品明确开放的叶子；新增系统字段默认不属于个人手动配置。
+-export const manualModelConfigSchema = completeModelConfigDataSchema
+-  .pick({ enabled: true })
+-  .extend({
+-    enabled: modelConfigDataSchema.shape.enabled,
+-    properties: complete.properties
+-      .pick({
+-        contextWindow: true,
+-        supportsJsonSchemaOutput: true,
+-        supportsNativeWebSearch: true,
+-        supportsMidConversationSystem: true,
++/**
++ * 手动配置 Schema 按 shared/model-config.ts 中的来源定义显式组合。
++ *
++ * 基线从 `completeModelConfigDataSchema.shape` 上 pick/extend 派生；scriptc 下 `.shape`
++ * 的 getter 返回 any，取出的叶子传给 extend 会被判成「any 用作 ZBase」。这里改为直接引用
++ * 来源 Schema：enabled 保持 modelConfigDataSchema 的 sparse 语义（nullable().optional()），
++ * 其余叶子与完整 Schema 一致，各对象层保持 strict，与基线 pick/extend 的结果一致。
++ *
++ * 手动模式只冻结产品明确开放的叶子；新增系统字段默认不属于个人手动配置。
++ */
++export const manualModelConfigSchema = z
++  .object({
++    enabled: z.boolean().nullable().optional(),
++    properties: z
++      .object({
++        contextWindow: z.number().int().positive(),
++        supportsJsonSchemaOutput: z.boolean(),
++        supportsNativeWebSearch: z.boolean(),
++        supportsMidConversationSystem: z.boolean(),
++        inputFormat: z
++          .object({
++            supportsImage: z.boolean(),
++            supportsVideo: z.boolean(),
++            supportsPdf: z.boolean(),
++          })
++          .strict(),
+       })
+-      .extend({
+-        inputFormat: complete.properties.shape.inputFormat.pick({
+-          supportsImage: true,
+-          supportsVideo: true,
+-          supportsPdf: true,
+-        }),
+-      }),
+-    optionSpecs: complete.optionSpecs.pick({ reasoningLevel: true }).extend({
+-      maxOutputTokens: complete.optionSpecs.shape.maxOutputTokens.pick({ max: true }),
+-    }),
+-  });
++      .strict(),
++    optionSpecs: z
++      .object({
++        reasoningLevel: completeEnumOptionSpecDataSchema,
++        maxOutputTokens: z.object({ max: z.number().int().positive() }).strict(),
++      })
++      .strict(),
++  })
++  .strict();
+ 
+ export type ManualModelConfig = z.infer<typeof manualModelConfigSchema>;
+ 
+ /** 草稿/旧完整规则提取复用 schema 结构，避免维护第二份可编辑字段清单。 */
+ export function extractManualModelConfig(input: unknown): ManualModelConfig {
+-  return manualModelConfigSchema.parse(pickSchemaFields(manualModelConfigSchema, input));
++  return manualModelConfigSchema.parse(pickSchemaFields(MANUAL_PICK_FIELDS, input));
+ }
+ 
+ /** 保留独立 enabled 和系统叶子；恢复智能配置及规则合成都使用同一字段归属。 */
+ export function clearManualModelConfig(input: z.infer<typeof modelConfigDataSchema>) {
+-  return modelConfigDataSchema.parse(
+-    omitSchemaFields(manualModelConfigSchema.omit({ enabled: true }), input),
+-  );
++  return modelConfigDataSchema.parse(omitSchemaFields(MANUAL_OMIT_FIELDS, input));
  }
  
 -function omitSchemaFields(schema: z.ZodObject, input: unknown): unknown {
-+function omitSchemaFields(schema: any, input: unknown): unknown {
-   if (!input || typeof input !== "object" || Array.isArray(input)) return input;
-   return Object.fromEntries(
-     Object.entries(input).flatMap(([key, value]) => {
-@@ -55,7 +55,7 @@ function omitSchemaFields(schema: z.ZodObject, input: unknown): unknown {
-   );
+-  if (!input || typeof input !== "object" || Array.isArray(input)) return input;
+-  return Object.fromEntries(
+-    Object.entries(input).flatMap(([key, value]) => {
+-      const child = schema.shape[key];
+-      if (!child) return [[key, value]];
+-      if (!(child instanceof z.ZodObject) || value == null) return [];
+-      const remaining = omitSchemaFields(child, value);
+-      return remaining && typeof remaining === "object" && Object.keys(remaining).length
+-        ? [[key, remaining]]
+-        : [];
+-    }),
+-  );
++/**
++ * 手动 Schema 的对象层级表：叶子字段不在表内；字段名在本 Schema 内唯一，所以按字段名索引。
++ *
++ * scriptc 不能枚举 `.shape`（类实例记录）的键，`instanceof z.ZodObject` 的右值
++ * （compat 层里是函数）也不是程序内声明的 class，因此不做 Schema 自省，改为显式维护字段树；
++ * 增删字段时需与 shared/model-config.ts 的完整 Schema 同步。
++ */
++const MANUAL_PROPERTIES_FIELDS: readonly string[] = [
++  "contextWindow",
++  "supportsJsonSchemaOutput",
++  "supportsNativeWebSearch",
++  "supportsMidConversationSystem",
++  "inputFormat",
++];
++const MANUAL_INPUT_FORMAT_FIELDS: readonly string[] = [
++  "supportsImage",
++  "supportsVideo",
++  "supportsPdf",
++];
++const MANUAL_OPTION_SPECS_FIELDS: readonly string[] = ["reasoningLevel", "maxOutputTokens"];
++const MANUAL_REASONING_LEVEL_FIELDS: readonly string[] = ["values", "map"];
++const MANUAL_MAX_OUTPUT_TOKENS_FIELDS: readonly string[] = ["max"];
++
++/** 提取用的根字段：手动 Schema 的全部顶层字段，保持声明顺序。 */
++const MANUAL_PICK_FIELDS: readonly string[] = ["enabled", "properties", "optionSpecs"];
++
++/** 清空手动字段用的根字段：enabled 是独立系统叶子，不参与剔除。 */
++const MANUAL_OMIT_FIELDS: readonly string[] = ["properties", "optionSpecs"];
++
++/** 对象字段名 → 子字段；叶子字段与表外键返回 undefined。 */
++function childFieldsOf(key: string): readonly string[] | undefined {
++  if (key === "properties") return MANUAL_PROPERTIES_FIELDS;
++  if (key === "inputFormat") return MANUAL_INPUT_FORMAT_FIELDS;
++  if (key === "optionSpecs") return MANUAL_OPTION_SPECS_FIELDS;
++  if (key === "reasoningLevel") return MANUAL_REASONING_LEVEL_FIELDS;
++  if (key === "maxOutputTokens") return MANUAL_MAX_OUTPUT_TOKENS_FIELDS;
++  return undefined;
++}
++
++/** 记录键枚举。scriptc 只对泛型记录参数上的 Object.keys 有 lowering；
++ *  `Record<string, any>` 直接调用没有（SC2020），先把值绑成 unknown 值记录再传进来。 */
++function recordKeys<T>(rec: Record<string, T>): string[] {
++  return Object.keys(rec);
++}
++
++function fieldListHas(fields: readonly string[], key: string): boolean {
++  for (const field of fields) {
++    if (field === key) return true;
++  }
++  return false;
++}
++
++/** 非空判定，与基线 `Object.keys(value).length` 的语义一致（数组看 length）。 */
++function hasEnumerableKeys(value: any): boolean {
++  if (Array.isArray(value)) return value.length > 0;
++  const record: Record<string, unknown> = value;
++  return recordKeys(record).length > 0;
++}
++
++function omitSchemaFields(fields: readonly string[], input: unknown): unknown {
++  // scriptc：unknown 上的 Array.isArray 在条件表达式里不收窄，先把容器擦成 any 再判断。
++  const raw: any = input;
++  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return input;
++  const source = input as Record<string, unknown>;
++  const result: Record<string, unknown> = {};
++  for (const key of recordKeys(source)) {
++    const value = source[key];
++    // 表外键（含被 omit 掉的 enabled）原样保留。
++    if (!fieldListHas(fields, key)) {
++      result[key] = value;
++      continue;
++    }
++    const children = childFieldsOf(key);
++    // 声明的手动叶子直接剔除；对象字段递归剔除后只在还有内容时保留。
++    if (children === undefined) continue;
++    if (value == null) continue;
++    const remaining = omitSchemaFields(children, value);
++    if (remaining && typeof remaining === "object" && hasEnumerableKeys(remaining)) {
++      result[key] = remaining;
++    }
++  }
++  return result;
  }
  
 -function pickSchemaFields(schema: z.ZodObject, input: unknown): unknown {
-+function pickSchemaFields(schema: any, input: unknown): unknown {
-   if (!input || typeof input !== "object" || Array.isArray(input)) return input;
+-  if (!input || typeof input !== "object" || Array.isArray(input)) return input;
++function pickSchemaFields(fields: readonly string[], input: unknown): unknown {
++  // 同 omitSchemaFields：先把容器擦成 any，Array.isArray 才有收窄。
++  const raw: any = input;
++  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return input;
    const source = input as Record<string, unknown>;
-   return Object.fromEntries(
+-  return Object.fromEntries(
+-    Object.entries(schema.shape).flatMap(([key, child]) => {
+-      if (!(key in source)) return [];
+-      return [
+-        [key, child instanceof z.ZodObject ? pickSchemaFields(child, source[key]) : source[key]],
+-      ];
+-    }),
+-  );
++  const picked: Record<string, unknown> = {};
++  for (const key of fields) {
++    if (!(key in source)) continue;
++    const children = childFieldsOf(key);
++    picked[key] = children === undefined ? source[key] : pickSchemaFields(children, source[key]);
++  }
++  return picked;
+ }
 diff --git a/packages/provider/src/config/model-config.ts b/packages/provider/src/config/model-config.ts
 index beb7e9a..f191141 100644
 --- a/packages/provider/src/config/model-config.ts
@@ -7631,7 +7940,7 @@ index a566b13..89d35a3 100644
  
    static empty(): ProviderConfigMap {
 diff --git a/packages/provider/src/config/provider-data-schema.ts b/packages/provider/src/config/provider-data-schema.ts
-index 101e2cb..c4e18b8 100644
+index 101e2cb..8a5b394 100644
 --- a/packages/provider/src/config/provider-data-schema.ts
 +++ b/packages/provider/src/config/provider-data-schema.ts
 @@ -18,8 +18,7 @@ export const zhipuAccountModeDataSchema = z.enum([
@@ -7654,14 +7963,18 @@ index 101e2cb..c4e18b8 100644
      type: z.enum(["api-key", "zhipu-coding-plan-api-key"]),
      apiKey: z.string().nullable().optional(),
      apiKeyManagementUrl: z.string().url().nullable().optional(),
-@@ -38,16 +36,14 @@ export const completeApiKeyAccessDataSchema = apiKeyAccessDataSchema.extend({
+@@ -38,18 +36,19 @@ export const completeApiKeyAccessDataSchema = apiKeyAccessDataSchema.extend({
    apiKey: nonBlankRequiredString,
  });
  
 -export const completeZhipuAccountAccessDataSchema = z
 -  .object({
+-    type: z.literal("zhipu-account"),
++// 不能读 `.shape.type` 复用字段 schema：scriptc 把 `.shape.field` 读成 any，放进
++// `z.object` 的槽位会报 any → ZBase；改为把该字段 schema 提成局部常量直接引用。
++const zhipuAccountTypeDataSchema = z.literal("zhipu-account");
 +export const completeZhipuAccountAccessDataSchema = z.object({
-     type: z.literal("zhipu-account"),
++    type: zhipuAccountTypeDataSchema,
      accountType: z.enum(["zai", "bigmodel"]),
      mode: zhipuAccountModeDataSchema,
      entitled: z.boolean(),
@@ -7671,9 +7984,12 @@ index 101e2cb..c4e18b8 100644
 -  .object({
 +export const zhipuAccountAccessDataSchema = z.object({
      ...sparseShape(completeZhipuAccountAccessDataSchema.shape),
-     type: completeZhipuAccountAccessDataSchema.shape.type,
+-    type: completeZhipuAccountAccessDataSchema.shape.type,
++    type: zhipuAccountTypeDataSchema,
    })
-@@ -61,15 +57,13 @@ const completeProviderAccessDataSchema = z.discriminatedUnion("type", [
+   .strict();
+ export const providerAccessDataSchema = z.discriminatedUnion("type", [
+@@ -61,15 +60,13 @@ const completeProviderAccessDataSchema = z.discriminatedUnion("type", [
    completeZhipuAccountAccessDataSchema,
  ]);
  
@@ -7691,7 +8007,7 @@ index 101e2cb..c4e18b8 100644
      ...sparseShape(completeProviderApiDataSchema.shape),
      baseUrl: z.string().url().nullable().optional(),
    })
-@@ -80,8 +74,7 @@ export const personalProviderApiDataSchema = providerApiDataSchema.extend({
+@@ -80,8 +77,7 @@ export const personalProviderApiDataSchema = providerApiDataSchema.extend({
  });
  
  const modelIdsDataSchema = z.array(z.string().min(1)).readonly().nullable().optional();
@@ -7701,7 +8017,7 @@ index 101e2cb..c4e18b8 100644
      group: providerGroupDataSchema.nullable().optional(),
      logo: providerLogoDataSchema.nullable().optional(),
      access: providerAccessDataSchema.nullable().optional(),
-@@ -98,14 +91,12 @@ export const completeProviderConfigDataSchema = providerConfigDataSchema.extend(
+@@ -98,14 +94,12 @@ export const completeProviderConfigDataSchema = providerConfigDataSchema.extend(
    api: completeProviderApiDataSchema,
  });
  
@@ -7719,7 +8035,7 @@ index 101e2cb..c4e18b8 100644
      templateNameMap: providerTemplateNameMapDataSchema,
      config: providerConfigDataSchema,
 diff --git a/packages/provider/src/config/rule-data-schema.ts b/packages/provider/src/config/rule-data-schema.ts
-index 07f2307..2008efa 100644
+index 07f2307..732d6ed 100644
 --- a/packages/provider/src/config/rule-data-schema.ts
 +++ b/packages/provider/src/config/rule-data-schema.ts
 @@ -11,8 +11,7 @@ import {
@@ -7762,7 +8078,7 @@ index 07f2307..2008efa 100644
      modelRules: z.array(modelMatchConfigRuleSchema),
      modelApiRules: z.array(modelApiMatchConfigRuleSchema),
      providerSiteRules: z.array(providerSiteMatchConfigRuleSchema),
-@@ -61,8 +57,7 @@ export const builtinModelConfigRulesSchema = z
+@@ -61,17 +57,17 @@ export const builtinModelConfigRulesSchema = z
      builtinProviderModelRules: z.array(providerModelConfigRuleSchema),
    })
    .strict();
@@ -7772,7 +8088,20 @@ index 07f2307..2008efa 100644
      providerModelRules: z.array(providerModelConfigRuleSchema),
      manualProviderModelRules: z.array(manualProviderModelConfigRuleSchema),
    })
-@@ -84,8 +79,7 @@ export const personalModelConfigRulesSchema = z
+   .strict()
+   .superRefine((rules, context) => {
+     // 不能通过最后一次覆盖掩盖矛盾模式；身份用元组编码，避免模型 ID 自带分隔符碰撞。
+-    const smartIds = new Set(
+-      rules.providerModelRules.map((rule) => JSON.stringify([rule.providerId, rule.modelId])),
+-    );
++    const smartIds = new Set<string>();
++    rules.providerModelRules.forEach((rule) => {
++      smartIds.add(JSON.stringify([rule.providerId, rule.modelId]));
++    });
+     rules.manualProviderModelRules.forEach((rule, index) => {
+       if (smartIds.has(JSON.stringify([rule.providerId, rule.modelId]))) {
+         context.addIssue({
+@@ -84,8 +80,7 @@ export const personalModelConfigRulesSchema = z
    });
  
  // 身份、模板引用和实例名属于规则，不再成为可向执行配置叠加的叶子。
@@ -7782,7 +8111,7 @@ index 07f2307..2008efa 100644
      providerId: idSchema,
      templateId: idSchema.nullable().optional(),
      providerName: idSchema.nullable().optional(),
-@@ -121,8 +115,7 @@ const personalProviderConfigRuleSchema = providerConfigRuleSchema
+@@ -121,8 +116,7 @@ const personalProviderConfigRuleSchema = providerConfigRuleSchema
        });
      }
    });
@@ -7792,7 +8121,7 @@ index 07f2307..2008efa 100644
      templateRules: z.array(providerTemplateConfigRuleSchema),
      providerRules: z.array(builtinProviderConfigRuleSchema),
    })
-@@ -141,8 +134,7 @@ export const builtinProviderConfigRulesSchema = z
+@@ -141,8 +135,7 @@ export const builtinProviderConfigRulesSchema = z
        context,
      );
    });
@@ -8706,6 +9035,102 @@ index d3a75a5..89b7f55 100644
 -});
 +  providers: ([]),
 +};
+diff --git a/packages/services/src/conversation-share/conversationShare.ts b/packages/services/src/conversation-share/conversationShare.ts
+index 1f4c967..3e8691a 100644
+--- a/packages/services/src/conversation-share/conversationShare.ts
++++ b/packages/services/src/conversation-share/conversationShare.ts
+@@ -14,6 +14,12 @@ import { Event as RpcEvent, type Event } from "@zcode/rpc";
+ import { createServiceDescriptor } from "../descriptors.js";
+ import type { ConversationShareClientErrorKind } from "./conversationShareHttpClient.js";
+ 
++/** scriptc 只对泛型记录参数上的 Object.keys 有 lowering；键枚举统一走这里，
++ *  调用方先把值绑定成 `Record<string, unknown>` 再传入。 */
++function recordKeys<T>(rec: Record<string, T>): string[] {
++  return Object.keys(rec);
++}
++
+ export type ConversationShareSelection =
+   | { kind: "all" }
+   | { kind: "productTurns"; productTurnIds: string[] }
+@@ -195,7 +201,17 @@ interface ConversationShareFailureDetails {
+   cause?: unknown;
+ }
+ 
+-const SAFE_FAILURE_DIAGNOSTIC_KEYS = new Set([
++/** scriptc 不支持用数组构造 Set（`new Set(values)` 无 lowering），
++ *  建空集合后逐个 add。 */
++function createStringSet(values: readonly string[]): Set<string> {
++  const result = new Set<string>();
++  for (const value of values) {
++    result.add(value);
++  }
++  return result;
++}
++
++const SAFE_FAILURE_DIAGNOSTIC_KEYS = createStringSet([
+   "rowKind",
+   "rowId",
+   "field",
+@@ -282,10 +298,14 @@ export function sanitizeConversationShareIssues(issues: readonly ConversationSha
+   issueCount: number;
+   omittedIssueCount: number;
+ } {
+-  const sanitized = issues
+-    .slice(0, MAX_FAILURE_ISSUES)
+-    .map(sanitizeFailureIssue)
+-    .filter((issue): issue is ConversationShareFailureIssue => issue !== null);
++  const sanitized: ConversationShareFailureIssue[] = [];
++  const limited = issues.slice(0, MAX_FAILURE_ISSUES);
++  for (const issue of limited) {
++    const sanitizedIssue = sanitizeFailureIssue(issue);
++    if (sanitizedIssue !== null) {
++      sanitized.push(sanitizedIssue);
++    }
++  }
+   return {
+     issues: sanitized,
+     issueCount: issues.length,
+@@ -298,12 +318,17 @@ function sanitizeFailureDiagnostics(
+ ): ConversationShareFailureDiagnostics | undefined {
+   if (!diagnostics) return undefined;
+   const safe: Record<string, ConversationShareFailureDiagnosticValue> = {};
+-  for (const [key, value] of Object.entries(diagnostics)) {
++  // 键枚举走 recordKeys（绑定后只用于枚举，取值仍从原记录读）。
++  const keysOf: Record<string, unknown> = diagnostics;
++  for (const key of recordKeys(keysOf)) {
+     if (!SAFE_FAILURE_DIAGNOSTIC_KEYS.has(key)) continue;
++    const value = diagnostics[key];
++    if (value === undefined) continue;
+     if (typeof value === "string" && (/[\\/]|:\/\//u.test(value) || value.length > 128)) continue;
+     safe[key] = value;
+   }
+-  return Object.keys(safe).length > 0 ? safe : undefined;
++  const safeKeysOf: Record<string, unknown> = safe;
++  return recordKeys(safeKeysOf).length > 0 ? safe : undefined;
+ }
+ 
+ export class ConversationShareServiceError extends Error {
+@@ -324,7 +349,7 @@ export class ConversationShareServiceError extends Error {
+     message: string,
+     details: ConversationShareFailureDetails = {},
+   ) {
+-    super(message, ...(details.cause === undefined ? [] : [{ cause: details.cause }]));
++    super(message);
+     this.name = "ConversationShareServiceError";
+     this.kind = kind;
+     const requestId = details.requestId?.trim();
+@@ -354,9 +379,8 @@ export class ConversationShareServiceError extends Error {
+       ...(this.issueCount > 0 ? { issueCount: this.issueCount } : {}),
+       ...(this.issueCount > 0 ? { omittedIssueCount: this.omittedIssueCount } : {}),
+     };
+-    if (Object.keys(safeDetails).length > 0) {
+-      this.details = safeDetails;
+-    }
++    // reasonCode 是必填字段，safeDetails 恒非空；scriptc 不能对接口值直查 Object.keys，直接赋值。
++    this.details = safeDetails;
+   }
+ }
+ 
 diff --git a/packages/services/src/conversation-share/conversationShareService.ts b/packages/services/src/conversation-share/conversationShareService.ts
 index d7e96c8..0d97043 100644
 --- a/packages/services/src/conversation-share/conversationShareService.ts
@@ -8955,6 +9380,179 @@ index 57c4875..2c53ac7 100644
 +    providers: (providers.map(projectModelSelectionProviderView)),
 +  };
  }
+diff --git a/packages/services/src/model-provider/providerProvisioningTarget.ts b/packages/services/src/model-provider/providerProvisioningTarget.ts
+index 3a8bd55..dbfbd94 100644
+--- a/packages/services/src/model-provider/providerProvisioningTarget.ts
++++ b/packages/services/src/model-provider/providerProvisioningTarget.ts
+@@ -25,7 +25,27 @@ import {
+ 
+ const PROVISIONING_SCHEMA_VERSION = 1 as const;
+ 
+-const OAUTH_CREDENTIAL_KEYS = new Set<string>(PROVIDER_PROVISIONING_OAUTH_CREDENTIAL_KEYS);
++/** 记录键枚举。scriptc 只对**泛型记录**参数上的 Object.keys 有 lowering，
++ *  `Record<string, any>` 的写法没有（SC2020），所以调用方先把值类型擦成 unknown 再传进来。 */
++function recordKeys<T>(rec: Record<string, T>): string[] {
++  return Object.keys(rec);
++}
++
++/** 数组判定。`Array.isArray` 在条件表达式里不会收窄 unknown，这里用本文件内的判定替代。 */
++function isArray(value: any): value is any[] {
++  return (
++    typeof value === "object" &&
++    value !== null &&
++    typeof value.length === "number" &&
++    typeof value.slice === "function"
++  );
++}
++
++// scriptc 不支持用数组构造 Set，显式建集合后逐个 add。
++const OAUTH_CREDENTIAL_KEYS = new Set<string>();
++for (const key of PROVIDER_PROVISIONING_OAUTH_CREDENTIAL_KEYS) {
++  OAUTH_CREDENTIAL_KEYS.add(key);
++}
+ 
+ export interface ProviderProvisioningTargetOptions {
+   readonly providerRuntime: ProviderRuntime;
+@@ -61,10 +81,14 @@ export function createProviderProvisioningTarget(
+           (record) => record.syncId === envelope.syncId,
+         );
+         if (previousResult) {
+-          return {
+-            ...previousResult.result,
+-            status: "already-applied",
+-          } satisfies ProviderProvisioningResult;
++          // scriptc 不支持展开 any 源；先绑成 JSON 安全记录，再按键复制后覆写状态。
++          const previousRecord: Record<string, unknown> = previousResult.result;
++          const alreadyApplied: Record<string, unknown> = {};
++          for (const key of recordKeys(previousRecord)) {
++            alreadyApplied[key] = previousRecord[key];
++          }
++          alreadyApplied.status = "already-applied";
++          return alreadyApplied;
+         }
+ 
+         validateCredentialEntries(envelope);
+@@ -88,9 +112,14 @@ export function createProviderProvisioningTarget(
+               envelope.accountSettings.providerFamilyConnectionSelections,
+           });
+ 
+-          const incomingCredentials = new Map(
+-            envelope.credentials.map((credential) => [credential.key, credential.value]),
+-          );
++          // any 上的 .map 不走静态路径；改为显式建表并逐个 set。
++          const incomingCredentials = new Map<string, string>();
++          const incomingEntries: any[] = envelope.credentials;
++          for (const credential of incomingEntries) {
++            const key: string = credential.key;
++            const value: string = credential.value;
++            incomingCredentials.set(key, value);
++          }
+           for (const key of before.credentials.keys()) {
+             const value = incomingCredentials.get(key);
+             applied.credentials.push({ key, value: value ?? null });
+@@ -185,11 +214,20 @@ async function captureBeforeState(
+     options.settingService.get(),
+   ]);
+   const credentials = new Map<string, string | null>();
+-  const credentialKeys = new Set<string>([
+-    ...OAUTH_CREDENTIAL_KEYS,
+-    ...((await options.listProvisioningCredentialKeys?.()) ?? []),
+-    ...envelope.credentials.map((entry) => entry.key),
+-  ]);
++  // scriptc 不支持用数组构造 Set；显式建集合后逐个 add，信封键先擦成 any[] 再枚举。
++  const credentialKeys = new Set<string>();
++  for (const key of PROVIDER_PROVISIONING_OAUTH_CREDENTIAL_KEYS) {
++    credentialKeys.add(key);
++  }
++  const listedCredentialKeys = (await options.listProvisioningCredentialKeys?.()) ?? [];
++  for (const key of listedCredentialKeys) {
++    credentialKeys.add(key);
++  }
++  const envelopeCredentials: any[] = envelope.credentials;
++  for (const entry of envelopeCredentials) {
++    const key: string = entry.key;
++    credentialKeys.add(key);
++  }
+   for (const key of credentialKeys) {
+     if (!OAUTH_CREDENTIAL_KEYS.has(key) && !isProviderProvisioningAccountCredentialKey(key)) {
+       continue;
+@@ -301,34 +339,43 @@ function sameAccountSettings(
+ 
+ function validateCredentialEntries(envelope: ProviderProvisioningEnvelope): void {
+   const seen = new Set<string>();
+-  for (const entry of envelope.credentials) {
+-    if (seen.has(entry.key)) throw new Error(`重复 Provisioning Credential key: ${entry.key}`);
+-    seen.add(entry.key);
++  const entries: any[] = envelope.credentials;
++  for (const entry of entries) {
++    const key: string = entry.key;
++    if (seen.has(key)) throw new Error(`重复 Provisioning Credential key: ${key}`);
++    seen.add(key);
+     const allowed =
+-      (entry.scope === "oauth-session" && OAUTH_CREDENTIAL_KEYS.has(entry.key)) ||
+-      (entry.scope === "account-provider" && isProviderProvisioningAccountCredentialKey(entry.key));
+-    if (!allowed) throw new Error(`不允许同步的 Credential key: ${entry.key}`);
++      (entry.scope === "oauth-session" && OAUTH_CREDENTIAL_KEYS.has(key)) ||
++      (entry.scope === "account-provider" && isProviderProvisioningAccountCredentialKey(key));
++    if (!allowed) throw new Error(`不允许同步的 Credential key: ${key}`);
+   }
+ }
+ 
+ async function readStateFile(filePath: string): Promise<ProvisioningStateFile | null> {
+   try {
+-    const parsed = JSON.parse(await readFile(filePath, "utf8")) as Record<string, unknown>;
++    // scriptc 拒绝把 any 断言成 Record<string, unknown>，这里保留 any 绑定并在取值处擦除。
++    const parsed: any = JSON.parse(await readFile(filePath, "utf8"));
+     if (parsed.schemaVersion !== PROVISIONING_SCHEMA_VERSION) {
+       return null;
+     }
+-    const rawRecords = Array.isArray(parsed.records)
+-      ? parsed.records
+-      : parsed.syncId && parsed.result
+-        ? [{ syncId: parsed.syncId, result: parsed.result }]
+-        : [];
+-    const records = rawRecords.flatMap((record) => {
+-      if (typeof record !== "object" || record === null) return [];
+-      const candidate = record as Record<string, unknown>;
+-      if (typeof candidate.syncId !== "string" || !candidate.syncId.trim()) return [];
++    // 整份 raw 已擦成 any；Array.isArray 不在条件表达式里收窄 unknown，改用本文件内的判定。
++    let rawRecords: any[] = [];
++    if (isArray(parsed.records)) {
++      rawRecords = parsed.records;
++    } else if (parsed.syncId && parsed.result) {
++      rawRecords = [{ syncId: parsed.syncId, result: parsed.result }];
++    }
++    // flatMap + 条件展开在 scriptc 里不支持，改为普通循环按需 push。
++    const records: ProvisioningStateRecord[] = [];
++    for (const record of rawRecords) {
++      if (typeof record !== "object" || record === null) continue;
++      const candidate: Record<string, unknown> = record;
++      if (typeof candidate.syncId !== "string" || !candidate.syncId.trim()) continue;
++      const syncId = candidate.syncId;
+       const result = providerProvisioningResultSchema.safeParse(candidate.result);
+-      return result.success ? [{ syncId: candidate.syncId, result: result.data }] : [];
+-    });
++      if (!result.success) continue;
++      records.push({ syncId, result: result.data });
++    }
+     return { schemaVersion: PROVISIONING_SCHEMA_VERSION, records };
+   } catch (error) {
+     if (isFileNotFound(error)) return null;
+diff --git a/packages/services/src/onboarding/onboardingRecord.ts b/packages/services/src/onboarding/onboardingRecord.ts
+index 7b3d8c3..622c00d 100644
+--- a/packages/services/src/onboarding/onboardingRecord.ts
++++ b/packages/services/src/onboarding/onboardingRecord.ts
+@@ -66,7 +66,9 @@ export type OnboardingRecordServiceFactory = (
+   options: CreateOnboardingRecordServiceOptions,
+ ) => IOnboardingRecordService;
+ 
+-export const IOnboardingRecordService = createServiceDescriptor<IOnboardingRecordService>(
++// phantom 泛型只做类型关联，运行时只读 channelName；IOnboardingRecordService 含
++// Omit<any, ...> 的方法参数（scriptc 无法映射），故这里实例化为 unknown。
++export const IOnboardingRecordService = createServiceDescriptor<unknown>(
+   ServiceChannels.OnboardingRecord,
+ );
+ 
 diff --git a/packages/services/src/process/processResourceSampler.ts b/packages/services/src/process/processResourceSampler.ts
 index 91077c9..a4be920 100644
 --- a/packages/services/src/process/processResourceSampler.ts
@@ -9201,10 +9799,105 @@ index afa9f5d..8cd3a23 100644
              JSON.stringify(retainLegacyAccountConnectionFields(latest)) !==
                JSON.stringify(retainLegacyAccountConnectionFields(original))
 diff --git a/packages/services/src/settings-sync/settingsSyncService.ts b/packages/services/src/settings-sync/settingsSyncService.ts
-index 492984b..a296207 100644
+index 492984b..648f06e 100644
 --- a/packages/services/src/settings-sync/settingsSyncService.ts
 +++ b/packages/services/src/settings-sync/settingsSyncService.ts
-@@ -800,7 +800,7 @@ async function collectPluginPaths(rootPath: string): Promise<string[]> {
+@@ -17,10 +17,15 @@ import type {
+   SettingsSyncImportMode,
+   SettingsSyncSkillImportResult,
+   SettingsSyncSkillSkipReason,
++  SettingsSyncSourceCommandSummary,
++  SettingsSyncSourceMcpServerSummary,
++  SettingsSyncSourcePluginSummary,
+   SettingsSyncSourceScope,
+   SettingsSyncSourceRootSummary,
++  SettingsSyncSourceSkillSummary,
+   SettingsSyncTaskImportResult,
+ } from "@zcode/shared";
++import { isArray } from "@zcode/native-checks";
+ import {
+   copyFile,
+   cp,
+@@ -32,7 +37,7 @@ import {
+   symlink,
+   writeFile,
+ } from "node:fs/promises";
+-import { homedir } from "node:os";
++import { homedir, platform as osPlatform } from "node:os";
+ import { basename, dirname, join, relative, resolve } from "node:path";
+ import { parse as parseYaml } from "yaml";
+ import { parse as parseToml } from "smol-toml";
+@@ -416,9 +421,49 @@ const CLAUDE_PLUGIN_MANIFEST_PATH = [".claude-plugin", "plugin.json"] as const;
+ const CODEX_PLUGIN_MANIFEST_PATH = [".codex-plugin", "plugin.json"] as const;
+ const INLINE_PLUGIN_MARKETPLACE = "inline";
+ 
++/** 记录键枚举。scriptc 只对**泛型记录**参数上的 Object.keys 有 lowering，
++ *  `Record<string, McpServerConfig>` 上直接调用没有（SC2020），所以调用方先把值
++ *  绑定成分值 unknown 的 `Record<string, unknown>` 再传进来。 */
++function recordKeys<T>(rec: Record<string, T>): string[] {
++  return Object.keys(rec);
++}
++
++/** 索引签名记录的逐键浅复制（含键序）。scriptc 对索引签名形状上的对象展开与
++ *  rest 解构都会报 SC1090/SC1031，用显式键循环替代。 */
++function copyRecord(rec: Record<string, unknown>): Record<string, unknown> {
++  const copy: Record<string, unknown> = {};
++  for (const key of recordKeys(rec)) {
++    copy[key] = rec[key];
++  }
++  return copy;
++}
++
++/** scriptc 不支持 `new Set(values)` 构造，只支持空 Set 后逐个 add/has。 */
++function toSet(values: string[]): Set<string> {
++  const result = new Set<string>();
++  for (const value of values) {
++    result.add(value);
++  }
++  return result;
++}
++
++/** 按首次出现顺序去重后按字典序排序，替代 `[...new Set(values)].sort(...)`。 */
++function uniqueSortedStrings(values: string[]): string[] {
++  const seen = new Set<string>();
++  const result: string[] = [];
++  for (const value of values) {
++    if (!seen.has(value)) {
++      seen.add(value);
++      result.push(value);
++    }
++  }
++  return result.sort((left, right) => left.localeCompare(right));
++}
++
+ function resolveUserHomeDir(): string {
+-  const envHome = process.env.HOME?.trim() || process.env.USERPROFILE?.trim();
+-  return envHome && envHome.length > 0 ? envHome : homedir();
++  // scriptc 没有 `process` 的 lowering（SC2020）；homedir() 在 POSIX 读 HOME、
++  // Windows 读 USERPROFILE，与原来的 env 兜底语义一致。
++  return homedir();
+ }
+ 
+ function getWorkspaceZcodeSkillRoot(workspacePath: string): string {
+@@ -561,7 +606,7 @@ async function importSkillDirectory(
+ }
+ 
+ function getSkillDirectorySymlinkType(
+-  platform: NodeJS.Platform | string = process.platform,
++  platform: NodeJS.Platform | string = osPlatform(),
+ ): "dir" | "junction" {
+   return platform === "win32" ? "junction" : "dir";
+ }
+@@ -582,7 +627,7 @@ async function importCommandFile(
+   importMode: SettingsSyncImportMode,
+ ): Promise<void> {
+   if (importMode === "symlink") {
+-    if (process.platform === "win32") {
++    if (osPlatform() === "win32") {
+       // Windows 创建文件级 symlink 需要管理员权限，改用硬链接。
+       // 硬链接不需要提权，且文件修改能双向同步。
+       // 跨分区（EXDEV）等硬链接失败时回退到复制。
+@@ -800,7 +845,7 @@ async function collectPluginPaths(rootPath: string): Promise<string[]> {
    } catch {
      return [];
    }
@@ -9213,7 +9906,201 @@ index 492984b..a296207 100644
    for (const entry of entries) {
      if (!entry.isDirectory() && !entry.isSymbolicLink()) {
        continue;
-@@ -1322,7 +1322,7 @@ async function buildSourceRootSummaries(
+@@ -1003,7 +1048,8 @@ function normalizeMcpServerMap(value: unknown): Record<string, McpServerConfig>
+     return {};
+   }
+   const servers: Record<string, McpServerConfig> = {};
+-  for (const [name, config] of Object.entries(value)) {
++  for (const name of recordKeys(value)) {
++    const config = value[name];
+     if (!name.trim() || !isRecord(config)) {
+       continue;
+     }
+@@ -1013,12 +1059,15 @@ function normalizeMcpServerMap(value: unknown): Record<string, McpServerConfig>
+ }
+ 
+ function stripExternalMcpTimeoutFields(config: McpServerConfig): McpServerConfig {
+-  const {
+-    timeout: _timeout,
+-    startup_timeout_sec: _startupTimeoutSec,
+-    ...rest
+-  } = config as Record<string, unknown>;
+-  return rest as McpServerConfig;
++  // scriptc 不支持索引签名记录上的 rest 解构；逐键复制并跳过两个外部超时字段。
++  const source: Record<string, unknown> = config;
++  const stripped: Record<string, unknown> = {};
++  for (const fieldName of recordKeys(source)) {
++    if (fieldName !== "timeout" && fieldName !== "startup_timeout_sec") {
++      stripped[fieldName] = source[fieldName];
++    }
++  }
++  return stripped as McpServerConfig;
+ }
+ 
+ function readZcodeMcpServers(parsed: Record<string, unknown>): Record<string, McpServerConfig> {
+@@ -1034,33 +1083,47 @@ function readWrappedMcpServers(parsed: Record<string, unknown>): Record<string,
+ 
+ function readOpenCodeMcpServers(parsed: Record<string, unknown>): Record<string, McpServerConfig> {
+   const servers = normalizeMcpServerMap(parsed.mcp);
+-  return Object.fromEntries(
+-    Object.entries(servers).map(([name, config]) => [name, normalizeOpenCodeMcpConfig(config)]),
+-  );
++  // scriptc 不认 Object.fromEntries（会崩 checker），改为逐项写回；
++  // 键枚举走泛型 recordKeys（先绑定成分值 unknown 的记录）。
++  const normalized: Record<string, McpServerConfig> = {};
++  const keysOf: Record<string, unknown> = servers;
++  for (const name of recordKeys(keysOf)) {
++    normalized[name] = normalizeOpenCodeMcpConfig(servers[name]);
++  }
++  return normalized;
+ }
+ 
+ function normalizeOpenCodeMcpConfig(config: McpServerConfig): McpServerConfig {
+-  const rawCommand = (config as Record<string, unknown>).command;
++  const source: Record<string, unknown> = config;
++  const rawCommand = source.command;
+   if (Array.isArray(rawCommand)) {
+     const [firstCommand, ...args] = rawCommand.filter(
+       (item): item is string => typeof item === "string",
+     );
+     if (firstCommand) {
+-      const { command: _command, type, ...rest } = config;
+-      return {
+-        ...rest,
+-        command: firstCommand,
+-        args,
+-        ...(type === "local" ? { type: "stdio" } : type === "remote" ? { type: "http" } : {}),
+-      };
++      // scriptc 不支持索引签名记录上的 rest 解构/对象展开；逐键复制（跳过被重写的
++      // command/type），再按 `{ ...rest, command, args, type? }` 的键序写回。
++      const normalized: Record<string, unknown> = {};
++      for (const fieldName of recordKeys(source)) {
++        if (fieldName !== "command" && fieldName !== "type") {
++          normalized[fieldName] = source[fieldName];
++        }
++      }
++      normalized.command = firstCommand;
++      normalized.args = args;
++      if (config.type === "local") {
++        normalized.type = "stdio";
++      } else if (config.type === "remote") {
++        normalized.type = "http";
++      }
++      return normalized as McpServerConfig;
+     }
+   }
+   if (config.type === "local" && typeof rawCommand === "string" && rawCommand.trim()) {
+-    return {
+-      ...config,
+-      type: "stdio",
+-      command: rawCommand.trim(),
+-    };
++    const normalized = copyRecord(source);
++    normalized.type = "stdio";
++    normalized.command = rawCommand.trim();
++    return normalized as McpServerConfig;
+   }
+   return config;
+ }
+@@ -1095,9 +1158,11 @@ async function collectExistingMcpServerNameKeys(
+   const nameKeys = new Set<string>();
+   const targetConfigPath = resolveMcpConfigPathForScope(targetScope, workspacePath);
+   if (targetConfigPath) {
+-    for (const name of Object.keys(
+-      readZcodeMcpServers(await readJsonFileOrEmpty(targetConfigPath)),
+-    )) {
++    // scriptc：非泛型记录上的 Object.keys 无 lowering；先绑定成分值 unknown 的记录再枚举。
++    const configuredServers: Record<string, unknown> = readZcodeMcpServers(
++      await readJsonFileOrEmpty(targetConfigPath),
++    );
++    for (const name of recordKeys(configuredServers)) {
+       nameKeys.add(normalizeMcpServerNameKey(name));
+     }
+   }
+@@ -1110,24 +1175,32 @@ async function addMcpServerToZcodeConfig(
+   config: McpServerConfig,
+ ): Promise<void> {
+   const parsed = await readJsonFileOrEmpty(filePath);
+-  const currentMcp = isRecord(parsed.mcp) ? parsed.mcp : {};
++  const currentMcp: Record<string, unknown> = isRecord(parsed.mcp) ? parsed.mcp : {};
+   const servers = readZcodeMcpServers(parsed);
+-  await writeJsonFile(filePath, {
+-    ...parsed,
+-    mcp: {
+-      ...currentMcp,
+-      servers: {
+-        ...servers,
+-        [name]: config,
+-      },
+-    },
+-  });
++  // scriptc 不支持索引签名记录的对象展开；逐层复制后按键写回，键序与展开一致。
++  const nextServers: Record<string, McpServerConfig> = {};
++  const serverKeys: Record<string, unknown> = servers;
++  for (const serverName of recordKeys(serverKeys)) {
++    nextServers[serverName] = servers[serverName];
++  }
++  nextServers[name] = config;
++  const nextMcp = copyRecord(currentMcp);
++  nextMcp.servers = nextServers;
++  const nextParsed = copyRecord(parsed);
++  nextParsed.mcp = nextMcp;
++  await writeJsonFile(filePath, nextParsed);
+ }
+ 
+ function readStringArray(value: unknown): string[] {
+-  return Array.isArray(value)
+-    ? value.filter((item): item is string => typeof item === "string")
+-    : [];
++  // scriptc 不在条件表达式里用 Array.isArray 收窄 unknown；改用 isArray 守卫。
++  const items: any[] = isArray(value) ? value : [];
++  const strings: string[] = [];
++  for (const item of items) {
++    if (typeof item === "string") {
++      strings.push(item);
++    }
++  }
++  return strings;
+ }
+ 
+ async function writeJsonFile(filePath: string, value: Record<string, unknown>): Promise<void> {
+@@ -1137,19 +1210,18 @@ async function writeJsonFile(filePath: string, value: Record<string, unknown>):
+ 
+ async function addPluginDirToConfig(filePath: string, pluginPath: string): Promise<void> {
+   const parsed = await readJsonFileOrEmpty(filePath);
+-  const plugins = isRecord(parsed.plugins) ? parsed.plugins : {};
++  const plugins: Record<string, unknown> = isRecord(parsed.plugins) ? parsed.plugins : {};
+   const dirs = readStringArray(plugins.dirs);
+   const resolvedPluginPath = resolve(pluginPath);
+   if (dirs.map((item) => resolve(item)).includes(resolvedPluginPath)) {
+     return;
+   }
+-  await writeJsonFile(filePath, {
+-    ...parsed,
+-    plugins: {
+-      ...plugins,
+-      dirs: [...dirs, resolvedPluginPath],
+-    },
+-  });
++  // scriptc 不支持索引签名记录的对象展开；逐层复制后写回 dirs，键序与展开一致。
++  const nextPlugins = copyRecord(plugins);
++  nextPlugins.dirs = [...dirs, resolvedPluginPath];
++  const nextParsed = copyRecord(parsed);
++  nextParsed.plugins = nextPlugins;
++  await writeJsonFile(filePath, nextParsed);
+ }
+ 
+ async function collectConfiguredPluginIds(configPath: string): Promise<Set<string>> {
+@@ -1298,7 +1370,7 @@ async function buildSourceRootSummaries(
+       continue;
+     }
+     let importableCount = 0;
+-    const skills = [];
++    const skills: SettingsSyncSourceSkillSummary[] = [];
+     for (const candidate of groupCandidates) {
+       const skipReason = await getSkillImportCandidateSkipReason(
+         candidate,
+@@ -1322,7 +1394,7 @@ async function buildSourceRootSummaries(
        discoveredCount: groupCandidates.length,
        importableCount,
        skippedCount: groupCandidates.length - importableCount,
@@ -9222,7 +10109,16 @@ index 492984b..a296207 100644
      });
    }
  
-@@ -1374,7 +1374,7 @@ async function buildCommandSourceRootSummaries(
+@@ -1349,7 +1421,7 @@ async function buildCommandSourceRootSummaries(
+       continue;
+     }
+     let importableCount = 0;
+-    const commands = [];
++    const commands: SettingsSyncSourceCommandSummary[] = [];
+     for (const candidate of groupCandidates) {
+       const skipReason = await getCommandImportCandidateSkipReason(
+         candidate,
+@@ -1374,7 +1446,7 @@ async function buildCommandSourceRootSummaries(
        discoveredCount: groupCandidates.length,
        importableCount,
        skippedCount: groupCandidates.length - importableCount,
@@ -9231,7 +10127,16 @@ index 492984b..a296207 100644
      });
    }
  
-@@ -1427,7 +1427,7 @@ async function buildPluginSourceRootSummaries(
+@@ -1402,7 +1474,7 @@ async function buildPluginSourceRootSummaries(
+       continue;
+     }
+     let importableCount = 0;
+-    const plugins = [];
++    const plugins: SettingsSyncSourcePluginSummary[] = [];
+     for (const candidate of groupCandidates) {
+       const skipReason = await getPluginImportCandidateSkipReason(
+         candidate,
+@@ -1427,7 +1499,7 @@ async function buildPluginSourceRootSummaries(
        discoveredCount: groupCandidates.length,
        importableCount,
        skippedCount: groupCandidates.length - importableCount,
@@ -9240,7 +10145,16 @@ index 492984b..a296207 100644
      });
    }
  
-@@ -1479,7 +1479,7 @@ async function buildMcpSourceRootSummaries(
+@@ -1455,7 +1527,7 @@ async function buildMcpSourceRootSummaries(
+       continue;
+     }
+     let importableCount = 0;
+-    const mcpServers = [];
++    const mcpServers: SettingsSyncSourceMcpServerSummary[] = [];
+     for (const candidate of groupCandidates) {
+       const skipReason = await getMcpImportCandidateSkipReason(
+         candidate,
+@@ -1479,7 +1551,7 @@ async function buildMcpSourceRootSummaries(
        discoveredCount: groupCandidates.length,
        importableCount,
        skippedCount: groupCandidates.length - importableCount,
@@ -9249,6 +10163,143 @@ index 492984b..a296207 100644
      });
    }
  
+@@ -1614,7 +1686,9 @@ async function collectMcpImportCandidates(workspacePath?: string): Promise<McpIm
+       continue;
+     }
+     const serverMap = await readMcpServersFromSourceFile(root.rootPath, root.format);
+-    for (const [name, config] of Object.entries(serverMap)) {
++    const serverKeys: Record<string, unknown> = serverMap;
++    for (const name of recordKeys(serverKeys)) {
++      const config = serverMap[name];
+       const sourcePath = `${root.rootPath}#${name}`;
+       const seenKey = `${root.agent}:${sourcePath}`;
+       if (seenSourceNames.has(seenKey)) {
+@@ -1641,9 +1715,9 @@ async function buildSkillsDiscovery(workspacePath?: string): Promise<SettingsSyn
+   for (const { agent } of SUPPORTED_SKILL_AGENT_SOURCES) {
+     const agentCandidates = candidates.filter((candidate) => candidate.agent === agent);
+     const discoveredCount = agentCandidates.length;
+-    const sourcePaths = [
+-      ...new Set(agentCandidates.map((candidate) => candidate.sourceRootPath)),
+-    ].sort((left, right) => left.localeCompare(right));
++    const sourcePaths = uniqueSortedStrings(
++      agentCandidates.map((candidate) => candidate.sourceRootPath),
++    );
+     const sourceRoots = await buildSourceRootSummaries(agentCandidates);
+     let importableCount = 0;
+     const existingNameKeysByTargetRoot = new Map<string, Set<string>>();
+@@ -1681,9 +1755,9 @@ async function buildCommandsDiscovery(
+   for (const { agent } of SUPPORTED_COMMAND_AGENT_SOURCES) {
+     const agentCandidates = candidates.filter((candidate) => candidate.agent === agent);
+     const discoveredCount = agentCandidates.length;
+-    const sourcePaths = [
+-      ...new Set(agentCandidates.map((candidate) => candidate.sourceRootPath)),
+-    ].sort((left, right) => left.localeCompare(right));
++    const sourcePaths = uniqueSortedStrings(
++      agentCandidates.map((candidate) => candidate.sourceRootPath),
++    );
+     const sourceRoots = await buildCommandSourceRootSummaries(agentCandidates);
+     let importableCount = 0;
+     const existingNameKeysByTargetRoot = new Map<string, Set<string>>();
+@@ -1719,9 +1793,9 @@ async function buildPluginsDiscovery(workspacePath?: string): Promise<SettingsSy
+   for (const { agent } of SUPPORTED_PLUGIN_AGENT_SOURCES) {
+     const agentCandidates = candidates.filter((candidate) => candidate.agent === agent);
+     const discoveredCount = agentCandidates.length;
+-    const sourcePaths = [
+-      ...new Set(agentCandidates.map((candidate) => candidate.sourceRootPath)),
+-    ].sort((left, right) => left.localeCompare(right));
++    const sourcePaths = uniqueSortedStrings(
++      agentCandidates.map((candidate) => candidate.sourceRootPath),
++    );
+     const sourceRoots = await buildPluginSourceRootSummaries(agentCandidates, workspacePath);
+     let importableCount = 0;
+     const existingPluginIdsByConfigPath = new Map<string, Set<string>>();
+@@ -1763,9 +1837,9 @@ async function buildMcpDiscovery(workspacePath?: string): Promise<SettingsSyncDi
+   for (const { agent } of SUPPORTED_MCP_AGENT_SOURCES) {
+     const agentCandidates = candidates.filter((candidate) => candidate.agent === agent);
+     const discoveredCount = agentCandidates.length;
+-    const sourcePaths = [
+-      ...new Set(agentCandidates.map((candidate) => candidate.sourceRootPath)),
+-    ].sort((left, right) => left.localeCompare(right));
++    const sourcePaths = uniqueSortedStrings(
++      agentCandidates.map((candidate) => candidate.sourceRootPath),
++    );
+     const sourceRoots = await buildMcpSourceRootSummaries(agentCandidates, workspacePath);
+     let importableCount = 0;
+     const existingNameKeysByTargetScope = new Map<SettingsSyncSourceScope, Set<string>>();
+@@ -1809,7 +1883,7 @@ async function importSkillsForAgent(
+   importMode: SettingsSyncImportMode = "symlink",
+   skillPaths?: string[],
+ ): Promise<SettingsSyncTaskImportResult> {
+-  const selectedSkillPaths = skillPaths ? new Set(skillPaths) : null;
++  const selectedSkillPaths = skillPaths ? toSet(skillPaths) : null;
+   const candidates = (await collectSkillImportCandidates(workspacePath)).filter(
+     (candidate) =>
+       candidate.agent === agent &&
+@@ -1905,7 +1979,7 @@ async function importCommandsForAgent(
+   importMode: SettingsSyncImportMode = "symlink",
+   commandPaths?: string[],
+ ): Promise<SettingsSyncTaskImportResult> {
+-  const selectedCommandPaths = commandPaths ? new Set(commandPaths) : null;
++  const selectedCommandPaths = commandPaths ? toSet(commandPaths) : null;
+   const candidates = (await collectCommandImportCandidates(workspacePath)).filter(
+     (candidate) =>
+       candidate.agent === agent &&
+@@ -1997,7 +2071,7 @@ async function importPluginsForAgent(
+   importMode: SettingsSyncImportMode = "symlink",
+   pluginPaths?: string[],
+ ): Promise<SettingsSyncTaskImportResult> {
+-  const selectedPluginPaths = pluginPaths ? new Set(pluginPaths) : null;
++  const selectedPluginPaths = pluginPaths ? toSet(pluginPaths) : null;
+   const candidates = (await collectPluginImportCandidates(workspacePath)).filter(
+     (candidate) =>
+       candidate.agent === agent &&
+@@ -2095,7 +2169,7 @@ async function importMcpServersForAgent(
+   targetScope?: SettingsSyncSourceScope,
+   mcpServerPaths?: string[],
+ ): Promise<SettingsSyncTaskImportResult> {
+-  const selectedMcpServerPaths = mcpServerPaths ? new Set(mcpServerPaths) : null;
++  const selectedMcpServerPaths = mcpServerPaths ? toSet(mcpServerPaths) : null;
+   const candidates = (await collectMcpImportCandidates(workspacePath)).filter(
+     (candidate) =>
+       candidate.agent === agent &&
+diff --git a/packages/services/src/usage-stats/providers/bigmodelUsageMonitorMapper.ts b/packages/services/src/usage-stats/providers/bigmodelUsageMonitorMapper.ts
+index 4fa2a6e..b182a0a 100644
+--- a/packages/services/src/usage-stats/providers/bigmodelUsageMonitorMapper.ts
++++ b/packages/services/src/usage-stats/providers/bigmodelUsageMonitorMapper.ts
+@@ -400,6 +400,15 @@ function buildCodingPlanActivitySnapshot(
+   };
+ }
+ 
++// compat 层下 AppUsageHeatmapCell 是 z.infer 出来的 any，`Omit<AppUsageHeatmapCell, "level">`
++// 做类型谓词会让 tsc 报 SC0001；用本地具体结构承接 map 出来的热力格。
++interface ActivityHeatmapDay {
++  date: string;
++  totalTokens: number;
++  turnCount: number;
++  toolCallCount: number;
++}
++
+ function buildCodingPlanActivityHeatmap(
+   series: BigModelCreditUsageActivitySeriesPayload[],
+ ): AppUsageHeatmap {
+@@ -418,7 +427,7 @@ function buildCodingPlanActivityHeatmap(
+         toolCallCount: toFiniteNumber(item.mcpCalls) ?? 0,
+       };
+     })
+-    .filter((cell): cell is Omit<AppUsageHeatmapCell, "level"> => cell !== null)
++    .filter((cell): cell is ActivityHeatmapDay => cell !== null)
+     .sort((left, right) => left.date.localeCompare(right.date));
+   const maxTokens = Math.max(0, ...cells.map((cell) => cell.totalTokens));
+   const weeks = buildAppUsageHeatmapWeeks(cells, maxTokens);
+@@ -431,7 +440,7 @@ function buildCodingPlanActivityHeatmap(
+ }
+ 
+ function buildAppUsageHeatmapWeeks(
+-  cells: Array<Omit<AppUsageHeatmapCell, "level">>,
++  cells: ActivityHeatmapDay[],
+   maxTokens: number,
+ ): AppUsageHeatmapWeek[] {
+   const byDate = new Map(cells.map((cell) => [cell.date, cell] as const));
 diff --git a/packages/services/test/nonCliAcpRetirement.test.ts b/packages/services/test/nonCliAcpRetirement.test.ts
 index d69fe69..151151b 100644
 --- a/packages/services/test/nonCliAcpRetirement.test.ts
@@ -10170,12 +11221,12 @@ index 00553a5..5bc122d 100644
      })
      .nullish(),
 diff --git a/packages/shared/src/config-schema.ts b/packages/shared/src/config-schema.ts
-index 2d75ead..3254ac4 100644
+index 2d75ead..51c22a3 100644
 --- a/packages/shared/src/config-schema.ts
 +++ b/packages/shared/src/config-schema.ts
-@@ -1,8 +1,37 @@
+@@ -1,8 +1,39 @@
 -import type { z } from "zod";
-+import type { ZodRawShape } from "zod";
++import type { ZodRawShape, ZodType } from "zod";
  
  /** 每个字段保持原 schema，只派生覆盖所需的缺省/null；嵌套结构由调用方显式派生。 */
 -export function sparseShape<T extends Record<string, z.ZodType>>(shape: T) {
@@ -10192,10 +11243,11 @@ index 2d75ead..3254ac4 100644
 +  const sparse: ZodRawShape = {};
 +  // scriptc：`Record<string, any>` 上的 Object.keys 无 lowering（SC2020），
 +  // 而泛型记录上的还有（同文件外的 omitKey 就是这么过的）；这里绑定一份
-+  // unknown 值类型的记录只用于枚举键，取值仍从原记录拿，保持 any 语义。
++  // unknown 值类型的记录：键从它枚举，值也经它取得——any 擦成 unknown 后
++  // 才能用 `as ZodType` 的校验断言取回 schema 实例（any 值不能直接当类实例用）。
 +  const keysOf: Record<string, unknown> = shape;
 +  for (const key of recordKeys(keysOf)) {
-+    const schema = shape[key];
++    const schema = keysOf[key] as ZodType;
 +    sparse[key] = schema.nullable().optional();
 +  }
 +  return sparse;
@@ -10209,10 +11261,11 @@ index 2d75ead..3254ac4 100644
 + */
 +export function copyShape(shape: Record<string, any>): ZodRawShape {
 +  const copied: ZodRawShape = {};
-+  // 同 sparseShape：键枚举走 recordKeys（泛型记录上的 Object.keys 才有 lowering）。
++  // 同 sparseShape：键枚举走 recordKeys（泛型记录上的 Object.keys 才有 lowering），
++  // 取值经 unknown 记录用校验断言取回。
 +  const keysOf: Record<string, unknown> = shape;
 +  for (const key of recordKeys(keysOf)) {
-+    copied[key] = shape[key];
++    copied[key] = keysOf[key] as ZodType;
 +  }
 +  return copied;
  }
@@ -10678,6 +11731,114 @@ index 3e020d5..efc122e 100644
      if (isWin32) {
        const lowerCmd = command.toLowerCase();
        const unwrappedCommand = args[1];
+diff --git a/packages/shared/src/memoryDiagnostics.ts b/packages/shared/src/memoryDiagnostics.ts
+index e2e32a7..adcac09 100644
+--- a/packages/shared/src/memoryDiagnostics.ts
++++ b/packages/shared/src/memoryDiagnostics.ts
+@@ -56,9 +56,47 @@ const MEMORY_FIELD_ORDER: readonly (keyof MemorySampleFields)[] = [
+   "arrayBuffersKb",
+ ];
+ 
++/** 记录键枚举。scriptc 只对**泛型记录**参数上的 Object.keys 有 lowering，
++ *  `Record<string, any>` 的写法没有（SC2020），所以调用方先把值类型擦成 unknown 再传进来。 */
++function recordKeys<T>(rec: Record<string, T>): string[] {
++  return Object.keys(rec);
++}
++
++function copyCounters(counters: Record<string, number>): Record<string, number> {
++  const copy: Record<string, number> = {};
++  const keysOf: Record<string, unknown> = counters;
++  for (const key of recordKeys(keysOf)) {
++    const value = counters[key];
++    if (value !== undefined) {
++      copy[key] = value;
++    }
++  }
++  return copy;
++}
++
++/** scriptc 不支持对象展开；按字段显式复制一份样本快照（含 counters 的浅拷贝）。 */
++function copyMemorySample(sample: MemorySample): MemorySample {
++  const copy: MemorySample = {
++    role: sample.role,
++    counters: copyCounters(sample.counters),
++  };
++  if (sample.rssKb !== undefined) copy.rssKb = sample.rssKb;
++  if (sample.heapUsedKb !== undefined) copy.heapUsedKb = sample.heapUsedKb;
++  if (sample.heapTotalKb !== undefined) copy.heapTotalKb = sample.heapTotalKb;
++  if (sample.externalKb !== undefined) copy.externalKb = sample.externalKb;
++  if (sample.arrayBuffersKb !== undefined) copy.arrayBuffersKb = sample.arrayBuffersKb;
++  return copy;
++}
++
+ function countersDiffer(a: Record<string, number>, b: Record<string, number>): boolean {
+-  const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
+-  for (const key of keys) {
++  const aKeys: Record<string, unknown> = a;
++  for (const key of recordKeys(aKeys)) {
++    if (a[key] !== b[key]) {
++      return true;
++    }
++  }
++  const bKeys: Record<string, unknown> = b;
++  for (const key of recordKeys(bKeys)) {
+     if (a[key] !== b[key]) {
+       return true;
+     }
+@@ -104,7 +142,7 @@ export function createMemorySampleWriteGate(
+         reason = "heartbeat";
+       }
+       if (reason) {
+-        lastWritten = { ...sample, counters: { ...sample.counters } };
++        lastWritten = copyMemorySample(sample);
+         lastWrittenAt = nowMs;
+       }
+       return reason;
+@@ -150,7 +188,10 @@ export function formatMemorySampleLine(
+       parts.push(`${field}=${Math.round(value)}`);
+     }
+   }
+-  for (const key of Object.keys(sample.counters).sort()) {
++  const counters: Record<string, unknown> = sample.counters;
++  const counterKeys = recordKeys(counters);
++  counterKeys.sort();
++  for (const key of counterKeys) {
+     const value = sample.counters[key];
+     if (typeof value === "number" && Number.isFinite(value)) {
+       parts.push(`${key}=${Math.round(value)}`);
+@@ -169,21 +210,27 @@ export interface MemoryDiagnosticsRegistry {
+ }
+ 
+ export function createMemoryDiagnosticsRegistry(): MemoryDiagnosticsRegistry {
+-  const providers = new Map<string, MemoryDiagnosticsProvider>();
++  // scriptc：Map 的构造与迭代都没有 lowering；索引签名记录 + recordKeys 是已验证替身。
++  const providers: Record<string, MemoryDiagnosticsProvider> = {};
+   return {
+     register(name, provider) {
+-      providers.set(name, provider);
++      providers[name] = provider;
+       return {
+         dispose() {
+-          if (providers.get(name) === provider) {
+-            providers.delete(name);
++          if (providers[name] === provider) {
++            delete providers[name];
+           }
+         },
+       };
+     },
+     collect() {
+       const result: Record<string, number> = {};
+-      for (const [name, provider] of providers) {
++      const providerNames: Record<string, unknown> = providers;
++      for (const name of recordKeys(providerNames)) {
++        const provider = providers[name];
++        if (provider === undefined) {
++          continue;
++        }
+         try {
+           for (const [key, value] of Object.entries(provider())) {
+             if (typeof value === "number" && Number.isFinite(value)) {
 diff --git a/packages/shared/src/model-config.ts b/packages/shared/src/model-config.ts
 index 1853167..fb594e2 100644
 --- a/packages/shared/src/model-config.ts
@@ -13658,6 +14819,62 @@ index 6aa8166..c654bdb 100644
    /** 后台工作的开始时刻，tooltip 的 elapsed 用；没有后台工作时缺席。 */
    startedAt: timestampSchema.optional(),
    /**
+diff --git a/packages/shared/src/zcode-protocol-v4/sessions-index.ts b/packages/shared/src/zcode-protocol-v4/sessions-index.ts
+index b506032..fa48c8c 100644
+--- a/packages/shared/src/zcode-protocol-v4/sessions-index.ts
++++ b/packages/shared/src/zcode-protocol-v4/sessions-index.ts
+@@ -2,12 +2,7 @@
+ import { z } from "zod";
+ import { timestampSchema } from "./core.js";
+ import { sessionWorkflowActivitySchema } from "./sessions-index-workflow-activity.js";
+-import {
+-  goalStateSchema,
+-  interactionAutoResolutionSchema,
+-  sessionMetaStateSchema,
+-  sessionPhaseSchema,
+-} from "./snapshot.js";
++import { interactionAutoResolutionSchema, sessionPhaseSchema } from "./snapshot.js";
+ 
+ export const sessionPendingInteractionSummarySchema = z.object({
+   interactionId: z.string(),
+@@ -26,6 +21,19 @@ export const pendingInteractionSummarySchema = z.object({
+ });
+ export type PendingInteractionSummary = z.infer<typeof pendingInteractionSummarySchema>;
+ 
++// scriptc 把 `.shape.field` 读成 any，any 传进 z.object 的 schema 槽会报 any → ZBase；
++// 改为抽出的具体 schema。约束与 snapshot.ts 的 sessionMetaStateSchema.titleSource 逐字一致，那边改动时同步这里。
++const sessionTitleSourceSchema = z.enum(["default", "generated", "custom"]);
++// 同上：不写 `goalStateSchema.shape.status`，约束与 snapshot.ts 的 goalStateSchema.status 逐字一致。
++const goalStatusSchema = z.enum([
++  "active",
++  "paused",
++  "verifying",
++  "verified",
++  "notSatisfied",
++  "failed",
++]);
++
+ export const sessionSummarySchema = z.object({
+   sessionId: z.string(),
+   workspaceId: z.string(),
+@@ -34,7 +42,7 @@ export const sessionSummarySchema = z.object({
+   title: z.string(),
+   // custom = 用户显式重命名；default/generated 都不是产品语义上的手动标题。
+   // optional 是为了兼容旧 sessions-index frame / 旧持久化摘要。
+-  titleSource: sessionMetaStateSchema.shape.titleSource.optional(),
++  titleSource: sessionTitleSourceSchema.optional(),
+   phase: sessionPhaseSchema,
+   sessionEnded: z.boolean(),
+   // 列表小圆点用（此处保留布尔，避免为侧栏订阅整个 backgroundWorks）。
+@@ -46,7 +54,7 @@ export const sessionSummarySchema = z.object({
+   // 侧栏只需要 kind/count，不下发问题、命令或答案等敏感 payload。
+   // optional 兼容旧 sessions-index frame / stored summary。
+   pendingInteractionSummary: pendingInteractionSummarySchema.optional(),
+-  goalStatus: goalStateSchema.shape.status.optional(),
++  goalStatus: goalStatusSchema.optional(),
+   // 未读推导：客户端本地记 lastSeenActivityAt 比较（不用 seq，epoch 会重置）。
+   lastActivityAt: timestampSchema,
+   // ≤120 字符。
 diff --git a/packages/shared/src/zcode-protocol-v4/shared-context-import.ts b/packages/shared/src/zcode-protocol-v4/shared-context-import.ts
 index f172bed..5576dc0 100644
 --- a/packages/shared/src/zcode-protocol-v4/shared-context-import.ts
@@ -14557,7 +15774,7 @@ index 25efab6..3c80327 100644
      return {
        kind: "rejected",
 diff --git a/packages/shared/src/zcode-protocol-v4/wire.ts b/packages/shared/src/zcode-protocol-v4/wire.ts
-index ff3fc88..bfb84ef 100644
+index ff3fc88..2c45608 100644
 --- a/packages/shared/src/zcode-protocol-v4/wire.ts
 +++ b/packages/shared/src/zcode-protocol-v4/wire.ts
 @@ -4,8 +4,7 @@ import { z } from "zod";
@@ -14623,6 +15840,48 @@ index ff3fc88..bfb84ef 100644
              .int()
              .positive()
              .max(PROTOCOL_V4_LIMITS.logicalFrameAssemblyMaxFragments),
+@@ -119,16 +112,15 @@ export function createTopicWireFrameSchema<F extends z.ZodTypeAny>(frameSchema:
+         .strict(),
+     ])
+     .superRefine((wire, context) => {
+-      const value = wire as unknown as TopicWireFrame<z.output<F>>;
+-      if (value.kind === "fragment") {
+-        if (value.fragmentIndex >= value.fragmentCount) {
++      if (wire.kind === "fragment") {
++        if (wire.fragmentIndex >= wire.fragmentCount) {
+           context.addIssue({
+             code: "custom",
+             message: "fragmentIndex must be smaller than fragmentCount",
+             path: ["fragmentIndex"],
+           });
+         }
+-        if (value.fragmentCount > value.logicalBytes) {
++        if (wire.fragmentCount > wire.logicalBytes) {
+           context.addIssue({
+             code: "custom",
+             message: "fragmentCount cannot exceed logicalBytes",
+@@ -137,18 +129,15 @@ export function createTopicWireFrameSchema<F extends z.ZodTypeAny>(frameSchema:
+         }
+         return;
+       }
+-      const frame = value.frame as {
+-        topic?: unknown;
+-        subscriptionId?: unknown;
+-      };
+-      if (frame.topic !== value.topic) {
++      const frame: any = wire.frame;
++      if (frame.topic !== wire.topic) {
+         context.addIssue({
+           code: "custom",
+           message: "complete wire topic must match logical frame topic",
+           path: ["topic"],
+         });
+       }
+-      if (frame.subscriptionId !== value.subscriptionId) {
++      if (frame.subscriptionId !== wire.subscriptionId) {
+         context.addIssue({
+           code: "custom",
+           message: "complete wire subscriptionId must match logical frame subscriptionId",
 diff --git a/packages/shared/src/zcode-protocol-v4/workflow-artifacts.ts b/packages/shared/src/zcode-protocol-v4/workflow-artifacts.ts
 index 25aee00..d3a001c 100644
 --- a/packages/shared/src/zcode-protocol-v4/workflow-artifacts.ts
@@ -14995,6 +16254,111 @@ index 3985ded..5350a6b 100644
      .min(1)
      .max(WORKFLOW_RUNS_LIMITS.maxSubagentModelLength)
      .nullable()
+diff --git a/packages/shared/src/zcode-protocol-v4/workflow-runs-artifacts.ts b/packages/shared/src/zcode-protocol-v4/workflow-runs-artifacts.ts
+index ad17cd8..5ed34a0 100644
+--- a/packages/shared/src/zcode-protocol-v4/workflow-runs-artifacts.ts
++++ b/packages/shared/src/zcode-protocol-v4/workflow-runs-artifacts.ts
+@@ -25,14 +25,43 @@ import {
+ } from "./workflow-artifacts.js";
+ 
+ /** 产物的六个成员种类。归约不校验 schema，所以这里自带一张闭集表判读。 */
+-const ARTIFACT_KINDS: ReadonlySet<string> = new Set<WorkflowRunArtifactKind>([
++const ARTIFACT_KIND_NAMES: string[] = [
+   "file",
+   "markdown",
+   "chart",
+   "table",
+   "metrics",
+   "board",
+-]);
++];
++
++// scriptc 只支持 `new Set<string>()` 后逐个 `.add`（兼容层下 WorkflowRunArtifactKind 解析为
++// any，`new Set<any>(...)` 无 lowering）；显式建集，不写 `new Set(数组)`。
++const ARTIFACT_KINDS = new Set<string>();
++for (const kind of ARTIFACT_KIND_NAMES) {
++  ARTIFACT_KINDS.add(kind);
++}
++
++/**
++ * 摘要对象的键序 = `workflowRunArtifactSummarySchema`（workflow-artifacts.ts）的声明序。
++ *
++ * scriptc 不支持展开 any 源，而兼容层下 `WorkflowRunArtifactSummary` 就是 any；
++ * upsert / 计数两处的 `{ ...summary }` 因此改为按本表显式复制。字段增删时同步本表。
++ */
++const ARTIFACT_SUMMARY_KEYS: string[] = [
++  "id",
++  "kind",
++  "title",
++  "version",
++  "contentType",
++  "bytes",
++  "itemCount",
++  "primary",
++];
++
++const ARTIFACT_SUMMARY_KEY_SET = new Set<string>();
++for (const key of ARTIFACT_SUMMARY_KEYS) {
++  ARTIFACT_SUMMARY_KEY_SET.add(key);
++}
+ 
+ /**
+  * `artifact-published` 载荷里的 `ArtifactVersionRecord` → 快照里的**最新版元数据**。
+@@ -85,10 +114,9 @@ export function upsertBoundedByArtifactId(
+   if (index >= 0) {
+     const previous = list[index]!;
+     const next = [...list];
+-    next[index] = {
+-      ...entry,
+-      ...(previous.itemCount === undefined ? {} : { itemCount: previous.itemCount }),
+-    };
++    const merged = copyArtifactSummary(entry);
++    if (previous.itemCount !== undefined) merged.itemCount = previous.itemCount;
++    next[index] = merged;
+     return { list: next, truncated: false };
+   }
+   if (list.length >= limit) return { list: [...list], truncated: true };
+@@ -120,7 +148,9 @@ export function countTaggedReport(
+   if (index < 0) return undefined;
+   const previous = list[index]!;
+   const next = [...list];
+-  next[index] = { ...previous, itemCount: (previous.itemCount ?? 0) + 1 };
++  const counted = copyArtifactSummary(previous);
++  counted.itemCount = (previous.itemCount ?? 0) + 1;
++  next[index] = counted;
+   return next;
+ }
+ 
+@@ -131,3 +161,29 @@ function isPlainRecord(value: unknown): value is Record<string, unknown> {
+ function nonEmptyString(value: unknown): string | undefined {
+   return typeof value === "string" && value.length > 0 ? value : undefined;
+ }
++
++/** 记录键枚举。scriptc 只对**泛型记录**参数上的 Object.keys 有 lowering（`Record<string, any>`
++ *  的写法会 SC2020），所以调用方先把值擦成 `Record<string, unknown>` 再传进来。 */
++function recordKeys<T>(rec: Record<string, T>): string[] {
++  return Object.keys(rec);
++}
++
++/**
++ * 摘要对象的浅拷贝，替代 `{ ...summary }`（scriptc 不支持展开 any 源）。表内键按 schema
++ * 声明序在前，表外键按到达序缀尾；`undefined` 值的键按缺席处理，与 JSON.stringify 对齐。
++ */
++function copyArtifactSummary(source: WorkflowRunArtifactSummary): WorkflowRunArtifactSummary {
++  const anySource: any = source;
++  const record: Record<string, unknown> = anySource;
++  const copy: Record<string, unknown> = {};
++  for (const key of ARTIFACT_SUMMARY_KEYS) {
++    const value = record[key];
++    if (value !== undefined) copy[key] = value;
++  }
++  for (const key of recordKeys(record)) {
++    if (ARTIFACT_SUMMARY_KEY_SET.has(key)) continue;
++    const value = record[key];
++    if (value !== undefined) copy[key] = value;
++  }
++  return copy as unknown as WorkflowRunArtifactSummary;
++}
 diff --git a/packages/shared/src/zcode-protocol-v4/workflow-runs-delta.ts b/packages/shared/src/zcode-protocol-v4/workflow-runs-delta.ts
 index 8e1d764..8e494d0 100644
 --- a/packages/shared/src/zcode-protocol-v4/workflow-runs-delta.ts
